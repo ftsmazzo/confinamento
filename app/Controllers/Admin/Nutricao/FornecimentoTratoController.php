@@ -191,13 +191,17 @@ class FornecimentoTratoController extends ControllerAdmin
         $data->nullIfEmpty("id_curral");
         $data->nullIfEmpty("id_formula_racao");
         $data->nullIfEmpty("id_programacao_trato");
-        $data->nullIfEmpty("turno");
+        $data->nullIfEmpty("hora_fornecimento");
         $data->nullIfEmpty("observacao");
 
         $payload = $data->all();
-        unset($payload["csrf"], $payload["id"]);
+        // fornecimento_trato não tem coluna turno (turno vem da programação ou da hora)
+        unset($payload["csrf"], $payload["id"], $payload["turno"]);
 
-        $payload["quantidade_fornecida"] = (float) str_replace(",", ".", (string) ($payload["quantidade_fornecida"] ?? 0));
+        $qtd = (string) ($payload["quantidade_fornecida"] ?? 0);
+        $payload["quantidade_fornecida"] = function_exists("money2float")
+            ? (float) money2float($qtd)
+            : (float) str_replace(",", ".", $qtd);
 
         return $payload;
     }
