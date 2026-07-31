@@ -198,7 +198,9 @@ class FormulaRacaoController extends ControllerAdmin
 
         foreach ($ingredientes as $index => $idIngrediente) {
             $idIngrediente = (int) $idIngrediente;
-            $percentual = isset($percentuais[$index]) ? (float) str_replace(",", ".", (string) $percentuais[$index]) : 0;
+            $percentual = isset($percentuais[$index])
+                ? (float) money2float((string) $percentuais[$index])
+                : 0;
 
             if ($idIngrediente <= 0 || $percentual <= 0) {
                 continue;
@@ -232,11 +234,16 @@ class FormulaRacaoController extends ControllerAdmin
             $idParametro = (int) $idParametro;
             $valorBruto = trim((string) $valorBruto);
 
-            if ($idParametro <= 0 || $valorBruto === "") {
+            // Máscara input-decimal preenche "0,0" em campos vazios — não persistir.
+            if ($idParametro <= 0 || $valorBruto === "" || preg_match('/^0+([.,]0+)?$/', $valorBruto)) {
                 continue;
             }
 
-            $valor = (float) str_replace(",", ".", $valorBruto);
+            $valor = (float) money2float($valorBruto);
+
+            if ($valor <= 0) {
+                continue;
+            }
 
             FormulaRacaoParametro::create([
                 "id_formula_racao" => $idFormula,

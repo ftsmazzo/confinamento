@@ -83,7 +83,7 @@
                                             </select>
                                         </td>
                                         <td>
-                                            <input type="text" class="form-control input-decimal" name="item_percentual[]" placeholder="0,00" autocomplete="off" value="<?=number_format((float) $item->percentual, 2, ",", ".")?>">
+                                            <input type="text" class="form-control input-decimal" name="item_percentual[]" placeholder="0,0" autocomplete="off" value="<?=number_format((float) $item->percentual, 1, ",", ".")?>">
                                         </td>
                                         <td class="text-end">
                                             <button type="button" class="btn btn-white btn-sm btn-remove-item-formula"><i class="uil uil-trash"></i></button>
@@ -132,9 +132,9 @@
                                         class="form-control input-decimal"
                                         id="parametro_valor_<?=$idParam?>"
                                         name="parametro_valor[<?=$idParam?>]"
-                                        placeholder="0,000"
+                                        placeholder="0,0"
                                         autocomplete="off"
-                                        value="<?=$valorAtual !== null ? number_format((float) $valorAtual, 3, ",", ".") : ""?>"
+                                        value="<?=$valorAtual !== null ? number_format((float) $valorAtual, 1, ",", ".") : ""?>"
                                     >
                                 </div>
                             </div>
@@ -183,7 +183,7 @@
             </select>
         </td>
         <td>
-            <input type="text" class="form-control input-decimal" name="item_percentual[]" placeholder="0,00" autocomplete="off">
+            <input type="text" class="form-control input-decimal" name="item_percentual[]" placeholder="0,0" autocomplete="off">
         </td>
         <td class="text-end">
             <button type="button" class="btn btn-white btn-sm btn-remove-item-formula"><i class="uil uil-trash"></i></button>
