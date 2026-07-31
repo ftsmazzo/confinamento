@@ -212,8 +212,8 @@
             <tr>
               <td><strong>P5</strong></td>
               <td>Quadro diário + custo alimentar (E02/E09)</td>
-              <td><span class="badge wait">Aguardando validação</span></td>
-              <td><code>1f3c6e0</code></td>
+              <td><span class="badge ok">Validado</span></td>
+              <td><code>1f3c6e0</code> + <code>b2232d6</code></td>
               <td>Não</td>
             </tr>
             <tr>
@@ -487,10 +487,11 @@
         <div class="step-top">
           <span class="step-id">P5</span>
           <h3>Quadro diário + custo alimentar (E02 · E09)</h3>
-          <span class="badge wait">Aguardando validação</span>
+          <span class="badge ok">Validado na segura</span>
           <span class="badge commit">1f3c6e0</span>
+          <span class="badge commit">b2232d6</span>
         </div>
-        <p class="muted small">Data: 31/07/2026 · Sem migration de schema</p>
+        <p class="muted small">Data: 31/07/2026 · Hotfix fornecimento (sem coluna turno) incluído</p>
 
         <div class="grid-2">
           <div class="box">
@@ -500,15 +501,16 @@
               <li>Filtros por data, linha e curral; KPIs + tabela desktop / cards mobile</li>
               <li>Indicador <strong>R$/cab/dia</strong> a partir do custo dos ingredientes</li>
               <li>Service compartilhado de custo de fórmula (também usado nos relatórios)</li>
+              <li>Hotfix: fornecimento não grava coluna <code>turno</code> inexistente</li>
               <li>Manual: como fechar o dia</li>
             </ul>
           </div>
           <div class="box">
-            <h4>Como validar na segura</h4>
+            <h4>Como foi validado</h4>
             <ol>
-              <li>Gerar previstos do dia (já feito no P4)</li>
-              <li>Lançar 1+ fornecimentos (ocorridos) no mesmo lote/data</li>
-              <li>Abrir Quadro do Dia e conferir P×O, aderência e R$/cab (se ingredientes tiverem custo)</li>
+              <li>Quadro com previstos do LOTE 2026-001 (4 turnos)</li>
+              <li>Lançado ocorrido Manhã 300 kg (hora 07:00)</li>
+              <li>Aderência ~30% · R$/cab R$ 7,32 · Δ negativo nos turnos ainda sem lançamento</li>
             </ol>
           </div>
         </div>
