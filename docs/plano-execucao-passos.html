@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Plano de execução — passos · Confinamento</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink: #1a2332; --muted: #5c6b7a; --line: #d8e0e8; --paper: #f7f4ef; --card: #fff;
+      --forest: #1f5c45; --forest-soft: #e6f2ec; --amber: #9a6b16; --amber-soft: #f8efd9;
+      --sky: #245b7a; --sky-soft: #e5f1f7; --max: 980px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; font-family: "Manrope", system-ui, sans-serif; color: var(--ink);
+      background:
+        radial-gradient(1000px 420px at 5% -8%, #e8efe9 0%, transparent 55%),
+        radial-gradient(700px 360px at 100% 0%, #ebe6f2 0%, transparent 48%),
+        var(--paper);
+      line-height: 1.55;
+    }
+    .wrap { max-width: var(--max); margin: 0 auto; padding: 36px 20px 80px; }
+    .cover {
+      background: var(--card); border: 1px solid var(--line); border-radius: 22px;
+      padding: 40px 36px 32px; position: relative; overflow: hidden;
+    }
+    .cover::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 8px; background: var(--forest); }
+    .eyebrow {
+      display: inline-flex; align-items: center; gap: 8px; font-size: 0.78rem; font-weight: 600;
+      letter-spacing: 0.08em; text-transform: uppercase; color: var(--forest); margin-bottom: 14px;
+    }
+    .eyebrow i { width: 8px; height: 8px; border-radius: 50%; background: var(--forest); font-style: normal; }
+    h1 {
+      font-family: "Fraunces", Georgia, serif; font-size: clamp(1.75rem, 3vw, 2.2rem);
+      line-height: 1.15; margin: 0 0 12px;
+    }
+    .lede { max-width: 70ch; color: var(--muted); font-size: 1.02rem; margin: 0 0 18px; }
+    .meta { display: flex; flex-wrap: wrap; gap: 8px; }
+    .chip {
+      font-size: 0.78rem; font-weight: 600; padding: 6px 12px; border-radius: 999px;
+      background: var(--forest-soft); color: var(--forest); border: 1px solid #c5ddd0;
+    }
+    .chip.neutral { background: #eef2f6; color: var(--muted); border-color: var(--line); }
+    .decision {
+      margin-top: 20px; background: linear-gradient(180deg, #f3f8f5, #eef5f1);
+      border: 1px solid #c7ddd1; border-radius: 14px; padding: 18px 20px; color: #234536;
+    }
+    .decision strong { color: var(--forest); }
+    section { margin: 34px 0; }
+    .section-head {
+      display: flex; align-items: baseline; gap: 12px; margin-bottom: 14px;
+      padding-bottom: 10px; border-bottom: 2px solid var(--ink);
+    }
+    .section-head .num { font-family: "Fraunces", Georgia, serif; font-size: 1.5rem; color: var(--forest); font-weight: 700; }
+    h2 { font-family: "Fraunces", Georgia, serif; font-size: 1.45rem; margin: 0; }
+    h3 { font-family: "Fraunces", Georgia, serif; font-size: 1.05rem; margin: 0 0 8px; }
+    p { margin: 0 0 10px; }
+    .muted { color: var(--muted); }
+    .small { font-size: 0.88rem; }
+    .step {
+      background: var(--card); border: 1px solid var(--line); border-radius: 16px;
+      padding: 18px 20px; margin-bottom: 12px;
+    }
+    .step-head {
+      display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 10px;
+    }
+    .step-num {
+      font-family: "Fraunces", Georgia, serif; font-weight: 700; font-size: 1.1rem;
+      background: var(--forest-soft); color: var(--forest); border-radius: 10px;
+      padding: 6px 12px;
+    }
+    .step h3 { margin: 0; flex: 1; min-width: 200px; }
+    .badge {
+      display: inline-block; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.03em;
+      text-transform: uppercase; padding: 3px 8px; border-radius: 6px;
+    }
+    .badge.ids { background: var(--sky-soft); color: var(--sky); }
+    .badge.done { background: var(--forest-soft); color: var(--forest); }
+    .badge.todo { background: var(--amber-soft); color: var(--amber); }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .box {
+      background: #f8fafb; border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px;
+    }
+    .box h4 {
+      margin: 0 0 6px; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted);
+    }
+    .box ul { margin: 0; padding-left: 1.1rem; font-size: 0.88rem; }
+    .box li { margin: 3px 0; }
+    .gate {
+      margin-top: 10px; font-size: 0.88rem; padding: 10px 12px; border-radius: 10px;
+      background: var(--amber-soft); border: 1px solid #ead7a8; color: #5c4210;
+    }
+    .gate strong { color: var(--amber); }
+    footer {
+      margin-top: 36px; padding-top: 16px; border-top: 1px solid var(--line);
+      color: var(--muted); font-size: 0.82rem;
+    }
+    @media (max-width: 800px) {
+      .grid-2 { grid-template-columns: 1fr; }
+      .cover { padding: 28px 22px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+
+    <header class="cover">
+      <div class="eyebrow"><i></i> Plano de execução</div>
+      <h1>Passos testáveis — versão segura → GitHub</h1>
+      <p class="lede">
+        Ordem por dependência. Cada passo termina com: teste na segura → migration (se houver) →
+        atualização do manual da topbar → <strong>commit + push</strong>.
+        Escopo: <code>docs/entrega-final-escopo.html</code> (E01–E12).
+      </p>
+      <div class="meta">
+        <span class="chip">Manual: public/assets/manual/manual-do-sistema.html</span>
+        <span class="chip neutral">Migrations: storage/migrations/</span>
+      </div>
+      <div class="decision">
+        <strong>Critério de pronto do passo:</strong> funciona na versão segura, documentado no manual
+        (se afeta uso), SQL pronto para Adminer (se afeta banco), commit no GitHub.
+      </div>
+    </header>
+
+    <section>
+      <div class="section-head"><span class="num">00</span><h2>Baseline (este commit)</h2></div>
+      <div class="step">
+        <div class="step-head">
+          <span class="step-num">P0</span>
+          <h3>Documentos de escopo e plano</h3>
+          <span class="badge done">Em andamento</span>
+        </div>
+        <div class="grid-2">
+          <div class="box">
+            <h4>Fazer</h4>
+            <ul>
+              <li>Publicar entrega-final-escopo.html</li>
+              <li>Publicar este plano</li>
+              <li>Commit + push</li>
+            </ul>
+          </div>
+          <div class="box">
+            <h4>Teste</h4>
+            <ul>
+              <li>Abrir HTMLs localmente</li>
+              <li>Confirmar remote GitHub</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-head"><span class="num">01</span><h2>Fundação (rápido, estabiliza o produto)</h2></div>
+
+      <div class="step">
+        <div class="step-head">
+          <span class="step-num">P1</span>
+          <h3>Correções técnicas</h3>
+          <span class="badge ids">E08</span>
+          <span class="badge todo">Pendente</span>
+        </div>
+        <div class="grid-2">
+          <div class="box">
+            <h4>Fazer</h4>
+            <ul>
+              <li>Corrigir typo menu <code>vetical</code></li>
+              <li>Restaurar edição de parcela (se quebrada)</li>
+              <li>Isolar/ocultar legado que atrapalha (cartão/cashback etc.)</li>
+            </ul>
+          </div>
+          <div class="box">
+            <h4>Teste na segura</h4>
+            <ul>
+              <li>Menu abre item correto</li>
+              <li>Editar parcela financeira funciona</li>
+              <li>Nada legado crítico no caminho operacional</li>
+            </ul>
+          </div>
+        </div>
+        <div class="gate"><strong>Gate:</strong> manual só se mudar fluxo visível · commit <code>fix: correções técnicas E08</code></div>
+      </div>
+
+      <div class="step">
+        <div class="step-head">
+          <span class="step-num">P2</span>
+          <h3>Campos Linha e Giro</h3>
+          <span class="badge ids">E06</span>
+          <span class="badge todo">Pendente</span>
+        </div>
+        <div class="grid-2">
+          <div class="box">
+            <h4>Fazer</h4>
+            <ul>
+              <li>Migration: campos em lote/curral</li>
+              <li>Formulários + listagens</li>
+              <li>Manual: onde preencher Linha/Giro</li>
+            </ul>
+          </div>
+          <div class="box">
+            <h4>Teste na segura</h4>
+            <ul>
+              <li>Criar/editar lote com Linha e Giro</li>
+              <li>Migration aplica limpa no Adminer</li>
+            </ul>
+          </div>
+        </div>
+        <div class="gate"><strong>Gate:</strong> SQL em storage/migrations · manual · push</div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-head"><span class="num">02</span><h2>Nutrição e quadro (núcleo da planilha)</h2></div>
+
+      <div class="step">
+        <div class="step-head">
+          <span class="step-num">P3</span>
+          <h3>Parâmetros nutricionais nas fórmulas</h3>
+          <span class="badge ids">E03</span>
+          <span class="badge todo">Pendente</span>
+        </div>
+        <div class="grid-2">
+          <div class="box">
+            <h4>Fazer</h4>
+            <ul>
+              <li>UI/fluxo para % MS e params da fórmula</li>
+              <li>Garantir persistência em <code>formula_racao_parametro</code> (ou equivalente)</li>
+              <li>Manual: como cadastrar bromatologia/% MS</li>
+            </ul>
+          </div>
+          <div class="box">
+            <h4>Teste na segura</h4>
+            <ul>
+              <li>Salvar % MS numa fórmula</li>
+              <li>Relêr e conferir valor</li>
+            </ul>
+          </div>
+        </div>
+        <div class="gate"><strong>Gate:</strong> params usáveis pelo motor · push</div>
+      </div>
+
+      <div class="step">
+        <div class="step-head">
+          <span class="step-num">P4</span>
+          <h3>Motor de previsão de trato</h3>
+          <span class="badge ids">E01 · E10</span>
+          <span class="badge todo">Pendente</span>
+        </div>
+        <div class="grid-2">
+          <div class="box">
+            <h4>Fazer</h4>
+            <ul>
+              <li>Cálculo: dias, peso projetado, %PV, MS→MN, 4 turnos</li>
+              <li>GMD e % turnos parametrizáveis</li>
+              <li>Expor dias no confinamento + alerta ~100</li>
+              <li>Manual: lógica e parâmetros</li>
+            </ul>
+          </div>
+          <div class="box">
+            <h4>Teste na segura</h4>
+            <ul>
+              <li>Caso conhecido da planilha Bichara (1 curral)</li>
+              <li>Conferir kg previsto ± margem aceitável</li>
+              <li>Alerta 100 dias aparece no lote certo</li>
+            </ul>
+          </div>
+        </div>
+        <div class="gate"><strong>Gate:</strong> números batem com planilha em amostra · push</div>
+      </div>
+
+      <div class="step">
+        <div class="step-head">
+          <span class="step-num">P5</span>
+          <h3>Quadro diário + custo alimentar</h3>
+          <span class="badge ids">E02 · E09</span>
+          <span class="badge todo">Pendente</span>
+        </div>
+        <div class="grid-2">
+          <div class="box">
+            <h4>Fazer</h4>
+            <ul>
+              <li>Tela quadro do dia (previstos × ocorridos)</li>
+              <li>Indicador R$/cab/dia quando houver custo de fórmula</li>
+              <li>Manual: como fechar o dia no sistema</li>
+            </ul>
+          </div>
+          <div class="box">
+            <h4>Teste na segura</h4>
+            <ul>
+              <li>Gerar previstos e lançar ocorridos</li>
+              <li>Quadro legível no mobile e desktop</li>
+            </ul>
+          </div>
+        </div>
+        <div class="gate"><strong>Gate:</strong> substitui uso diário da planilha de trato · push</div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-head"><span class="num">03</span><h2>Dados da fazenda</h2></div>
+
+      <div class="step">
+        <div class="step-head">
+          <span class="step-num">P6</span>
+          <h3>Carga rebanho / currais (peso médio)</h3>
+          <span class="badge ids">E05 · E11</span>
+          <span class="badge todo">Pendente</span>
+        </div>
+        <div class="grid-2">
+          <div class="box">
+            <h4>Fazer</h4>
+            <ul>
+              <li>Script/SQL ou import one-shot das planilhas</li>
+              <li>Amarrar lote ↔ curral na entrada</li>
+              <li>Manual: o que foi migrado e como conferir</li>
+            </ul>
+          </div>
+          <div class="box">
+            <h4>Teste na segura</h4>
+            <ul>
+              <li>Currais/lotes batem com Linha 1–2</li>
+              <li>Curral puxa lote na tela de leitura</li>
+            </ul>
+          </div>
+        </div>
+        <div class="gate"><strong>Gate:</strong> seed/SQL reproduzível para a real · push</div>
+      </div>
+
+      <div class="step">
+        <div class="step-head">
+          <span class="step-num">P7</span>
+          <h3>Farmácia — carga inicial de produtos</h3>
+          <span class="badge ids">E04</span>
+          <span class="badge todo">Pendente</span>
+        </div>
+        <div class="grid-2">
+          <div class="box">
+            <h4>Fazer</h4>
+            <ul>
+              <li>Seed/SQL do cadastro (~94 produtos)</li>
+              <li>Sem tela de import recorrente</li>
+              <li>Manual: conferência do catálogo</li>
+            </ul>
+          </div>
+          <div class="box">
+            <h4>Teste na segura</h4>
+            <ul>
+              <li>Produtos listados no estoque/sanitário</li>
+              <li>Reaplicar seed não quebra (ou documentar limpeza)</li>
+            </ul>
+          </div>
+        </div>
+        <div class="gate"><strong>Gate:</strong> arquivo único para Adminer · push</div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-head"><span class="num">04</span><h2>Leitura de cocho (adendo leve)</h2></div>
+
+      <div class="step">
+        <div class="step-head">
+          <span class="step-num">P8</span>
+          <h3>Foto, permissão, turnos e visão diária</h3>
+          <span class="badge ids">E12</span>
+          <span class="badge todo">Pendente</span>
+        </div>
+        <div class="grid-2">
+          <div class="box">
+            <h4>Fazer</h4>
+            <ul>
+              <li>Migration: foto, turno, escore opcional</li>
+              <li>Permissão <code>dieta_dar_nota</code></li>
+              <li>Upload de foto no formulário de leitura</li>
+              <li>Visão do dia manhã → noite</li>
+              <li>Manual completo do fluxo</li>
+            </ul>
+          </div>
+          <div class="box">
+            <h4>Teste na segura</h4>
+            <ul>
+              <li>Usuário sem permissão: registra sem nota / não edita escore</li>
+              <li>Com permissão: lança escore</li>
+              <li>Foto salva e abre</li>
+              <li>Filtro/visão manhã e tarde</li>
+            </ul>
+          </div>
+        </div>
+        <div class="gate"><strong>Gate:</strong> migration + permissão cadastrada · push</div>
+      </div>
+
+      <div class="step">
+        <div class="step-head">
+          <span class="step-num">P9</span>
+          <h3>Sugestão de ajuste por escore</h3>
+          <span class="badge ids">E07</span>
+          <span class="badge todo">Pendente</span>
+        </div>
+        <div class="grid-2">
+          <div class="box">
+            <h4>Fazer</h4>
+            <ul>
+              <li>Regra % sugerida a partir do escore</li>
+              <li>Exibir sugestão no fluxo de trato/quadro</li>
+              <li>Manual: interpretação dos escores</li>
+            </ul>
+          </div>
+          <div class="box">
+            <h4>Teste na segura</h4>
+            <ul>
+              <li>Com escore 0–4, sugestão coerente</li>
+              <li>Sem escore: não quebra o fluxo</li>
+            </ul>
+          </div>
+        </div>
+        <div class="gate"><strong>Gate:</strong> sugestão só quando há nota · push</div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-head"><span class="num">05</span><h2>Fechamento da rodada</h2></div>
+      <div class="step">
+        <div class="step-head">
+          <span class="step-num">P10</span>
+          <h3>Checklist final + handoff</h3>
+          <span class="badge todo">Pendente</span>
+        </div>
+        <div class="grid-2">
+          <div class="box">
+            <h4>Fazer</h4>
+            <ul>
+              <li>Revisar manual ponta a ponta (seções novas)</li>
+              <li>Lista ordenada de migrations para a real</li>
+              <li>Smoke test completo na segura</li>
+            </ul>
+          </div>
+          <div class="box">
+            <h4>Entregar</h4>
+            <ul>
+              <li>Link GitHub atualizado</li>
+              <li>Instruções Adminer (ordem dos SQL)</li>
+              <li>O que falta fora do escopo (dashboard, peão…)</li>
+            </ul>
+          </div>
+        </div>
+        <div class="gate"><strong>Gate:</strong> rodada pronta para produção</div>
+      </div>
+    </section>
+
+    <footer>
+      Plano de execução · Confinamento · Julho/2026<br>
+      Escopo: <code>docs/entrega-final-escopo.html</code>
+    </footer>
+  </div>
+</body>
+</html>

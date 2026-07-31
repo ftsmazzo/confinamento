@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Escopo vs pedido da cliente — Confinamento</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink: #1a2332;
+      --muted: #5c6b7a;
+      --line: #d8e0e8;
+      --paper: #f7f4ef;
+      --card: #ffffff;
+      --forest: #1f5c45;
+      --forest-soft: #e6f2ec;
+      --amber: #9a6b16;
+      --amber-soft: #f8efd9;
+      --clay: #8b3a2a;
+      --clay-soft: #f6e8e4;
+      --sky: #245b7a;
+      --sky-soft: #e5f1f7;
+      --plum: #4a3f6b;
+      --plum-soft: #eeeaf5;
+      --max: 980px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Manrope", system-ui, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(1000px 420px at 5% -8%, #e8efe9 0%, transparent 55%),
+        radial-gradient(700px 360px at 100% 0%, #ebe6f2 0%, transparent 48%),
+        var(--paper);
+      line-height: 1.55;
+    }
+    .wrap { max-width: var(--max); margin: 0 auto; padding: 36px 20px 80px; }
+
+    .cover {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      padding: 40px 36px 32px;
+      position: relative;
+      overflow: hidden;
+    }
+    .cover::before {
+      content: "";
+      position: absolute; inset: 0 auto 0 0; width: 8px;
+      background: var(--forest);
+    }
+    .eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 0.78rem; font-weight: 600; letter-spacing: 0.08em;
+      text-transform: uppercase; color: var(--forest); margin-bottom: 14px;
+    }
+    .eyebrow i {
+      width: 8px; height: 8px; border-radius: 50%; background: var(--forest);
+      font-style: normal;
+    }
+    h1 {
+      font-family: "Fraunces", Georgia, serif;
+      font-size: clamp(1.8rem, 3.2vw, 2.4rem);
+      line-height: 1.15; margin: 0 0 12px; letter-spacing: -0.02em;
+    }
+    .lede { max-width: 68ch; color: var(--muted); font-size: 1.05rem; margin: 0 0 18px; }
+    .meta { display: flex; flex-wrap: wrap; gap: 8px; }
+    .chip {
+      font-size: 0.78rem; font-weight: 600; padding: 6px 12px; border-radius: 999px;
+      background: var(--forest-soft); color: var(--forest); border: 1px solid #c5ddd0;
+    }
+    .chip.alt { background: var(--plum-soft); color: var(--plum); border-color: #d4cce6; }
+    .chip.neutral { background: #eef2f6; color: var(--muted); border-color: var(--line); }
+    .chip.warn { background: var(--amber-soft); color: var(--amber); border-color: #ead7a8; }
+    .chip.gap { background: var(--clay-soft); color: var(--clay); border-color: #e8cfc7; }
+
+    .decision {
+      margin-top: 20px;
+      background: linear-gradient(180deg, #f3f8f5, #eef5f1);
+      border: 1px solid #c7ddd1;
+      border-radius: 14px;
+      padding: 18px 20px;
+      color: #234536;
+    }
+    .decision strong { color: var(--forest); }
+
+    section { margin: 34px 0; }
+    .section-head {
+      display: flex; align-items: baseline; gap: 12px;
+      margin-bottom: 14px; padding-bottom: 10px;
+      border-bottom: 2px solid var(--ink);
+    }
+    .section-head .num {
+      font-family: "Fraunces", Georgia, serif;
+      font-size: 1.5rem; color: var(--forest); font-weight: 700;
+    }
+    h2 {
+      font-family: "Fraunces", Georgia, serif;
+      font-size: 1.45rem; margin: 0; letter-spacing: -0.01em;
+    }
+    h3 {
+      font-family: "Fraunces", Georgia, serif;
+      font-size: 1.08rem; margin: 0 0 8px;
+    }
+    p { margin: 0 0 12px; }
+    .muted { color: var(--muted); }
+    .small { font-size: 0.88rem; }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 16px 18px;
+    }
+    .card.ok { background: var(--forest-soft); border-color: #c5ddd0; }
+    .card.warn { background: var(--amber-soft); border-color: #ead7a8; }
+    .card.gap { background: var(--clay-soft); border-color: #e8cfc7; }
+    .card.sky { background: var(--sky-soft); border-color: #bdd5e3; }
+    .card.plum { background: var(--plum-soft); border-color: #d4cce6; }
+
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: var(--card);
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+    th, td {
+      text-align: left; padding: 11px 13px;
+      border-bottom: 1px solid var(--line); vertical-align: top;
+    }
+    th {
+      background: #eef2f6;
+      font-size: 0.72rem; text-transform: uppercase;
+      letter-spacing: 0.05em; color: var(--muted); font-weight: 700;
+    }
+    tr:last-child td { border-bottom: 0; }
+    tr.in td { background: #f4faf6; }
+    tr.stretch td { background: #fbf7ee; }
+    tr.out td { background: #faf3f1; }
+
+    .badge {
+      display: inline-block;
+      font-size: 0.68rem; font-weight: 700;
+      letter-spacing: 0.03em; text-transform: uppercase;
+      padding: 3px 8px; border-radius: 6px; white-space: nowrap;
+    }
+    .badge.in { background: var(--forest-soft); color: var(--forest); }
+    .badge.stretch { background: var(--amber-soft); color: var(--amber); }
+    .badge.out { background: var(--clay-soft); color: var(--clay); }
+    .badge.ref { background: var(--sky-soft); color: var(--sky); }
+
+    .item {
+      display: grid;
+      grid-template-columns: 72px 1fr;
+      gap: 14px;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 16px 18px;
+      margin-bottom: 10px;
+    }
+    .item .id {
+      font-family: "Fraunces", Georgia, serif;
+      font-size: 1.05rem; font-weight: 700;
+      width: 56px; height: 56px; border-radius: 12px;
+      display: grid; place-items: center; text-align: center; line-height: 1.1;
+    }
+    .item .id.ok { color: var(--forest); background: var(--forest-soft); }
+    .item .id.warn { color: var(--amber); background: var(--amber-soft); }
+    .item .id.gap { color: var(--clay); background: var(--clay-soft); }
+    .item h3 { margin: 0 0 6px; }
+    .item p { margin: 0; color: var(--muted); font-size: 0.9rem; }
+    .item .why {
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px dashed var(--line);
+      font-size: 0.86rem;
+      color: var(--ink);
+    }
+    .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+
+    .quote {
+      background: var(--card);
+      border-left: 4px solid var(--forest);
+      border-radius: 0 14px 14px 0;
+      padding: 16px 20px;
+      margin: 0 0 14px;
+      color: #2a3544;
+    }
+    .quote p { margin: 0 0 8px; }
+    .quote p:last-child { margin: 0; color: var(--muted); font-size: 0.9rem; }
+
+    .approve {
+      background: var(--ink);
+      color: #e8eef4;
+      border-radius: 18px;
+      padding: 28px 24px;
+      margin-top: 8px;
+    }
+    .approve h2 {
+      font-family: "Fraunces", Georgia, serif;
+      color: #fff; font-size: 1.35rem; margin: 0 0 12px;
+    }
+    .approve p { color: #c5d0db; margin: 0 0 10px; }
+    .approve strong { color: #fff; }
+    .approve .checklist {
+      margin: 16px 0 0; padding: 0; list-style: none;
+    }
+    .approve .checklist li {
+      display: flex; gap: 10px; align-items: flex-start;
+      padding: 8px 0; border-top: 1px solid rgba(255,255,255,.1);
+      font-size: 0.92rem; color: #d7e0e9;
+    }
+    .approve .checklist li span {
+      color: #8fd0ad; font-weight: 700; min-width: 1.2em;
+    }
+
+    footer {
+      margin-top: 36px; padding-top: 16px; border-top: 1px solid var(--line);
+      color: var(--muted); font-size: 0.82rem;
+    }
+
+    @media (max-width: 800px) {
+      .grid-2, .grid-3 { grid-template-columns: 1fr; }
+      .item { grid-template-columns: 1fr; }
+      .cover { padding: 28px 22px; }
+    }
+    @media print {
+      body { background: #fff; }
+      .cover, .card, .item, .table-wrap, .approve { break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+
+    <header class="cover">
+      <div class="eyebrow"><i></i> Alinhamento de escopo · Julho/2026</div>
+      <h1>Pedido da cliente × pacote de alterações — o que entra, o que estica e o que vira adendo</h1>
+      <p class="lede">
+        Depois da reunião com a cliente, cruzei o que ela pediu com o pacote que já tínhamos
+        fechado para entrega. Este relatório é a minha leitura do cenário e a proposta de
+        como seguirmos: manter o combinado, incluir o que cabe sem distorcer o prazo, e
+        separar o que é produto novo (adendo).
+      </p>
+      <div class="meta">
+        <span class="chip">Base: pacote de alterações (itens 01–09)</span>
+        <span class="chip alt">Fonte: pedido pós-reunião (áudios, prints, planilhas)</span>
+        <span class="chip warn">Incluir com critério</span>
+        <span class="chip gap">Adendo recomendado</span>
+      </div>
+
+      <div class="decision">
+        <strong>Posição:</strong> o núcleo do pedido (importar operação + previsão de peso/trato +
+        dias no confinamento) entra no pacote atual. O fluxo “substituir o grupo de WhatsApp”
+        (peão manda foto → responsável lança nota e dieta) é viável e faz sentido para a cliente,
+        mas muda o produto — recomendo orçar e entregar como adendo, não misturar nesta rodada.
+      </div>
+    </header>
+
+    <!-- 01 Entendimento -->
+    <section>
+      <div class="section-head"><span class="num">01</span><h2>O que a cliente pediu (em resumo)</h2></div>
+      <div class="grid-2">
+        <div class="card ok">
+          <h3>Operação / dados</h3>
+          <p class="small" style="margin:0">
+            Importar currais e gado com peso médio de entrada (planilha de acompanhamento /
+            Currais Linha 1 e 2). Farmácia: só cadastro de produtos. Lote com data de entrada,
+            dias no confinamento e alerta perto de 100 dias. Previsão de ganho e peso final.
+          </p>
+        </div>
+        <div class="card sky">
+          <h3>Rotina diária (hoje no WhatsApp)</h3>
+          <p class="small" style="margin:0">
+            Duas leituras de cocho por dia. Peão registra curral + foto. Responsável técnico
+            lança a nota (escore) e a nutrição/dieta do período (manhã = dieta de hoje;
+            tarde = dieta de amanhã). Lote amarrado ao curral para não preencher os dois.
+          </p>
+        </div>
+      </div>
+      <p class="muted small" style="margin-top:12px">
+        Tudo isso é possível tecnicamente. A diferença está em o que já estava no pacote
+        de alterações e o que cria um fluxo novo de trabalho (dois papéis + mídia + notificação).
+      </p>
+    </section>
+
+    <!-- 02 Três caixas -->
+    <section>
+      <div class="section-head"><span class="num">02</span><h2>Três faixas de decisão</h2></div>
+      <div class="grid-3">
+        <div class="card ok">
+          <h3>A · Entra no pacote</h3>
+          <p class="small" style="margin:0">
+            Já coberto pelos itens 01–09 (ou é adequação leve do que eles já preveem).
+            É o que eu entendo que vamos alterar/entregar nesta rodada.
+          </p>
+        </div>
+        <div class="card warn">
+          <h3>B · Incluir com critério</h3>
+          <p class="small" style="margin:0">
+            Não estava explícito no pacote, mas é barato, reduz atrito e reforça o valor
+            da entrega. Recomendo incluir sem abrir adendo formal.
+          </p>
+        </div>
+        <div class="card gap">
+          <h3>C · Adendo</h3>
+          <p class="small" style="margin:0">
+            Faz sentido para a operação dela, mas muda escopo, esforço e prazo.
+            Separar, orçar e alinhar com a cliente antes de comprometer.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 03 Tabela comparativa -->
+    <section>
+      <div class="section-head"><span class="num">03</span><h2>Comparativo pedido × pacote</h2></div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Pedido da cliente</th>
+              <th>Referência no pacote</th>
+              <th>Classificação</th>
+              <th>Comentário</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="in">
+              <td>Importar currais / lotes com peso médio de entrada</td>
+              <td><span class="badge ref">05</span> Importação rebanho</td>
+              <td><span class="badge in">Pacote</span></td>
+              <td>Núcleo da migração operacional.</td>
+            </tr>
+            <tr class="in">
+              <td>Farmácia — só cadastro de produtos</td>
+              <td><span class="badge ref">04</span> Importação farmácia</td>
+              <td><span class="badge in">Pacote</span></td>
+              <td>Escopo até menor do que o item 04 original (sem histórico cheio).</td>
+            </tr>
+            <tr class="in">
+              <td>Previsão de ganho / peso final / trato</td>
+              <td><span class="badge ref">01</span> <span class="badge ref">02</span> Motor + quadro</td>
+              <td><span class="badge in">Pacote</span></td>
+              <td>Prioridade máxima — substitui a planilha de acompanhamento.</td>
+            </tr>
+            <tr class="in">
+              <td>Parâmetros de dieta / % MS (bromatologia)</td>
+              <td><span class="badge ref">03</span> Parâmetros nutricionais</td>
+              <td><span class="badge in">Pacote</span></td>
+              <td>Alinha o print de “Bromatologia % MS” com o cadastro de fórmula.</td>
+            </tr>
+            <tr class="in">
+              <td>Dias no confinamento (cálculo)</td>
+              <td><span class="badge ref">01</span> Permanência no motor</td>
+              <td><span class="badge in">Pacote</span></td>
+              <td>Já previsto no cálculo de peso projetado.</td>
+            </tr>
+            <tr class="in">
+              <td>Linha / giro (se ainda necessário na UX)</td>
+              <td><span class="badge ref">06</span> Campos Linha e Giro</td>
+              <td><span class="badge in">Pacote</span></td>
+              <td>Manter conforme o quadro operacional.</td>
+            </tr>
+            <tr class="stretch">
+              <td>Amarrar lote ↔ curral na entrada (cocho só com curral)</td>
+              <td>Adequação UX (vínculo já existe)</td>
+              <td><span class="badge stretch">Incluir</span></td>
+              <td>Pequeno, evita erro diário; reforça o uso do quadro e da leitura.</td>
+            </tr>
+            <tr class="stretch">
+              <td>Alerta próximo dos 100 dias (~110 = prejuízo)</td>
+              <td>Regra sobre permanência + lembrete</td>
+              <td><span class="badge stretch">Incluir</span></td>
+              <td>Barato em cima do motor; valor claro para a cliente.</td>
+            </tr>
+            <tr class="stretch">
+              <td>Turno manhã / tarde no registro de leitura</td>
+              <td>Campo simples em leitura de cocho</td>
+              <td><span class="badge stretch">Incluir</span></td>
+              <td>Só o campo — sem workflow de dois papéis.</td>
+            </tr>
+            <tr class="out">
+              <td>Peão: só curral + foto (sem nota)</td>
+              <td>—</td>
+              <td><span class="badge out">Adendo</span></td>
+              <td>Muda o modelo atual (escore obrigatório num lançamento só).</td>
+            </tr>
+            <tr class="out">
+              <td>Foto obrigatória / galeria de cocho</td>
+              <td>—</td>
+              <td><span class="badge out">Adendo</span></td>
+              <td>Upload, storage, permissões, UX mobile.</td>
+            </tr>
+            <tr class="out">
+              <td>Responsável: nota + dieta na leitura (2 turnos)</td>
+              <td>Parcialmente ligado ao <span class="badge ref">07</span></td>
+              <td><span class="badge out">Adendo</span></td>
+              <td>O item 07 é sugestão por escore; não é este fluxo completo.</td>
+            </tr>
+            <tr class="out">
+              <td>Tela simples do peão + notificação</td>
+              <td>—</td>
+              <td><span class="badge out">Adendo</span></td>
+              <td>Novo perfil/front e canal de aviso — fora do pacote 01–09.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 04 Pacote -->
+    <section>
+      <div class="section-head"><span class="num">04</span><h2>A · O que vamos alterar nesta rodada</h2></div>
+      <p class="muted small">Confirmação do pacote já proposto — agora cruzado com o pedido da reunião.</p>
+
+      <div class="item">
+        <div class="id ok">01–03</div>
+        <div>
+          <h3>Motor, quadro diário e parâmetros nutricionais</h3>
+          <p>
+            Previsão de peso/ganho, consumo e trato por turno; tela operacional do dia;
+            % MS e parâmetros nas fórmulas. Responde ao uso diário da planilha de acompanhamento
+            e aos dados de bromatologia que ela já comunica.
+          </p>
+          <div class="tags">
+            <span class="badge in">Pacote</span>
+            <span class="badge ref">Prioridade máxima</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="item">
+        <div class="id ok">04–05</div>
+        <div>
+          <h3>Importações</h3>
+          <p>
+            Farmácia: cadastro de produtos. Rebanho/currais: lotes com peso médio de entrada
+            a partir das abas de Currais Linha 1 e 2 / acompanhamento.
+          </p>
+          <div class="tags"><span class="badge in">Pacote</span></div>
+        </div>
+      </div>
+
+      <div class="item">
+        <div class="id ok">06–09</div>
+        <div>
+          <h3>Linha/Giro, sugestão por cocho, correções e custo no quadro</h3>
+          <p>
+            Mantém o restante do pacote: campos de estrutura operacional, sugestão de ajuste
+            a partir do escore (versão enxuta), correções técnicas e custo alimentar no quadro
+            quando couber.
+          </p>
+          <div class="tags"><span class="badge in">Pacote</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 05 Stretch -->
+    <section>
+      <div class="section-head"><span class="num">05</span><h2>B · O que recomendo incluir sem adendo</h2></div>
+
+      <div class="item">
+        <div class="id warn">B1</div>
+        <div>
+          <h3>Amarrar lote ao curral na entrada</h3>
+          <p>
+            Na leitura e no quadro, o curral já traz o lote. A cliente pediu isso explicitamente
+            para não obrigar o peão a preencher os dois campos.
+          </p>
+          <div class="why"><strong>Por quê incluir:</strong> esforço baixo, impacto alto na rotina diária.</div>
+        </div>
+      </div>
+
+      <div class="item">
+        <div class="id warn">B2</div>
+        <div>
+          <h3>Dias no confinamento + alerta ~100 dias</h3>
+          <p>
+            Exibir permanência e sinalizar quando o lote se aproxima do limite em que ela
+            considera risco de prejuízo.
+          </p>
+          <div class="why"><strong>Por quê incluir:</strong> nasce do mesmo dado do motor; reforça o valor da previsão sem abrir frentes novas.</div>
+        </div>
+      </div>
+
+      <div class="item">
+        <div class="id warn">B3</div>
+        <div>
+          <h3>Campo de turno (manhã / tarde) na leitura</h3>
+          <p>
+            Registrar qual leitura do dia é, sem ainda implantar o fluxo peão → responsável.
+          </p>
+          <div class="why"><strong>Por quê incluir:</strong> prepara o terreno e atende a regra operacional dela; o workflow completo fica no adendo.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 06 Adendo -->
+    <section>
+      <div class="section-head"><span class="num">06</span><h2>C · O que recomendo como adendo (e por quê)</h2></div>
+
+      <div class="quote">
+        <p>
+          O pedido de substituir o grupo de WhatsApp pelo sistema é legítimo e melhora a operação.
+          Só que ele não é “ajuste da planilha” — é um fluxo novo de captura em campo + validação técnica.
+        </p>
+        <p>Se misturarmos isso no pacote atual, esticamos prazo e misturamos duas entregas diferentes para a cliente.</p>
+      </div>
+
+      <div class="item">
+        <div class="id gap">C1</div>
+        <div>
+          <h3>Fluxo em duas etapas na leitura de cocho</h3>
+          <p>
+            Peão: curral + foto (sem escore). Responsável técnico: escore obrigatório + escolha/registro
+            da dieta/nutrição do período (manhã → dieta de hoje; tarde → dieta de amanhã).
+          </p>
+          <div class="why">
+            <strong>Por quê adendo:</strong> muda o modelo atual de lançamento único com escore;
+            exige regras de status (rascunho / aguardando / concluído), papéis e ligação leitura → dieta do dia.
+          </div>
+        </div>
+      </div>
+
+      <div class="item">
+        <div class="id gap">C2</div>
+        <div>
+          <h3>Foto obrigatória e armazenamento</h3>
+          <p>
+            Anexar foto na leitura, visualizar histórico e substituir o envio informal no grupo.
+          </p>
+          <div class="why">
+            <strong>Por quê adendo:</strong> envolve upload, armazenamento, permissões e UX pensada para celular em campo.
+          </div>
+        </div>
+      </div>
+
+      <div class="item">
+        <div class="id gap">C3</div>
+        <div>
+          <h3>Tela do peão + notificação para o responsável</h3>
+          <p>
+            Interface enxuta para o operador de campo e aviso quando houver leitura pendente de nota/dieta.
+          </p>
+          <div class="why">
+            <strong>Por quê adendo:</strong> é perfil/front e canal de notificação novos — fora dos itens 01–09.
+          </div>
+        </div>
+      </div>
+
+      <div class="card plum" style="margin-top:12px">
+        <h3>Como eu apresentaria o adendo para a cliente</h3>
+        <p class="small" style="margin:0">
+          “Nesta rodada fechamos o sistema no lugar da planilha (dados + previsão + quadro).
+          Em seguida, num segundo pacote, trazemos a rotina do WhatsApp para dentro do sistema:
+          foto pelo peão, nota e dieta pelo responsável, com aviso automático.”
+          Assim o valor fica claro e o orçamento do fluxo de campo não compete com a migração do Excel.
+        </p>
+      </div>
+    </section>
+
+    <!-- 07 Fora -->
+    <section>
+      <div class="section-head"><span class="num">07</span><h2>O que continua fora (nem pacote, nem este adendo)</h2></div>
+      <div class="grid-2">
+        <div class="card">
+          <h3>Já combinado como fora</h3>
+          <p class="small muted" style="margin:0">
+            App offline dedicado, integração com balança/RFID, módulo de logística completo,
+            inventário formal avançado, closeout tipo TGC, expansão de calendário/BI além do necessário.
+          </p>
+        </div>
+        <div class="card">
+          <h3>Não confundir com o adendo</h3>
+          <p class="small muted" style="margin:0">
+            O adendo proposto cobre só o fluxo peão/foto → responsável/nota/dieta (+ notificação).
+            Não abre automaticamente balança, logística ou closeout.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 08 Posição -->
+    <section>
+      <div class="approve">
+        <h2>O que eu proponho combinarmos</h2>
+        <p>
+          Seguir com o pacote 01–09 + os três inclusões leves (B1–B3). Tratar o fluxo de WhatsApp
+          (C1–C3) como adendo orçado à parte. Assim entregamos o que tira a planilha sem diluir
+          a rodada no produto novo de campo.
+        </p>
+        <ul class="checklist">
+          <li><span>✓</span> Confirmar pacote A (01–09) como escopo desta entrega</li>
+          <li><span>✓</span> Autorizar inclusões B1–B3 sem adendo formal</li>
+          <li><span>✓</span> Separar C1–C3 como adendo (escopo + prazo + valor)</li>
+          <li><span>✓</span> Alinhar com a cliente a ordem: primeiro Excel → sistema; depois WhatsApp → sistema</li>
+        </ul>
+      </div>
+    </section>
+
+    <footer>
+      Documento interno de alinhamento · Sistema de confinamento · Julho/2026<br>
+      Fontes: pacote de alterações (proposta-alteracoes-aprovacao) · pedido pós-reunião (material-informacoes)
+    </footer>
+
+  </div>
+</body>
+</html>

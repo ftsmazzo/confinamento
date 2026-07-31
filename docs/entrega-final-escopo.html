@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Entrega final — Escopo fechado · Confinamento</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink: #1a2332; --muted: #5c6b7a; --line: #d8e0e8; --paper: #f7f4ef; --card: #fff;
+      --forest: #1f5c45; --forest-soft: #e6f2ec; --amber: #9a6b16; --amber-soft: #f8efd9;
+      --clay: #8b3a2a; --clay-soft: #f6e8e4; --sky: #245b7a; --sky-soft: #e5f1f7;
+      --plum: #4a3f6b; --plum-soft: #eeeaf5; --max: 980px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; font-family: "Manrope", system-ui, sans-serif; color: var(--ink);
+      background:
+        radial-gradient(1000px 420px at 5% -8%, #e8efe9 0%, transparent 55%),
+        radial-gradient(700px 360px at 100% 0%, #ebe6f2 0%, transparent 48%),
+        var(--paper);
+      line-height: 1.55;
+    }
+    .wrap { max-width: var(--max); margin: 0 auto; padding: 36px 20px 80px; }
+    .cover {
+      background: var(--card); border: 1px solid var(--line); border-radius: 22px;
+      padding: 40px 36px 32px; position: relative; overflow: hidden;
+    }
+    .cover::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 8px; background: var(--forest); }
+    .eyebrow {
+      display: inline-flex; align-items: center; gap: 8px; font-size: 0.78rem; font-weight: 600;
+      letter-spacing: 0.08em; text-transform: uppercase; color: var(--forest); margin-bottom: 14px;
+    }
+    .eyebrow i { width: 8px; height: 8px; border-radius: 50%; background: var(--forest); font-style: normal; }
+    h1 {
+      font-family: "Fraunces", Georgia, serif; font-size: clamp(1.8rem, 3.2vw, 2.4rem);
+      line-height: 1.15; margin: 0 0 12px; letter-spacing: -0.02em;
+    }
+    .lede { max-width: 70ch; color: var(--muted); font-size: 1.05rem; margin: 0 0 18px; }
+    .meta { display: flex; flex-wrap: wrap; gap: 8px; }
+    .chip {
+      font-size: 0.78rem; font-weight: 600; padding: 6px 12px; border-radius: 999px;
+      background: var(--forest-soft); color: var(--forest); border: 1px solid #c5ddd0;
+    }
+    .chip.alt { background: var(--plum-soft); color: var(--plum); border-color: #d4cce6; }
+    .chip.neutral { background: #eef2f6; color: var(--muted); border-color: var(--line); }
+    .chip.warn { background: var(--amber-soft); color: var(--amber); border-color: #ead7a8; }
+    .chip.gap { background: var(--clay-soft); color: var(--clay); border-color: #e8cfc7; }
+    .decision {
+      margin-top: 20px; background: linear-gradient(180deg, #f3f8f5, #eef5f1);
+      border: 1px solid #c7ddd1; border-radius: 14px; padding: 18px 20px; color: #234536;
+    }
+    .decision strong { color: var(--forest); }
+    section { margin: 34px 0; }
+    .section-head {
+      display: flex; align-items: baseline; gap: 12px; margin-bottom: 14px;
+      padding-bottom: 10px; border-bottom: 2px solid var(--ink);
+    }
+    .section-head .num { font-family: "Fraunces", Georgia, serif; font-size: 1.5rem; color: var(--forest); font-weight: 700; }
+    h2 { font-family: "Fraunces", Georgia, serif; font-size: 1.45rem; margin: 0; letter-spacing: -0.01em; }
+    h3 { font-family: "Fraunces", Georgia, serif; font-size: 1.08rem; margin: 0 0 8px; }
+    p { margin: 0 0 12px; }
+    .muted { color: var(--muted); }
+    .small { font-size: 0.88rem; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .card {
+      background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px;
+    }
+    .card.ok { background: var(--forest-soft); border-color: #c5ddd0; }
+    .card.warn { background: var(--amber-soft); border-color: #ead7a8; }
+    .card.gap { background: var(--clay-soft); border-color: #e8cfc7; }
+    .card.sky { background: var(--sky-soft); border-color: #bdd5e3; }
+    .table-wrap {
+      overflow-x: auto; border: 1px solid var(--line); border-radius: 14px; background: var(--card);
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+    th, td { text-align: left; padding: 11px 13px; border-bottom: 1px solid var(--line); vertical-align: top; }
+    th {
+      background: #eef2f6; font-size: 0.72rem; text-transform: uppercase;
+      letter-spacing: 0.05em; color: var(--muted); font-weight: 700;
+    }
+    tr:last-child td { border-bottom: 0; }
+    tr.in td { background: #f4faf6; }
+    tr.wait td { background: #fbf7ee; }
+    tr.out td { background: #faf3f1; }
+    .badge {
+      display: inline-block; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.03em;
+      text-transform: uppercase; padding: 3px 8px; border-radius: 6px; white-space: nowrap;
+    }
+    .badge.in { background: var(--forest-soft); color: var(--forest); }
+    .badge.wait { background: var(--amber-soft); color: var(--amber); }
+    .badge.out { background: var(--clay-soft); color: var(--clay); }
+    .badge.ref { background: var(--sky-soft); color: var(--sky); }
+    .item {
+      display: grid; grid-template-columns: 72px 1fr; gap: 14px; background: var(--card);
+      border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; margin-bottom: 10px;
+    }
+    .item .id {
+      font-family: "Fraunces", Georgia, serif; font-size: 1.05rem; font-weight: 700;
+      width: 56px; height: 56px; border-radius: 12px; display: grid; place-items: center;
+      color: var(--forest); background: var(--forest-soft);
+    }
+    .item h3 { margin: 0 0 6px; }
+    .item p { margin: 0; color: var(--muted); font-size: 0.9rem; }
+    .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+    .out-list { margin: 0; padding: 0; list-style: none; }
+    .out-list li {
+      padding: 9px 0 9px 18px; position: relative; border-bottom: 1px solid rgba(0,0,0,.06); font-size: 0.92rem;
+    }
+    .out-list li:last-child { border-bottom: 0; }
+    .out-list li::before {
+      content: ""; position: absolute; left: 0; top: 16px; width: 7px; height: 7px;
+      border-radius: 50%; background: var(--clay);
+    }
+    .rules {
+      background: var(--ink); color: #e8eef4; border-radius: 18px; padding: 28px 24px;
+    }
+    .rules h2 { font-family: "Fraunces", Georgia, serif; color: #fff; font-size: 1.35rem; margin: 0 0 12px; }
+    .rules p { color: #c5d0db; margin: 0 0 10px; }
+    .rules strong { color: #fff; }
+    .rules ul { margin: 12px 0 0; padding: 0; list-style: none; }
+    .rules li {
+      display: flex; gap: 10px; padding: 8px 0; border-top: 1px solid rgba(255,255,255,.1);
+      font-size: 0.92rem; color: #d7e0e9;
+    }
+    .rules li span { color: #8fd0ad; font-weight: 700; min-width: 1.2em; }
+    footer {
+      margin-top: 36px; padding-top: 16px; border-top: 1px solid var(--line);
+      color: var(--muted); font-size: 0.82rem;
+    }
+    @media (max-width: 800px) {
+      .grid-2, .grid-3 { grid-template-columns: 1fr; }
+      .item { grid-template-columns: 1fr; }
+      .cover { padding: 28px 22px; }
+    }
+    @media print {
+      body { background: #fff; }
+      .cover, .card, .item, .table-wrap, .rules { break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+
+    <header class="cover">
+      <div class="eyebrow"><i></i> Escopo fechado · Julho/2026</div>
+      <h1>Entrega final — o que vamos entregar nesta rodada</h1>
+      <p class="lede">
+        Documento de referência da execução. Consolida o pacote de alterações, o pedido da cliente
+        e o alinhamento operacional. Tudo listado em <strong>ENTRA</strong> será desenvolvido,
+        testado na versão segura, commitado/pushado no GitHub e documentado no manual da topbar.
+      </p>
+      <div class="meta">
+        <span class="chip">Versão segura → GitHub → produção</span>
+        <span class="chip alt">Manual: public/assets/manual/</span>
+        <span class="chip warn">Migrations em storage/migrations/</span>
+        <span class="chip gap">Dashboard: aguardando</span>
+      </div>
+      <div class="decision">
+        <strong>Fechamento:</strong> entregar o sistema no lugar da planilha de acompanhamento
+        (dados + previsão + quadro) e a leitura de cocho enxuta (foto + permissão de nota + visão
+        manhã/noite). App do peão, notificação e dashboard por permissão ficam fora desta rodada.
+      </div>
+    </header>
+
+    <section>
+      <div class="section-head"><span class="num">01</span><h2>Regras de trabalho (invioláveis)</h2></div>
+      <div class="rules">
+        <h2>Como cada entrega sobe</h2>
+        <p>Sem exceção, para cada passo concluído:</p>
+        <ul>
+          <li><span>1</span> Implementar e testar na versão segura</li>
+          <li><span>2</span> Se houver banco: criar SQL em <code>storage/migrations/</code> (datado, comentado, aplicável no Adminer)</li>
+          <li><span>3</span> Atualizar o manual da topbar: <code>public/assets/manual/manual-do-sistema.html</code></li>
+          <li><span>4</span> Commit + push no GitHub (<code>ftsmazzo/confinamento</code>)</li>
+          <li><span>5</span> Só então aplicar migration / pull na versão real</li>
+        </ul>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-head"><span class="num">02</span><h2>ENTRA — lista de entrega</h2></div>
+
+      <div class="item">
+        <div class="id">E01</div>
+        <div>
+          <h3>Motor de previsão de trato</h3>
+          <p>Permanência, peso projetado (GMD), % PV → MS → MN, rateio 4 turnos (30/20/20/30 editável). Gera previstos na programação.</p>
+          <div class="tags"><span class="badge in">Entra</span><span class="badge ref">Pacote 01</span></div>
+        </div>
+      </div>
+      <div class="item">
+        <div class="id">E02</div>
+        <div>
+          <h3>Quadro diário de trato</h3>
+          <p>Visão operacional do dia por linha/curral: cabeças, dieta, previstos × ocorridos por turno.</p>
+          <div class="tags"><span class="badge in">Entra</span><span class="badge ref">Pacote 02</span></div>
+        </div>
+      </div>
+      <div class="item">
+        <div class="id">E03</div>
+        <div>
+          <h3>Parâmetros nutricionais nas fórmulas</h3>
+          <p>% MS e parâmetros necessários para o motor fechar (incluindo uso de dados de bromatologia).</p>
+          <div class="tags"><span class="badge in">Entra</span><span class="badge ref">Pacote 03</span></div>
+        </div>
+      </div>
+      <div class="item">
+        <div class="id">E04</div>
+        <div>
+          <h3>Farmácia — carga inicial (sem import recorrente)</h3>
+          <p>Carga única do catálogo de produtos. Sem tela de import recorrente. Entradas futuras via estoque/notas ficam para outro momento.</p>
+          <div class="tags"><span class="badge in">Entra (reduzido)</span><span class="badge ref">Pacote 04</span></div>
+        </div>
+      </div>
+      <div class="item">
+        <div class="id">E05</div>
+        <div>
+          <h3>Carga / importação rebanho e currais</h3>
+          <p>Currais e lotes com peso médio de entrada (planilha Acompanhamento / Currais Linha 1–2).</p>
+          <div class="tags"><span class="badge in">Entra</span><span class="badge ref">Pacote 05</span></div>
+        </div>
+      </div>
+      <div class="item">
+        <div class="id">E06</div>
+        <div>
+          <h3>Campos Linha e Giro</h3>
+          <p>Vocabulário da fazenda no lote/curral (sem módulo novo de estrutura).</p>
+          <div class="tags"><span class="badge in">Entra</span><span class="badge ref">Pacote 06</span></div>
+        </div>
+      </div>
+      <div class="item">
+        <div class="id">E07</div>
+        <div>
+          <h3>Sugestão de ajuste por leitura de cocho</h3>
+          <p>Sugerir variação % no próximo trato com base no escore (quando houver nota).</p>
+          <div class="tags"><span class="badge in">Entra</span><span class="badge ref">Pacote 07</span></div>
+        </div>
+      </div>
+      <div class="item">
+        <div class="id">E08</div>
+        <div>
+          <h3>Correções técnicas</h3>
+          <p>Typo menu (<code>vetical</code>), edição de parcela, higiene de legado que atrapalha operação.</p>
+          <div class="tags"><span class="badge in">Entra</span><span class="badge ref">Pacote 08</span></div>
+        </div>
+      </div>
+      <div class="item">
+        <div class="id">E09</div>
+        <div>
+          <h3>Custo alimentar no quadro</h3>
+          <p>Indicador R$/cabeça/dia no quadro ou relatório existente — sem módulo financeiro novo.</p>
+          <div class="tags"><span class="badge in">Entra</span><span class="badge ref">Pacote 09</span></div>
+        </div>
+      </div>
+      <div class="item">
+        <div class="id">E10</div>
+        <div>
+          <h3>Permanência + alerta ~100 dias</h3>
+          <p>Exibir dias no confinamento e sinalizar proximidade do limite (~100 / risco ~110).</p>
+          <div class="tags"><span class="badge in">Entra</span><span class="badge ref">Inclusão leve</span></div>
+        </div>
+      </div>
+      <div class="item">
+        <div class="id">E11</div>
+        <div>
+          <h3>Amarrar lote ↔ curral</h3>
+          <p>Na entrada e na leitura/quadro, curral puxa lote (não obrigar preencher os dois).</p>
+          <div class="tags"><span class="badge in">Entra</span><span class="badge ref">Inclusão leve</span></div>
+        </div>
+      </div>
+      <div class="item">
+        <div class="id">E12</div>
+        <div>
+          <h3>Leitura de cocho — foto + permissão + turnos</h3>
+          <p>
+            Upload de foto no sistema; permissão <code>dieta_dar_nota</code> para lançar escore;
+            escore opcional; campo turno manhã/tarde; visão diária manhã → noite.
+          </p>
+          <div class="tags"><span class="badge in">Entra</span><span class="badge ref">Adendo leve alinhado</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-head"><span class="num">03</span><h2>NÃO ENTRA / AGUARDA</h2></div>
+      <div class="grid-2">
+        <div class="card gap">
+          <h3>Fora desta rodada</h3>
+          <ul class="out-list">
+            <li>Tela/app simples do peão</li>
+            <li>Notificação automática para a veterinária</li>
+            <li>Fluxo rígido peão → rascunho → vet (dois papéis obrigatórios)</li>
+            <li>Dieta automática na leitura (manhã=hoje / tarde=amanhã)</li>
+            <li>Import recorrente de farmácia / entradas via notas fiscais</li>
+            <li>App offline, balança/RFID, logística, closeout avançado</li>
+          </ul>
+        </div>
+        <div class="card warn">
+          <h3>Aguardando definição</h3>
+          <p class="small" style="margin:0">
+            <strong>Dashboard por permissões</strong> (valores gerenciais). Pausado até conferência
+            das permissões pertinentes (ex.: <code>contas_pagar_gerenciar</code>). Não iniciar nesta rodada.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-head"><span class="num">04</span><h2>Matriz rápida</h2></div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Entrega</th>
+              <th>Status</th>
+              <th>DB?</th>
+              <th>Manual?</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="in"><td>E01</td><td>Motor previsão</td><td><span class="badge in">Entra</span></td><td>Provável</td><td>Sim</td></tr>
+            <tr class="in"><td>E02</td><td>Quadro diário</td><td><span class="badge in">Entra</span></td><td>Possível</td><td>Sim</td></tr>
+            <tr class="in"><td>E03</td><td>Params nutricionais</td><td><span class="badge in">Entra</span></td><td>Dados</td><td>Sim</td></tr>
+            <tr class="in"><td>E04</td><td>Farmácia carga inicial</td><td><span class="badge in">Entra</span></td><td>Seed/SQL</td><td>Sim</td></tr>
+            <tr class="in"><td>E05</td><td>Rebanho/currais</td><td><span class="badge in">Entra</span></td><td>Seed/SQL</td><td>Sim</td></tr>
+            <tr class="in"><td>E06</td><td>Linha e Giro</td><td><span class="badge in">Entra</span></td><td>Sim</td><td>Sim</td></tr>
+            <tr class="in"><td>E07</td><td>Sugestão cocho</td><td><span class="badge in">Entra</span></td><td>Possível</td><td>Sim</td></tr>
+            <tr class="in"><td>E08</td><td>Correções técnicas</td><td><span class="badge in">Entra</span></td><td>Possível</td><td>Se afetar uso</td></tr>
+            <tr class="in"><td>E09</td><td>Custo alimentar</td><td><span class="badge in">Entra</span></td><td>Não</td><td>Sim</td></tr>
+            <tr class="in"><td>E10</td><td>Alerta 100 dias</td><td><span class="badge in">Entra</span></td><td>Possível</td><td>Sim</td></tr>
+            <tr class="in"><td>E11</td><td>Lote ↔ curral</td><td><span class="badge in">Entra</span></td><td>UX</td><td>Sim</td></tr>
+            <tr class="in"><td>E12</td><td>Foto / permissão / turnos</td><td><span class="badge in">Entra</span></td><td>Sim</td><td>Sim</td></tr>
+            <tr class="wait"><td>—</td><td>Dashboard por permissão</td><td><span class="badge wait">Aguarda</span></td><td>—</td><td>—</td></tr>
+            <tr class="out"><td>—</td><td>App peão + notificação</td><td><span class="badge out">Fora</span></td><td>—</td><td>—</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-head"><span class="num">05</span><h2>Implantação na versão real</h2></div>
+      <div class="grid-3">
+        <div class="card ok">
+          <h3>Código</h3>
+          <p class="small" style="margin:0">Pull/deploy do GitHub após cada passo validado na segura.</p>
+        </div>
+        <div class="card sky">
+          <h3>Banco</h3>
+          <p class="small" style="margin:0">Rodar no Adminer, na ordem, os arquivos de <code>storage/migrations/</code> do passo.</p>
+        </div>
+        <div class="card">
+          <h3>Manual</h3>
+          <p class="small muted" style="margin:0">Já vem no deploy (arquivo em <code>public/assets/manual/</code>).</p>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      Entrega final · Confinamento · Julho/2026<br>
+      Ver também: <code>docs/plano-execucao-passos.html</code> · Base: proposta-alteracoes-aprovacao + alinhamento pós-reunião
+    </footer>
+  </div>
+</body>
+</html>
