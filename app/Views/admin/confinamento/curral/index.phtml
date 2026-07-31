@@ -14,6 +14,7 @@
                     <tr>
                         <th>Nome</th>
                         <th>Código</th>
+                        <th>Linha</th>
                         <th>Unidade</th>
                         <th>Capacidade</th>
                         <th>Status</th>
@@ -34,6 +35,7 @@
                                 <?php endif ?>
                             </td>
                             <td><?=$d->codigo?></td>
+                            <td><?=!empty($d->linha) ? $d->linha : "-"?></td>
                             <td>
                                 <?=$d->unidade_nome ?: "-"?>
                                 <?php if (!empty($d->unidade_codigo)) : ?>

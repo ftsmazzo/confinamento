@@ -53,6 +53,13 @@
                             <input type="text" class="form-control" id="curral-tipo-estrutura" name="tipo_estrutura" placeholder="Tipo de Estrutura" autocomplete="off" value="<?=$curral->tipo_estrutura ?? ""?>">
                         </div>
                     </div>
+                    <div class="col-12 col-md-3">
+                        <div class="mb-3">
+                            <label for="curral-linha" class="form-label">Linha</label>
+                            <input type="text" class="form-control" id="curral-linha" name="linha" placeholder="Ex: 1, 2, A, B, RECEPÇÃO" autocomplete="off" value="<?=$curral->linha ?? ""?>">
+                            <small class="text-muted">Agrupamento operacional da fazenda (Linha 1 / Linha 2).</small>
+                        </div>
+                    </div>
                 </div>
             </div>
 

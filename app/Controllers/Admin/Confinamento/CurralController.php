@@ -84,6 +84,10 @@ class CurralController extends ControllerAdmin
             return;
         }
 
+        $data->nullIfEmpty("linha");
+        $data->nullIfEmpty("capacidade");
+        $data->nullIfEmpty("tipo_estrutura");
+
         $payload = $data->all();
         unset($payload["csrf"], $payload["id"]);
         $payload["ativo"] = isset($payload["ativo"]) ? (int) $payload["ativo"] : 1;
@@ -134,6 +138,10 @@ class CurralController extends ControllerAdmin
             Redirect::referer();
             return;
         }
+
+        $data->nullIfEmpty("linha");
+        $data->nullIfEmpty("capacidade");
+        $data->nullIfEmpty("tipo_estrutura");
 
         $payload = $data->all();
         unset($payload["csrf"], $payload["id"]);

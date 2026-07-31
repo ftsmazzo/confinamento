@@ -98,6 +98,9 @@ class LoteController extends ControllerAdmin
         $data->nullIfEmpty("id_curral");
         $data->nullIfEmpty("id_piquete");
         $data->nullIfEmpty("data_formacao");
+        $data->nullIfEmpty("giro");
+        $data->nullIfEmpty("fase");
+        $data->nullIfEmpty("objetivo");
 
         $entradaPayload = $this->extractLoteEntradaPayload($data);
 
@@ -167,6 +170,9 @@ class LoteController extends ControllerAdmin
         $data->nullIfEmpty("id_curral");
         $data->nullIfEmpty("id_piquete");
         $data->nullIfEmpty("data_formacao");
+        $data->nullIfEmpty("giro");
+        $data->nullIfEmpty("fase");
+        $data->nullIfEmpty("objetivo");
 
         $entradaPayload = $this->extractLoteEntradaPayload($data);
 

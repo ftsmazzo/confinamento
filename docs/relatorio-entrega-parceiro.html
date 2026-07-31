@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Relatório de entrega — Confinamento</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink: #1a2332; --muted: #5c6b7a; --line: #d8e0e8; --paper: #f7f4ef; --card: #fff;
+      --forest: #1f5c45; --forest-soft: #e6f2ec; --amber: #9a6b16; --amber-soft: #f8efd9;
+      --sky: #245b7a; --sky-soft: #e5f1f7; --clay: #8b3a2a; --clay-soft: #f6e8e4;
+      --max: 920px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; font-family: "Manrope", system-ui, sans-serif; color: var(--ink);
+      background:
+        radial-gradient(900px 400px at 0% -10%, #e8efe9 0%, transparent 55%),
+        radial-gradient(700px 360px at 100% 0%, #e8eef5 0%, transparent 45%),
+        var(--paper);
+      line-height: 1.55;
+    }
+    .wrap { max-width: var(--max); margin: 0 auto; padding: 36px 20px 80px; }
+    .cover {
+      background: var(--card); border: 1px solid var(--line); border-radius: 22px;
+      padding: 40px 36px 32px; position: relative; overflow: hidden;
+    }
+    .cover::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 8px; background: var(--forest); }
+    .eyebrow {
+      display: inline-flex; align-items: center; gap: 8px; font-size: 0.78rem; font-weight: 600;
+      letter-spacing: 0.08em; text-transform: uppercase; color: var(--forest); margin-bottom: 14px;
+    }
+    .eyebrow i { width: 8px; height: 8px; border-radius: 50%; background: var(--forest); font-style: normal; }
+    h1 {
+      font-family: "Fraunces", Georgia, serif; font-size: clamp(1.75rem, 3vw, 2.25rem);
+      line-height: 1.15; margin: 0 0 12px;
+    }
+    .lede { max-width: 68ch; color: var(--muted); font-size: 1.02rem; margin: 0 0 18px; }
+    .meta { display: flex; flex-wrap: wrap; gap: 8px; }
+    .chip {
+      font-size: 0.78rem; font-weight: 600; padding: 6px 12px; border-radius: 999px;
+      background: var(--forest-soft); color: var(--forest); border: 1px solid #c5ddd0;
+    }
+    .chip.neutral { background: #eef2f6; color: var(--muted); border-color: var(--line); }
+    .chip.sky { background: var(--sky-soft); color: var(--sky); border-color: #bdd5e3; }
+    .decision {
+      margin-top: 20px; background: linear-gradient(180deg, #f3f8f5, #eef5f1);
+      border: 1px solid #c7ddd1; border-radius: 14px; padding: 16px 18px; color: #234536; font-size: 0.95rem;
+    }
+    .decision strong { color: var(--forest); }
+    section { margin: 32px 0; }
+    .section-head {
+      display: flex; align-items: baseline; gap: 12px; margin-bottom: 14px;
+      padding-bottom: 10px; border-bottom: 2px solid var(--ink);
+    }
+    .section-head .num { font-family: "Fraunces", Georgia, serif; font-size: 1.4rem; color: var(--forest); font-weight: 700; }
+    h2 { font-family: "Fraunces", Georgia, serif; font-size: 1.35rem; margin: 0; }
+    h3 { font-family: "Fraunces", Georgia, serif; font-size: 1.05rem; margin: 0 0 8px; }
+    p { margin: 0 0 10px; }
+    .muted { color: var(--muted); }
+    .small { font-size: 0.88rem; }
+    .step {
+      background: var(--card); border: 1px solid var(--line); border-radius: 18px;
+      padding: 22px 22px 18px; margin-bottom: 16px;
+    }
+    .step.pending { opacity: 0.72; border-style: dashed; }
+    .step-top {
+      display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 12px;
+    }
+    .step-id {
+      font-family: "Fraunces", Georgia, serif; font-weight: 700; font-size: 1.15rem;
+      background: var(--forest-soft); color: var(--forest); border-radius: 10px; padding: 6px 12px;
+    }
+    .step-top h3 { margin: 0; flex: 1; min-width: 180px; }
+    .badge {
+      display: inline-block; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.03em;
+      text-transform: uppercase; padding: 4px 9px; border-radius: 6px;
+    }
+    .badge.ok { background: var(--forest-soft); color: var(--forest); }
+    .badge.wait { background: var(--amber-soft); color: var(--amber); }
+    .badge.commit { background: var(--sky-soft); color: var(--sky); font-family: ui-monospace, monospace; text-transform: none; letter-spacing: 0; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .box {
+      background: #f8fafb; border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px;
+    }
+    .box h4 {
+      margin: 0 0 8px; font-size: 0.72rem; text-transform: uppercase;
+      letter-spacing: 0.05em; color: var(--muted);
+    }
+    .box ul, .box ol { margin: 0; padding-left: 1.15rem; font-size: 0.9rem; }
+    .box li { margin: 4px 0; }
+    code, .path {
+      font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+      font-size: 0.82em; background: #eef2f6; padding: 1px 6px; border-radius: 4px;
+    }
+    .files { margin: 0; padding: 0; list-style: none; }
+    .files li {
+      font-family: ui-monospace, Consolas, monospace; font-size: 0.8rem;
+      padding: 6px 0; border-bottom: 1px solid rgba(0,0,0,.05);
+      display: flex; gap: 8px; align-items: flex-start;
+    }
+    .files li:last-child { border-bottom: 0; }
+    .files .tag {
+      flex-shrink: 0; font-size: 0.65rem; font-weight: 700; text-transform: uppercase;
+      padding: 2px 6px; border-radius: 4px; background: var(--sky-soft); color: var(--sky);
+    }
+    .files .tag.del { background: var(--clay-soft); color: var(--clay); }
+    .files .tag.doc { background: var(--amber-soft); color: var(--amber); }
+    .howto {
+      margin-top: 12px; padding: 12px 14px; border-radius: 12px;
+      background: var(--sky-soft); border: 1px solid #bdd5e3; font-size: 0.9rem;
+    }
+    .howto strong { color: var(--sky); }
+    .sql-box {
+      margin-top: 12px; padding: 12px 14px; border-radius: 12px;
+      background: #1a2332; color: #d7e0e9; font-size: 0.85rem;
+    }
+    .sql-box strong { color: #8fd0ad; }
+    .sql-box code { background: transparent; color: #b8e0c8; padding: 0; }
+    .toc { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; }
+    .toc table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+    .toc th, .toc td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--line); }
+    .toc th { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); }
+    .toc tr:last-child td { border-bottom: 0; }
+    footer {
+      margin-top: 36px; padding-top: 16px; border-top: 1px solid var(--line);
+      color: var(--muted); font-size: 0.82rem;
+    }
+    @media (max-width: 800px) {
+      .grid-2 { grid-template-columns: 1fr; }
+      .cover { padding: 28px 22px; }
+    }
+    @media print {
+      body { background: #fff; }
+      .step { break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+
+    <header class="cover">
+      <div class="eyebrow"><i></i> Relatório de entrega · implantação</div>
+      <h1>O que foi feito, onde mexemos e como validar</h1>
+      <p class="lede">
+        Registro vivo da rodada de alterações. Cada passo validado na versão segura entra aqui
+        com arquivos, commit no GitHub e o que aplicar na versão real (se houver banco).
+      </p>
+      <div class="meta">
+        <span class="chip">Repo: github.com/ftsmazzo/confinamento</span>
+        <span class="chip sky">Branch: main</span>
+        <span class="chip neutral">Manual: public/assets/manual/</span>
+      </div>
+      <div class="decision">
+        <strong>Como usar este documento:</strong> após pull/deploy, confira o passo, rode a migration
+        listada (se houver) no Adminer e valide pelo roteiro de teste. O manual da topbar (?) já sobe com o código.
+      </div>
+    </header>
+
+    <section>
+      <div class="section-head"><span class="num">01</span><h2>Status da rodada</h2></div>
+      <div class="toc">
+        <table>
+          <thead>
+            <tr>
+              <th>Passo</th>
+              <th>Entrega</th>
+              <th>Status</th>
+              <th>Commit</th>
+              <th>DB</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>P1</strong></td>
+              <td>Correções técnicas (E08)</td>
+              <td><span class="badge ok">Validado</span></td>
+              <td><code>666e73b</code></td>
+              <td>Não</td>
+            </tr>
+            <tr>
+              <td><strong>P2</strong></td>
+              <td>Campos Linha e Giro (E06)</td>
+              <td><span class="badge wait">Aguardando validação</span></td>
+              <td><code>pendente push</code></td>
+              <td>Sim</td>
+            </tr>
+            <tr>
+              <td><strong>P3–P10</strong></td>
+              <td>Demais entregas do escopo</td>
+              <td><span class="badge wait">Pendente</span></td>
+              <td>—</td>
+              <td>—</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-head"><span class="num">02</span><h2>Passos entregues</h2></div>
+
+      <!-- P1 -->
+      <article class="step" id="p1">
+        <div class="step-top">
+          <span class="step-id">P1</span>
+          <h3>Correções técnicas (E08)</h3>
+          <span class="badge ok">Validado na segura</span>
+          <span class="badge commit">666e73b</span>
+        </div>
+        <p class="muted small">Data: 31/07/2026 · Sem migration de banco</p>
+
+        <div class="grid-2">
+          <div class="box">
+            <h4>O que mudou</h4>
+            <ul>
+              <li>Typo de menu <code>vetical</code> → <code>vertical</code></li>
+              <li>Layout normaliza qualquer valor ≠ horizontal para vertical</li>
+              <li>Botão <strong>Editar</strong> restaurado nas parcelas (Pagar e Receber)</li>
+              <li>Removido botão legado de cartão no cadastro de cliente</li>
+              <li>Limpeza de variável morta na topbar (busca de cartão)</li>
+              <li>Manual atualizado (seção Parcelas + data)</li>
+            </ul>
+          </div>
+          <div class="box">
+            <h4>Como foi validado</h4>
+            <ol>
+              <li>Login admin na versão segura</li>
+              <li>Financeiro → Contas a Pagar → conta parcelada</li>
+              <li>Clique no lápis da parcela 2/6</li>
+              <li>Vencimento mudou para 15/08/2026 (parcela 2) — OK</li>
+            </ol>
+          </div>
+        </div>
+
+        <div class="box" style="margin-top:12px">
+          <h4>Arquivos alterados</h4>
+          <ul class="files">
+            <li><span class="tag">cfg</span> <span class="path">config/app.php</span></li>
+            <li><span class="tag">view</span> <span class="path">app/Views/app/template/base.phtml</span></li>
+            <li><span class="tag">view</span> <span class="path">app/Views/app/template/topbar.phtml</span></li>
+            <li><span class="tag">view</span> <span class="path">app/Views/admin/financeiro/conta-pagar/form.phtml</span></li>
+            <li><span class="tag">view</span> <span class="path">app/Views/admin/financeiro/conta-receber/form.phtml</span></li>
+            <li><span class="tag">view</span> <span class="path">app/Views/admin/cliente/novo.phtml</span></li>
+            <li><span class="tag doc">manual</span> <span class="path">public/assets/manual/manual-do-sistema.html</span></li>
+            <li><span class="tag doc">manual</span> <span class="path">docs/manual/manual-do-sistema.html</span></li>
+            <li><span class="tag doc">docs</span> <span class="path">docs/plano-execucao-passos.html</span></li>
+          </ul>
+        </div>
+
+        <div class="howto">
+          <strong>Na versão real:</strong> só pull/deploy do commit <code>666e73b</code> (ou main atual).
+          Nada para rodar no Adminer neste passo.
+        </div>
+      </article>
+
+      <!-- P2 -->
+      <article class="step" id="p2">
+        <div class="step-top">
+          <span class="step-id">P2</span>
+          <h3>Campos Linha e Giro (E06)</h3>
+          <span class="badge wait">Aguardando validação na segura</span>
+        </div>
+        <p class="muted small">Data: 31/07/2026 · <strong>Requer migration no Adminer</strong></p>
+
+        <div class="grid-2">
+          <div class="box">
+            <h4>O que mudou</h4>
+            <ul>
+              <li>Campo <strong>Linha</strong> no curral (ex.: 1, 2, A, B, RECEPÇÃO)</li>
+              <li>Campo <strong>Giro</strong> no lote (ex.: 1, 2, 1º, 2º)</li>
+              <li>Colunas nas listagens de Currais e Lotes</li>
+              <li>Manual atualizado (Currais + Lotes)</li>
+            </ul>
+          </div>
+          <div class="box">
+            <h4>Como validar</h4>
+            <ol>
+              <li>Rodar a migration no Adminer (abaixo)</li>
+              <li>Pull/deploy do código</li>
+              <li>Confinamento → Currais → Editar → preencher Linha → Salvar</li>
+              <li>Manejo → Lotes → Editar → preencher Giro → Salvar</li>
+              <li>Conferir colunas Linha/Giro nas listagens</li>
+            </ol>
+          </div>
+        </div>
+
+        <div class="box" style="margin-top:12px">
+          <h4>Arquivos alterados</h4>
+          <ul class="files">
+            <li><span class="tag">sql</span> <span class="path">storage/migrations/20260731_0001_add_linha_giro.sql</span></li>
+            <li><span class="tag">model</span> <span class="path">app/Models/Confinamento/Curral.php</span></li>
+            <li><span class="tag">model</span> <span class="path">app/Models/Manejo/Lote.php</span></li>
+            <li><span class="tag">ctrl</span> <span class="path">app/Controllers/Admin/Confinamento/CurralController.php</span></li>
+            <li><span class="tag">ctrl</span> <span class="path">app/Controllers/Admin/Manejo/LoteController.php</span></li>
+            <li><span class="tag">view</span> <span class="path">app/Views/admin/confinamento/curral/form.phtml</span></li>
+            <li><span class="tag">view</span> <span class="path">app/Views/admin/confinamento/curral/index.phtml</span></li>
+            <li><span class="tag">view</span> <span class="path">app/Views/admin/manejo/lote/form.phtml</span></li>
+            <li><span class="tag">view</span> <span class="path">app/Views/admin/manejo/lote/index.phtml</span></li>
+            <li><span class="tag doc">manual</span> <span class="path">public/assets/manual/manual-do-sistema.html</span></li>
+          </ul>
+        </div>
+
+        <div class="sql-box">
+          <strong>Na versão real (Adminer → SQL):</strong><br>
+          Executar o arquivo <code>storage/migrations/20260731_0001_add_linha_giro.sql</code>
+          (idempotente — pode rodar sem medo se a coluna já existir).
+        </div>
+      </article>
+
+    </section>
+
+    <section>
+      <div class="section-head"><span class="num">03</span><h2>Próximos passos (fila)</h2></div>
+      <div class="toc">
+        <table>
+          <thead>
+            <tr><th>Passo</th><th>Entrega</th><th>Obs.</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>P3</td><td>Parâmetros nutricionais (E03)</td><td>% MS nas fórmulas</td></tr>
+            <tr><td>P4</td><td>Motor de previsão + alerta 100 dias (E01/E10)</td><td>Núcleo da planilha</td></tr>
+            <tr><td>P5</td><td>Quadro diário + custo (E02/E09)</td><td>—</td></tr>
+            <tr><td>P6</td><td>Carga rebanho + lote↔curral (E05/E11)</td><td>Seed/SQL</td></tr>
+            <tr><td>P7</td><td>Farmácia carga inicial (E04)</td><td>Sem import recorrente</td></tr>
+            <tr><td>P8</td><td>Cocho: foto, permissão, turnos (E12)</td><td>Migration + ACL</td></tr>
+            <tr><td>P9</td><td>Sugestão por escore (E07)</td><td>—</td></tr>
+            <tr><td>P10</td><td>Handoff final</td><td>Lista ordenada de migrations</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <footer>
+      Relatório de entrega · Confinamento · atualizado a cada passo validado<br>
+      Escopo: <code>docs/entrega-final-escopo.html</code> · Plano: <code>docs/plano-execucao-passos.html</code>
+    </footer>
+  </div>
+</body>
+</html>

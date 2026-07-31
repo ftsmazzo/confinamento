@@ -19,6 +19,7 @@
                         <th>Qtd.</th>
                         <th>Peso Médio</th>
                         <th>Fase</th>
+                        <th>Giro</th>
                         <th>Status</th>
                         <th>Ativo</th>
                         <th class="text-end actions-column"></th>
@@ -40,6 +41,7 @@
                             <td><?=$d->quantidade !== null ? (int) $d->quantidade : "-"?></td>
                             <td><?=$d->peso_medio !== null ? number_format((float) $d->peso_medio, 2, ",", ".") . " kg" : "-"?></td>
                             <td><?=$d->fase ?: "-"?></td>
+                            <td><?=!empty($d->giro) ? $d->giro : "-"?></td>
                             <td><?=$d->status ?: "-"?></td>
                             <td><?=!empty($d->ativo) ? '<span class="badge filled-outlined bg-success">Sim</span>' : '<span class="badge filled-outlined bg-secondary">Não</span>'?></td>
                             <td class="text-end actions-column">

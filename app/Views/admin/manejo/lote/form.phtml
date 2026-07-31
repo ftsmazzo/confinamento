@@ -44,6 +44,13 @@
                     </div>
                     <div class="col-12 col-md-4">
                         <div class="mb-3">
+                            <label for="giro" class="form-label">Giro</label>
+                            <input type="text" class="form-control" id="giro" name="giro" placeholder="Ex: 1, 2, 1º, 2º" autocomplete="off" value="<?=$lote->giro ?? ""?>">
+                            <small class="text-muted">Ciclo/giro do lote no confinamento.</small>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <div class="mb-3">
                             <label for="objetivo" class="form-label">Objetivo</label>
                             <input type="text" class="form-control" id="objetivo" name="objetivo" placeholder="Objetivo do lote" autocomplete="off" value="<?=$lote->objetivo ?? ""?>">
                         </div>
