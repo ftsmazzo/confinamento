@@ -205,7 +205,7 @@
             <tr>
               <td><strong>P4</strong></td>
               <td>Motor de previsão + alerta 100 dias (E01/E10)</td>
-              <td><span class="badge wait">Aguardando validação</span></td>
+              <td><span class="badge ok">Validado</span></td>
               <td><code>5468de5</code></td>
               <td>Sim</td>
             </tr>
@@ -428,10 +428,10 @@
         <div class="step-top">
           <span class="step-id">P4</span>
           <h3>Motor de previsão de trato + alerta ~100 dias (E01 · E10)</h3>
-          <span class="badge wait">Aguardando validação</span>
+          <span class="badge ok">Validado na segura</span>
           <span class="badge commit">5468de5</span>
         </div>
-        <p class="muted small">Data: 31/07/2026 · Migration de parâmetros em configuracao</p>
+        <p class="muted small">Data: 31/07/2026 · Migration aplicada e testada na segura</p>
 
         <div class="grid-2">
           <div class="box">
@@ -446,12 +446,12 @@
             </ul>
           </div>
           <div class="box">
-            <h4>Como validar na segura</h4>
+            <h4>Como foi validado</h4>
             <ol>
-              <li>Adminer: rodar <code>20260731_0002_parametros_trato.sql</code></li>
-              <li>Nas fórmulas usadas pelos lotes, cadastrar % MS (ex.: 57,5)</li>
-              <li>Nutrição → Programação de Trato → Gerar previstos (hoje / 1 lote)</li>
-              <li>Conferir 4 turnos e kg; Lotes → coluna Dias / alerta</li>
+              <li>SQL <code>20260731_0002_parametros_trato.sql</code> aplicado</li>
+              <li>Parâmetros: GMD 1,50 · %PV 2,25 · turnos 30/20/20/30</li>
+              <li>Gerados 4 turnos no LOTE 2026-001 (303,16 / 202,11 / 202,11 / 303,16)</li>
+              <li>Lotes: coluna Dias 91 / 82 / 60</li>
             </ol>
           </div>
         </div>
