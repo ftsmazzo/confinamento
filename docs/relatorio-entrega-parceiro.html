@@ -182,6 +182,13 @@
               <td>Não</td>
             </tr>
             <tr>
+              <td><strong>P1.1</strong></td>
+              <td>Hotfix: findByMd5 sem MD5() do MySQL</td>
+              <td><span class="badge wait">Deploy</span></td>
+              <td><code>pendente</code></td>
+              <td>Não</td>
+            </tr>
+            <tr>
               <td><strong>P2</strong></td>
               <td>Campos Linha e Giro (E06)</td>
               <td><span class="badge wait">Aguardando validação</span></td>
@@ -254,6 +261,38 @@
         <div class="howto">
           <strong>Na versão real:</strong> só pull/deploy do commit <code>666e73b</code> (ou main atual).
           Nada para rodar no Adminer neste passo.
+        </div>
+      </article>
+
+      <!-- P1.1 -->
+      <article class="step" id="p1-1">
+        <div class="step-top">
+          <span class="step-id">P1.1</span>
+          <h3>Hotfix — edição de cadastros (MD5 no MySQL)</h3>
+          <span class="badge wait">Deploy + validar</span>
+        </div>
+        <p class="muted small">
+          Na versão segura, ao editar Curral (e outros CRUDs que usam hash na URL), o MySQL
+          retornava <code>FUNCTION confinamento.MD5 does not exist</code>. O host trata MD5()
+          como função de schema, não como built-in.
+        </p>
+        <div class="grid-2">
+          <div class="box">
+            <h4>O que mudou</h4>
+            <ul>
+              <li><code>Model::findByMd5</code> e <code>findBySha1</code> resolvem o hash em PHP</li>
+              <li>Não depende mais de <code>MD5()</code> / <code>SHA1()</code> no SQL</li>
+            </ul>
+          </div>
+          <div class="box">
+            <h4>Arquivo</h4>
+            <ul class="files">
+              <li><span class="tag">core</span> <span class="path">app/Core/Model.php</span></li>
+            </ul>
+          </div>
+        </div>
+        <div class="howto">
+          <strong>Na versão real:</strong> só pull/deploy. Sem migration.
         </div>
       </article>
 

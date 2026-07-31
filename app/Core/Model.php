@@ -294,24 +294,58 @@ abstract class Model
 
     public static function findByMd5(string $hash): ?static
     {
-        $col = (static::$alias ? static::$alias . '.' : '') . static::$primary;
+        $hash = strtolower(trim($hash));
+        if ($hash === '') {
+            return null;
+        }
 
-        $row = static::query()
-            ->whereRaw('MD5(' . $col . ') = ?', [$hash])
-            ->first();
+        // ID numérico direto (rotas que não usam hash)
+        if (ctype_digit($hash)) {
+            return static::find((int) $hash);
+        }
 
-        return $row ? static::fromArray($row) : null;
+        // Resolve o hash em PHP. Em alguns hosts (ex.: MySQL gerenciado / FIPS)
+        // a função MD5() do SQL falha com:
+        // FUNCTION {database}.MD5 does not exist (1305).
+        $primary = static::$primary;
+        $col = (static::$alias ? static::$alias . '.' : '') . $primary;
+
+        $rows = static::query()->select($col)->get();
+
+        foreach ($rows as $row) {
+            $id = is_object($row) ? ($row->{$primary} ?? null) : null;
+            if ($id !== null && hash_equals(md5((string) $id), $hash)) {
+                return static::find($id);
+            }
+        }
+
+        return null;
     }
 
     public static function findBySha1(string $hash): ?static
     {
-        $col = (static::$alias ? static::$alias . '.' : '') . static::$primary;
+        $hash = strtolower(trim($hash));
+        if ($hash === '') {
+            return null;
+        }
 
-        $row = static::query()
-            ->whereRaw('SHA1(' . $col . ') = ?', [$hash])
-            ->first();
+        if (ctype_digit($hash)) {
+            return static::find((int) $hash);
+        }
 
-        return $row ? static::fromArray($row) : null;
+        $primary = static::$primary;
+        $col = (static::$alias ? static::$alias . '.' : '') . $primary;
+
+        $rows = static::query()->select($col)->get();
+
+        foreach ($rows as $row) {
+            $id = is_object($row) ? ($row->{$primary} ?? null) : null;
+            if ($id !== null && hash_equals(sha1((string) $id), $hash)) {
+                return static::find($id);
+            }
+        }
+
+        return null;
     }
 
     public static function findBy(string $column, mixed $value): ?static
