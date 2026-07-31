@@ -54,7 +54,7 @@ return [
 
         'admin' => [
             'case'  => 'upper', // upper, normal (upper apenas nos campos selecionados no Model)
-            'menu'  => 'vetical', // vertical, horizontal
+            'menu'  => 'vertical', // vertical, horizontal
             'color' => 'light', // clean, light, dark
             'preference_model' => \App\Models\UsuarioPreferencia::class,
             'menu_service'     => \App\Services\MenuService::class,

@@ -8,7 +8,12 @@
 <link href="<?= asset("app/css/overrides.min.css")?>" rel="stylesheet" type="text/css" />
 <?php echo $this->section("startScripts") ?>
 </head>
-<?php $menuMode = $layout['menu'] ?? 'vertical'; ?>
+<?php
+$menuMode = $layout['menu'] ?? 'vertical';
+if ($menuMode !== 'horizontal') {
+    $menuMode = 'vertical';
+}
+?>
 <?php
 $contentContainer = $content_container ?? $layout['content_container'] ?? 'container-fluid';
 $allowedContentContainers = ['container', 'container-fluid', 'container-extra'];

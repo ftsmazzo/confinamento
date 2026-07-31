@@ -180,6 +180,10 @@
                                     </td>
                                     <td class="text-end actions-column">
                                         <div class="table-actions">
+                                            <a class="table-action-btn" title="Editar"
+                                               href="<?=$router->route("admin.financeiro.conta.pagar.editar", ["id" => $p->id])?>">
+                                                <i class="uil-edit-alt"></i>
+                                            </a>
                                             <?php if ($p->status !== 'PAGO') : ?>
                                             <button type="button" class="table-action-btn table-action-success" title="Baixar" onclick="baixarParcela(<?=$p->id?>, '<?=date("d/m/Y", strtotime($p->data_vencimento))?>', '<?=$p->descricao?>')">
                                                 <i class="uil uil-check-circle"></i>

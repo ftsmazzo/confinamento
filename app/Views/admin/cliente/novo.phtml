@@ -1,11 +1,5 @@
 <?php $this->layout("app/template/base"); ?>
 
-<?php $this->start("page-actions") ?>
-    <?php if (isset($cartao) && allow("cartao_gerenciar")): ?>
-        <a class="btn btn-primary"  href="<?=$router->route("admin.cartao.hub", ["id" => $d->id])?>"><i class="uil uil-eye"></i> Ver Detalhes</a>
-    <?php endif ?>
-<?php $this->end() ?>
-
 <?php $this->start("endScripts") ?>
 <script>
 window.clienteFormConfig = {

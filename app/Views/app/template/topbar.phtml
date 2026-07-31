@@ -1,10 +1,6 @@
 <?php $topbarClasses = trim((string) ($topbarClasses ?? '')); ?>
 <nav class="navbar navbar-top navbar-expand navbar-dashboard navbar-dark <?= htmlspecialchars($topbarClasses) ?>">
   <?php
-    $homeRoute = $router->hasNamedRoute('admin.home') ? $router->route('admin.home') : '#';
-    $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH) ?: '';
-    $homePath = parse_url($homeRoute, PHP_URL_PATH) ?: '';
-    $showTopbarCartaoSearch = $currentPath !== $homePath;
     $topbarLogoRoute = $layout["topbar-logo-route"] ?? "#";
     if (is_string($topbarLogoRoute) && $router->hasNamedRoute($topbarLogoRoute)) {
       $topbarLogoRoute = $router->route($topbarLogoRoute);
