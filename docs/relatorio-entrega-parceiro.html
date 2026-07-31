@@ -198,8 +198,8 @@
             <tr>
               <td><strong>P3</strong></td>
               <td>Parâmetros nutricionais nas fórmulas (E03)</td>
-              <td><span class="badge wait">Aguardando validação</span></td>
-              <td><code>5e0b9de</code></td>
+              <td><span class="badge ok">Validado</span></td>
+              <td><code>5e0b9de</code> + <code>27e7487</code></td>
               <td>Não</td>
             </tr>
             <tr>
@@ -371,8 +371,11 @@
         <div class="step-top">
           <span class="step-id">P3</span>
           <h3>Parâmetros nutricionais nas fórmulas (E03)</h3>
-          <span class="badge wait">Aguardando validação</span>
+          <span class="badge ok">Validado na segura</span>
           <span class="badge commit">5e0b9de</span>
+          <span class="badge commit">27e7487</span>
+        </div>
+        <p class="muted small">Data: 31/07/2026 · Sem migration · Hotfix máscara decimal incluído</p>
 
         <div class="grid-2">
           <div class="box">
@@ -381,15 +384,17 @@
               <li>Seção <strong>Parâmetros nutricionais</strong> no formulário da fórmula</li>
               <li>Persistência em <code>formula_racao_parametro</code> (inclui % MS)</li>
               <li>Coluna <strong>% MS</strong> na listagem de fórmulas</li>
+              <li>Composição (ingredientes) e % MS são <strong>independentes</strong></li>
+              <li>Hotfix: formatação com 1 casa decimal (máscara <code>input-decimal</code>)</li>
               <li>Manual atualizado (catálogo + cadastro da fórmula)</li>
             </ul>
           </div>
           <div class="box">
-            <h4>Como validar na segura</h4>
+            <h4>Como foi validado</h4>
             <ol>
-              <li>Nutrição → Fórmulas de Ração → editar uma fórmula</li>
-              <li>Preencher <strong>MATÉRIA SECA (%)</strong> (ex.: 65,000) e Salvar</li>
-              <li>Reabrir a fórmula e conferir o valor; listagem deve mostrar % MS</li>
+              <li>Salvar % MS na fórmula e conferir na listagem</li>
+              <li>Confirmar que composição e % MS não se alteram mutuamente</li>
+              <li>Fórmula Adaptacao recolocada em 100% (60/25/10/5)</li>
             </ol>
           </div>
         </div>
@@ -408,7 +413,6 @@
         <div class="sql-box">
           <strong>DB:</strong> não há migration neste passo. Usa tabelas já existentes
           <code>parametro_nutricional</code> (catálogo) e <code>formula_racao_parametro</code> (valores por fórmula).
-          Confirme que o catálogo tem ao menos <strong>MATÉRIA SECA</strong> (seed do dump).
         </div>
       </article>
 
