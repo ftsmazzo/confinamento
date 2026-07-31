@@ -2,8 +2,8 @@
 
 /**
  * E11 — amarra lote ↔ curral nos formulários operacionais.
- * Curral com data-id-lote (único lote ativo) preenche o lote;
- * lote com data-id-curral preenche o curral.
+ * Estratégia principal: achar o lote cuja option tem data-id-curral = curral escolhido.
+ * Fallback: data-id-lote na option do curral (quando há um único lote ativo).
  */
 (function () {
     function setSelectValue($select, value) {
@@ -11,13 +11,32 @@
             return;
         }
         const next = String(value);
-        if ($select.find('option[value="' + next.replace(/"/g, '\\"') + '"]').length === 0) {
+        if ($select.find('option[value="' + next.replace(/\\/g, "\\\\").replace(/"/g, '\\"') + '"]').length === 0) {
             return;
         }
-        if (String($select.val()) === next) {
+        if (String($select.val() || "") === next) {
             return;
         }
         $select.val(next).trigger("change");
+    }
+
+    function loteIdForCurral($lote, idCurral, $curralOpt) {
+        if (!idCurral) {
+            return "";
+        }
+        const matches = [];
+        $lote.find("option").each(function () {
+            const cid = String($(this).attr("data-id-curral") || "");
+            if (cid && cid === String(idCurral) && this.value) {
+                matches.push(String(this.value));
+            }
+        });
+        if (matches.length === 1) {
+            return matches[0];
+        }
+        // Fallback: atributo no curral (quando o PHP já resolveu o lote único)
+        const fromCurral = $curralOpt && $curralOpt.attr("data-id-lote");
+        return fromCurral ? String(fromCurral) : "";
     }
 
     function bindCurralLote($form, curralSelector, loteSelector) {
@@ -35,7 +54,9 @@
             if (syncing) {
                 return;
             }
-            const idLote = $curral.find("option:selected").attr("data-id-lote");
+            const idCurral = $curral.val();
+            const $opt = $curral.find("option:selected");
+            const idLote = loteIdForCurral($lote, idCurral, $opt);
             if (!idLote) {
                 return;
             }
@@ -57,10 +78,10 @@
             syncing = false;
         }
 
-        $curral.on("change", fromCurral);
-        $lote.on("change", fromLote);
+        // Select2 dispara select2:select; change cobre select nativo
+        $curral.on("change select2:select", fromCurral);
+        $lote.on("change select2:select", fromLote);
 
-        // Estado inicial: se curral já veio preenchido, puxa lote (e vice-versa).
         if ($curral.val()) {
             fromCurral();
         } else if ($lote.val()) {
@@ -87,7 +108,7 @@
 
     window.initCurralLoteLink = initCurralLoteLink;
 
-    $(document).ready(function () {
+    $(function () {
         initCurralLoteLink($(document));
     });
 })();

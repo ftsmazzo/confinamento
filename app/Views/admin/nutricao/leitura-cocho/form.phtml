@@ -1,5 +1,9 @@
 <?php $this->layout("app/template/base"); ?>
 
+<?php $this->start("endScripts") ?>
+<script src="<?=asset("admin/js/curral-lote-link.js")?>"></script>
+<?php $this->end() ?>
+
 <?php $this->start("page-actions") ?>
 <?php $this->end() ?>
 
@@ -97,5 +101,3 @@
         </div>
     </div>
 </form>
-
-<script src="<?=asset("admin/js/curral-lote-link.js")?>"></script>

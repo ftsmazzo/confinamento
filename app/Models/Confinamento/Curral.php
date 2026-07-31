@@ -22,13 +22,16 @@ class Curral extends Model
     {
         $currais = self::orderBy("nome")->get();
         $lotes = Lote::where("ativo", "=", 1)
-            ->where("status", "=", "ATIVO")
             ->whereNotNull("id_curral")
             ->orderBy("nome")
             ->get();
 
         $porCurral = [];
         foreach ($lotes as $lote) {
+            $status = strtoupper(trim((string) ($lote->status ?? "")));
+            if ($status !== "" && $status !== "ATIVO") {
+                continue;
+            }
             $cid = (int) $lote->id_curral;
             if ($cid <= 0) {
                 continue;
