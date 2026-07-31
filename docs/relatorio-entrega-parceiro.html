@@ -184,14 +184,14 @@
             <tr>
               <td><strong>P1.1</strong></td>
               <td>Hotfix: findByMd5 sem MD5() do MySQL</td>
-              <td><span class="badge wait">Deploy</span></td>
-              <td><code>pendente</code></td>
+              <td><span class="badge ok">Validado</span></td>
+              <td><code>86fa367</code></td>
               <td>Não</td>
             </tr>
             <tr>
               <td><strong>P2</strong></td>
               <td>Campos Linha e Giro (E06)</td>
-              <td><span class="badge wait">Aguardando validação</span></td>
+              <td><span class="badge ok">Validado</span></td>
               <td><code>c238059</code></td>
               <td>Sim</td>
             </tr>
@@ -269,7 +269,8 @@
         <div class="step-top">
           <span class="step-id">P1.1</span>
           <h3>Hotfix — edição de cadastros (MD5 no MySQL)</h3>
-          <span class="badge wait">Deploy + validar</span>
+          <span class="badge ok">Validado na segura</span>
+          <span class="badge commit">86fa367</span>
         </div>
         <p class="muted small">
           Na versão segura, ao editar Curral (e outros CRUDs que usam hash na URL), o MySQL
@@ -285,14 +286,23 @@
             </ul>
           </div>
           <div class="box">
-            <h4>Arquivo</h4>
-            <ul class="files">
-              <li><span class="tag">core</span> <span class="path">app/Core/Model.php</span></li>
-            </ul>
+            <h4>Como foi validado</h4>
+            <ol>
+              <li>Deploy do fix</li>
+              <li>Confinamento → Currais → Editar abriu normalmente</li>
+              <li>Salvou Linha sem erro</li>
+            </ol>
           </div>
         </div>
+        <div class="box" style="margin-top:12px">
+          <h4>Arquivo</h4>
+          <ul class="files">
+            <li><span class="tag">core</span> <span class="path">app/Core/Model.php</span></li>
+          </ul>
+        </div>
         <div class="howto">
-          <strong>Na versão real:</strong> só pull/deploy. Sem migration.
+          <strong>Na versão real:</strong> só pull/deploy. Sem migration. Seguro em qualquer MySQL
+          (com ou sem MD5 built-in).
         </div>
       </article>
 
@@ -301,10 +311,10 @@
         <div class="step-top">
           <span class="step-id">P2</span>
           <h3>Campos Linha e Giro (E06)</h3>
-          <span class="badge wait">Aguardando validação na segura</span>
+          <span class="badge ok">Validado na segura</span>
           <span class="badge commit">c238059</span>
         </div>
-        <p class="muted small">Data: 31/07/2026 · <strong>Requer migration no Adminer</strong></p>
+        <p class="muted small">Data: 31/07/2026 · Migration aplicada e testada na segura</p>
 
         <div class="grid-2">
           <div class="box">
@@ -317,13 +327,11 @@
             </ul>
           </div>
           <div class="box">
-            <h4>Como validar</h4>
+            <h4>Como foi validado</h4>
             <ol>
-              <li>Rodar a migration no Adminer (abaixo)</li>
-              <li>Pull/deploy do código</li>
-              <li>Confinamento → Currais → Editar → preencher Linha → Salvar</li>
-              <li>Manejo → Lotes → Editar → preencher Giro → Salvar</li>
-              <li>Conferir colunas Linha/Giro nas listagens</li>
+              <li>Currais: CURRAL 01 = RECEPÇÃO, CURRAL 02 = A</li>
+              <li>Lotes: LOTE 2026-001 Giro = 1, LOTE 2026-002 Giro = 2</li>
+              <li>Toast “Lote atualizado com sucesso”</li>
             </ol>
           </div>
         </div>
@@ -347,7 +355,7 @@
         <div class="sql-box">
           <strong>Na versão real (Adminer → SQL):</strong><br>
           Executar o arquivo <code>storage/migrations/20260731_0001_add_linha_giro.sql</code>
-          (idempotente — pode rodar sem medo se a coluna já existir).
+          (idempotente — pode rodar sem medo se a coluna já existir). Já validado na segura.
         </div>
       </article>
 
