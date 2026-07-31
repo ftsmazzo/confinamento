@@ -11,6 +11,7 @@ use App\Models\Confinamento\Piquete;
 use App\Models\Confinamento\Unidade;
 use App\Models\Manejo\Lote;
 use App\Models\Manejo\LoteEntrada;
+use App\Services\Nutricao\PrevisaoTratoService;
 
 class LoteController extends ControllerAdmin
 {
@@ -46,12 +47,27 @@ class LoteController extends ControllerAdmin
             ->leftJoin("curral as c", "l.id_curral", "=", "c.id")
             ->leftJoin("piquete as p", "l.id_piquete", "=", "p.id")
             ->leftJoin("lote_entrada as le", "l.id", "=", "le.id_lote")
-            ->select("l.*", "u.nome as unidade_nome", "c.nome as curral_nome", "p.nome as piquete_nome", "le.quantidade", "le.peso_medio", "le.peso_total")
+            ->select(
+                "l.*",
+                "u.nome as unidade_nome",
+                "c.nome as curral_nome",
+                "p.nome as piquete_nome",
+                "le.quantidade",
+                "le.peso_medio",
+                "le.peso_total",
+                "le.data_entrada"
+            )
             ->orderBy("l.nome")
             ->get();
 
+        $previsao = new PrevisaoTratoService();
+
         foreach ($lotes as $lote) {
             $lote->hash = md5((string) $lote->id);
+            $lote->dias_confinamento = $previsao->diasConfinamento(
+                !empty($lote->data_entrada) ? (string) $lote->data_entrada : null
+            );
+            $lote->alerta_permanencia = $previsao->nivelAlerta($lote->dias_confinamento);
         }
 
         echo $this->view->render("admin/manejo/lote/index", [

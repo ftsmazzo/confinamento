@@ -17,15 +17,23 @@ class Configuracao extends Model
 
     public static function setValue(string $chave, mixed $valor, ?int $updatedBy = null): void
     {
+        $payload = [
+            "valor" => ($valor !== null && $valor !== "") ? (string) $valor : null,
+            "updated_by" => $updatedBy,
+            "updated_at" => date("Y-m-d H:i:s"),
+        ];
+
         $row = static::where("c.chave", "=", $chave)->first();
-        if (!$row) {
+        if ($row) {
+            static::updateBy((int) $row->id, $payload);
             return;
         }
 
-        static::updateBy((int) $row->id, [
-            "valor"      => ($valor !== null && $valor !== "") ? (string) $valor : null,
-            "updated_by" => $updatedBy,
-            "updated_at" => date("Y-m-d H:i:s"),
+        static::create([
+            "chave" => $chave,
+            "valor" => $payload["valor"],
+            "updated_by" => $payload["updated_by"],
+            "updated_at" => $payload["updated_at"],
         ]);
     }
 

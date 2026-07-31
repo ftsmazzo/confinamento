@@ -7,6 +7,12 @@
 <?php $this->end() ?>
 
 <?php $this->start("page-buttons") ?>
+    <?php if (!empty($permissao["parametros"])) : ?>
+        <a class="btn btn-white" href="<?=$router->route("admin.nutricao.parametro.trato.editar")?>"><i class="uil uil-sliders-v-alt"></i> Parâmetros</a>
+    <?php endif ?>
+    <?php if (!empty($permissao["gerar"])) : ?>
+        <a class="btn btn-white" href="<?=$router->route("admin.nutricao.programacao.trato.gerar", array_filter(["id_lote" => $lote->id ?? null]))?>"><i class="fa fa-calculator fa-fw"></i> Gerar previstos</a>
+    <?php endif ?>
     <?php if (!empty($permissao["inserir"])) : ?>
         <a class="btn btn-primary" href="<?=$router->route("admin.nutricao.programacao.trato.novo", array_filter(["id_lote" => $lote->id ?? null]))?>"><i class="fa fa-plus fa-fw"></i> Nova Programação</a>
     <?php endif ?>
@@ -38,7 +44,7 @@
                                 <td><?=$d->vinculo_print?></td>
                             <?php endif ?>
                             <td><?=datebr($d->data_programacao)?></td>
-                            <td><?=$d->turno ?: "-"?></td>
+                            <td><?=isset($turnosLabel[$d->turno]) ? $turnosLabel[$d->turno] : ($d->turno ?: "-")?></td>
                             <td><?=$d->curral_nome ?: "-"?></td>
                             <td><?=$d->formula_nome ?: "-"?></td>
                             <td><?=$d->quantidade_prevista !== null ? number_format((float) $d->quantidade_prevista, 2, ",", ".") : "-"?></td>

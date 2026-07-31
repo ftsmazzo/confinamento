@@ -48,7 +48,7 @@
                             <label for="turno" class="form-label">Turno</label>
                             <select name="turno" id="turno" class="form-select" data-search="false">
                                 <option value="">Selecione</option>
-                                <?php foreach (["MANHA" => "Manhã", "TARDE" => "Tarde", "NOITE" => "Noite"] as $valor => $label) : ?>
+                                <?php foreach (["MANHA" => "Manhã (1º)", "MEIO" => "Intermediário (2º)", "TARDE" => "Tarde (3º)", "NOITE" => "Noite (4º)"] as $valor => $label) : ?>
                                     <option value="<?=$valor?>" <?=isset($programacao->turno) && $programacao->turno === $valor ? "selected" : ""?>><?=$label?></option>
                                 <?php endforeach ?>
                             </select>

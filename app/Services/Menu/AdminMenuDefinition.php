@@ -140,6 +140,9 @@ class AdminMenuDefinition extends AbstractMenuDefinition
             $this->link("nutricao-programacoes-trato", "Programação de Trato", "admin.nutricao.programacao.trato.index", [
                 "permission" => "programacao_trato_gerenciar",
             ]),
+            $this->link("nutricao-parametros-trato", "Parâmetros do Trato", "admin.nutricao.parametro.trato.editar", [
+                "permission" => "programacao_trato_gerenciar",
+            ]),
             $this->link("nutricao-fornecimentos-trato", "Fornecimento de Trato", "admin.nutricao.fornecimento.trato.index", [
                 "permission" => "fornecimento_trato_gerenciar",
             ]),

@@ -10,6 +10,7 @@ use App\Models\Confinamento\Curral;
 use App\Models\Manejo\Lote;
 use App\Models\Nutricao\FormulaRacao;
 use App\Models\Nutricao\ProgramacaoTrato;
+use App\Services\Nutricao\PrevisaoTratoService;
 
 class ProgramacaoTratoController extends ControllerAdmin
 {
@@ -74,8 +75,78 @@ class ProgramacaoTratoController extends ControllerAdmin
                 "inserir" => $this->auth->allow("programacao_trato_inserir"),
                 "editar" => $this->auth->allow("programacao_trato_editar"),
                 "excluir" => $this->auth->allow("programacao_trato_excluir"),
+                "gerar" => $this->auth->allow("programacao_trato_inserir"),
+                "parametros" => $this->auth->allow("programacao_trato_gerenciar"),
+            ],
+            "turnosLabel" => PrevisaoTratoService::TURNOS_LABEL,
+        ]);
+    }
+
+    public function gerarForm(Request $request): void
+    {
+        $this->authorize("programacao_trato_inserir");
+        $data = new Data($request->all());
+        $idLote = $data->has("id_lote") ? (int) $data->id_lote : null;
+
+        $this->view->addData([
+            "breadcrumb" => [
+                "Dashboard" => ["url" => $this->router->route("admin.home"), "current" => false],
+                "Nutrição" => ["url" => false, "current" => false],
+                "Programação de Trato" => ["url" => $this->router->route("admin.nutricao.programacao.trato.index"), "current" => false],
+                "Gerar previstos" => ["url" => false, "current" => true],
+            ],
+            "page" => [
+                "title" => "Gerar previstos do dia",
+                "desc" => "Motor: permanência → peso → %PV → MS→MN → 4 turnos",
             ],
         ]);
+
+        echo $this->view->render("admin/nutricao/programacao-trato/gerar", [
+            "csrf" => $this->csrf->generate(),
+            "id_lote" => $idLote,
+            "lotes" => $this->lotes(),
+            "data_programacao" => date("Y-m-d"),
+            "url_action" => $this->router->route("admin.nutricao.programacao.trato.gerar.executar"),
+            "url_voltar" => $this->urlVoltar($idLote),
+        ]);
+    }
+
+    public function gerarExecutar(Request $request): void
+    {
+        $this->authorize("programacao_trato_inserir");
+        $data = new Data($request->all());
+
+        if (!$data->has("data_programacao")) {
+            $this->message->warning("Informe a data da programação");
+            Redirect::referer();
+            return;
+        }
+
+        $dataRef = (string) $data->data_programacao;
+        $idLote = $data->has("id_lote") ? (int) $data->id_lote : null;
+        if ($idLote <= 0) {
+            $idLote = null;
+        }
+        $substituir = !empty($data->substituir);
+
+        $service = new PrevisaoTratoService();
+        $resultado = $service->gerar($dataRef, $idLote, (int) $this->user->uid, $substituir);
+
+        if ($resultado["gerados"] > 0) {
+            $this->message->success(
+                "Gerados {$resultado["gerados"]} turnos em {$resultado["lotes"]} lote(s) para " . datebr($dataRef)
+            );
+        } else {
+            $this->message->warning("Nenhuma programação gerada. Verifique entrada, fórmula, % MS e parâmetros.");
+        }
+
+        if (!empty($resultado["pulados"])) {
+            $this->message->info("Pulados: " . implode(" · ", array_slice($resultado["pulados"], 0, 5)));
+        }
+
+        $this->router->redirect("admin.nutricao.programacao.trato.index", array_filter([
+            "id_lote" => $idLote,
+        ]));
     }
 
     public function new(Request $request): void

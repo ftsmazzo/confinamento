@@ -272,10 +272,15 @@ $router->namespace("\App\Controllers\Admin")->group(null);
     // NUTRICAO - PROGRAMACOES DE TRATO
     $router->get("/nutricao/programacoes-trato", "Nutricao\\ProgramacaoTratoController:index", "admin.nutricao.programacao.trato.index");
     $router->get("/nutricao/programacoes-trato/novo", "Nutricao\\ProgramacaoTratoController:new", "admin.nutricao.programacao.trato.novo");
+    $router->get("/nutricao/programacoes-trato/gerar", "Nutricao\\ProgramacaoTratoController:gerarForm", "admin.nutricao.programacao.trato.gerar");
+    $router->post("/nutricao/programacoes-trato/gerar", "Nutricao\\ProgramacaoTratoController:gerarExecutar", "admin.nutricao.programacao.trato.gerar.executar");
     $router->get("/nutricao/programacoes-trato/editar/{id}", "Nutricao\\ProgramacaoTratoController:edit", "admin.nutricao.programacao.trato.editar");
     $router->post("/nutricao/programacoes-trato/insert", "Nutricao\\ProgramacaoTratoController:create", "admin.nutricao.programacao.trato.insert");
     $router->post("/nutricao/programacoes-trato/update", "Nutricao\\ProgramacaoTratoController:update", "admin.nutricao.programacao.trato.update");
     $router->get("/nutricao/programacoes-trato/delete/{id}", "Nutricao\\ProgramacaoTratoController:delete", "admin.nutricao.programacao.trato.delete");
+
+    $router->get("/nutricao/parametros-trato", "Nutricao\\ParametroTratoController:edit", "admin.nutricao.parametro.trato.editar");
+    $router->post("/nutricao/parametros-trato/update", "Nutricao\\ParametroTratoController:update", "admin.nutricao.parametro.trato.update");
 
     // NUTRICAO - FORNECIMENTOS DE TRATO
     $router->get("/nutricao/fornecimentos-trato", "Nutricao\\FornecimentoTratoController:index", "admin.nutricao.fornecimento.trato.index");
