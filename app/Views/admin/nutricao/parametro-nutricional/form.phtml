@@ -1,0 +1,17 @@
+<form id="form-parametro-nutricional" class="form-validate" action="<?=$url_action?>" method="POST">
+    <input type="hidden" name="csrf" value="<?=$csrf?>">
+    <?php if (!empty($parametro->id)) : ?>
+        <input type="hidden" name="id" value="<?=$parametro->hash()?>">
+    <?php endif ?>
+
+    <div class="row g-3">
+        <div class="col-8">
+            <label for="nome" class="form-label" title="Campo Obrigatório">Nome <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="nome" name="nome" placeholder="Ex: Matéria Seca, Proteína Bruta" required value="<?=$parametro->nome ?? ""?>">
+        </div>
+        <div class="col-4">
+            <label for="unidade_medida" class="form-label">Unidade</label>
+            <input type="text" class="form-control" id="unidade_medida" name="unidade_medida" placeholder="Ex: %, Mcal/kg" autocomplete="off" value="<?=$parametro->unidade_medida ?? ""?>">
+        </div>
+    </div>
+</form>

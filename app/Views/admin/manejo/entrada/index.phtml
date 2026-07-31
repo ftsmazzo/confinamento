@@ -1,0 +1,62 @@
+<?php $this->layout("app/template/base"); ?>
+
+<?php $this->start("page-buttons") ?>
+    <?php if (!empty($permissao["inserir"])) : ?>
+        <a class="btn btn-primary" href="<?=$router->route("admin.manejo.entrada.novo")?>"><i class="fa fa-plus fa-fw"></i> Nova Entrada</a>
+    <?php endif ?>
+<?php $this->end() ?>
+
+<div class="card crud-table-card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover table-sm table-datatable table-datatable-alt crud-table">
+                <thead>
+                    <tr>
+                        <th>Lote</th>
+                        <th>Data</th>
+                        <th>Fornecedor</th>
+                        <th>Curral Destino</th>
+                        <th>Documento</th>
+                        <th>Valor Total</th>
+                        <?php if ($permissao["editar"] || $permissao["excluir"]) : ?>
+                            <th class="text-end actions-column"></th>
+                        <?php endif ?>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($dados as $d) : ?>
+                        <tr>
+                            <td>
+                                <?php if ($permissao["editar"]) : ?>
+                                    <a class="edit" href="<?=$router->route("admin.manejo.entrada.editar", ["id" => $d->hash])?>"><?=$d->lote_nome ?: "-"?></a>
+                                <?php else : ?>
+                                    <span><?=$d->lote_nome ?: "-"?></span>
+                                <?php endif ?>
+                                <?php if (!empty($d->lote_codigo)) : ?>
+                                    <small><?=$d->lote_codigo?></small>
+                                <?php endif ?>
+                            </td>
+                            <td><?=datebr($d->data_entrada)?></td>
+                            <td><?=$d->fornecedor_razao ?: "-"?></td>
+                            <td><?=$d->curral_nome ?: "-"?></td>
+                            <td><?=$d->documento ?: "-"?></td>
+                            <td><?=$d->valor_total !== null ? "R$ " . number_format((float) $d->valor_total, 2, ",", ".") : "-"?></td>
+                            <?php if ($permissao["editar"] || $permissao["excluir"]) : ?>
+                                <td class="text-end actions-column">
+                                    <div class="table-actions">
+                                        <?php if ($permissao["editar"]) : ?>
+                                            <a class="table-action-btn" data-tooltip="true" title="Editar" href="<?=$router->route("admin.manejo.entrada.editar", ["id" => $d->hash])?>"><i class="uil-edit-alt"></i></a>
+                                        <?php endif ?>
+                                        <?php if ($permissao["excluir"]) : ?>
+                                            <button type="button" class="table-action-btn table-action-danger" data-tooltip="true" title="Excluir entrada" onclick="Delete('manejo/entradas/delete', '<?=$d->hash?>')"><i class="uil uil-trash"></i></button>
+                                        <?php endif ?>
+                                    </div>
+                                </td>
+                            <?php endif ?>
+                        </tr>
+                    <?php endforeach ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

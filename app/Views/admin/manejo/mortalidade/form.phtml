@@ -1,0 +1,95 @@
+<?php $this->layout("app/template/base"); ?>
+
+<?php $this->start("page-actions") ?>
+<?php $this->end() ?>
+
+<form id="form-manejo-mortalidade" class="form-validate" action="<?=$url_action?>" method="POST">
+    <input type="hidden" name="csrf" value="<?=$csrf?>">
+    <?php if (!empty($mortalidade->id)) : ?>
+        <input type="hidden" name="id" value="<?=$mortalidade->hash()?>">
+    <?php endif ?>
+
+    <div class="card crud-form-card">
+        <div class="card-body">
+            <div class="crud-subsection mb-4">
+                <div class="crud-section-copy mb-3">
+                    <h5>Lote e Ocorrência</h5>
+                    <small>Registro de baixa técnica por morte, descarte ou perda.</small>
+                </div>
+
+                <div class="row">
+                    <?php if ($id_lote) : ?>
+                        <input type="hidden" name="id_lote" value="<?=$id_lote?>">
+                        <?php $loteAtual = null; foreach ($lotes as $l) { if ((int) $l->id === (int) $id_lote) { $loteAtual = $l; break; } } ?>
+                        <div class="col-12">
+                            <div class="alert alert-info mb-0">Registrando ocorrência do lote: <strong><?=$loteAtual->nome ?? "#$id_lote"?></strong></div>
+                        </div>
+                    <?php else : ?>
+                        <div class="col-12 col-md-6">
+                            <div class="mb-3">
+                                <label for="id_lote" class="form-label">Lote</label>
+                                <select name="id_lote" id="id_lote" class="form-select select2" data-search="true">
+                                    <option value="">Selecione</option>
+                                    <?php foreach ($lotes as $l) : ?>
+                                        <option value="<?=$l->id?>" <?=isset($mortalidade->id_lote) && (int) $mortalidade->id_lote === (int) $l->id ? "selected" : ""?>><?=$l->nome?> (<?=$l->codigo?>)</option>
+                                    <?php endforeach ?>
+                                </select>
+                            </div>
+                        </div>
+                    <?php endif ?>
+                    <div class="col-12 col-md-4">
+                        <div class="mb-3">
+                            <label for="id_motivo_perda" class="form-label">Motivo</label>
+                            <select name="id_motivo_perda" id="id_motivo_perda" class="form-select" data-search="false">
+                                <option value="">Selecione</option>
+                                <?php foreach ($motivos as $motivo) : ?>
+                                    <option value="<?=$motivo->id?>" <?=isset($mortalidade->id_motivo_perda) && (int) $mortalidade->id_motivo_perda === (int) $motivo->id ? "selected" : ""?>><?=$motivo->descricao?></option>
+                                <?php endforeach ?>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <div class="mb-3">
+                            <label for="data_ocorrencia" class="form-label">Data</label>
+                            <input type="date" class="form-control" id="data_ocorrencia" name="data_ocorrencia" autocomplete="off" value="<?=!empty($mortalidade->data_ocorrencia) ? dateus($mortalidade->data_ocorrencia) : ""?>">
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <div class="mb-3">
+                            <label for="quantidade" class="form-label">Quantidade</label>
+                            <input type="number" min="1" class="form-control" id="quantidade" name="quantidade" placeholder="Nº de cabeças" autocomplete="off" value="<?=$mortalidade->quantidade ?? "1"?>">
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="mb-3">
+                            <label for="responsavel" class="form-label">Responsável</label>
+                            <input type="text" class="form-control" id="responsavel" name="responsavel" placeholder="Quem constatou/registrou" autocomplete="off" value="<?=$mortalidade->responsavel ?? ""?>">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="crud-subsection">
+                <div class="crud-section-copy mb-3">
+                    <h5>Observações</h5>
+                    <small>Informações livres para apoio operacional.</small>
+                </div>
+
+                <div class="row">
+                    <div class="col-12">
+                        <div class="mb-3">
+                            <textarea class="form-control" id="observacao" name="observacao" rows="4" placeholder="Observação"><?=$mortalidade->observacao ?? ""?></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-3 pt-4 border-top">
+                <div class="d-grid gap-2 d-sm-block">
+                    <button class="btn btn-primary" type="submit">Salvar</button>
+                    <a href="<?=$url_voltar?>" class="btn btn-white"><i class="uil uil-left"></i> Voltar</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>

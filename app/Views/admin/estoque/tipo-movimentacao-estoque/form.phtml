@@ -1,0 +1,20 @@
+<form id="form-tipo-movimentacao-estoque" class="form-validate" action="<?=$url_action?>" method="POST">
+    <input type="hidden" name="csrf" value="<?=$csrf?>">
+    <?php if (!empty($tipo->id)) : ?>
+        <input type="hidden" name="id" value="<?=$tipo->hash()?>">
+    <?php endif ?>
+
+    <div class="row g-3">
+        <div class="col-8">
+            <label for="descricao" class="form-label" title="Campo Obrigatório">Descrição <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="descricao" name="descricao" placeholder="Ex: Entrada, Saída, Ajuste, Transferência, Perda, Inventário" required value="<?=$tipo->descricao ?? ""?>">
+        </div>
+        <div class="col-4">
+            <label for="natureza" class="form-label" title="Campo Obrigatório">Natureza <span class="text-danger">*</span></label>
+            <select name="natureza" id="natureza" class="form-select" data-search="false" required>
+                <option value="ENTRADA" <?=isset($tipo->natureza) && $tipo->natureza === "ENTRADA" ? "selected" : ""?>>Entrada</option>
+                <option value="SAIDA" <?=isset($tipo->natureza) && $tipo->natureza === "SAIDA" ? "selected" : ""?>>Saída</option>
+            </select>
+        </div>
+    </div>
+</form>

@@ -1,0 +1,71 @@
+<?php $this->layout("app/template/base"); ?>
+
+<?php $this->start("page-buttons") ?>
+    <?php if (!empty($permissao["inserir"])) : ?>
+        <a class="btn btn-primary" href="<?=$router->route("admin.manejo.lote.novo")?>"><i class="fa fa-plus fa-fw"></i> Novo Lote</a>
+    <?php endif ?>
+<?php $this->end() ?>
+
+<div class="card crud-table-card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover table-sm table-datatable table-datatable-alt crud-table">
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Código</th>
+                        <th>Unidade</th>
+                        <th>Curral / Piquete</th>
+                        <th>Qtd.</th>
+                        <th>Peso Médio</th>
+                        <th>Fase</th>
+                        <th>Status</th>
+                        <th>Ativo</th>
+                        <th class="text-end actions-column"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($dados as $d) : ?>
+                        <tr>
+                            <td>
+                                <?php if ($permissao["editar"]) : ?>
+                                    <a class="edit" href="<?=$router->route("admin.manejo.lote.editar", ["id" => $d->hash])?>"><?=$d->nome?></a>
+                                <?php else : ?>
+                                    <span><?=$d->nome?></span>
+                                <?php endif ?>
+                            </td>
+                            <td><?=$d->codigo?></td>
+                            <td><?=$d->unidade_nome ?: "-"?></td>
+                            <td><?=$d->curral_nome ?: ($d->piquete_nome ?: "-")?></td>
+                            <td><?=$d->quantidade !== null ? (int) $d->quantidade : "-"?></td>
+                            <td><?=$d->peso_medio !== null ? number_format((float) $d->peso_medio, 2, ",", ".") . " kg" : "-"?></td>
+                            <td><?=$d->fase ?: "-"?></td>
+                            <td><?=$d->status ?: "-"?></td>
+                            <td><?=!empty($d->ativo) ? '<span class="badge filled-outlined bg-success">Sim</span>' : '<span class="badge filled-outlined bg-secondary">Não</span>'?></td>
+                            <td class="text-end actions-column">
+                                <div class="table-actions">
+                                    <div class="dropdown d-inline-block">
+                                        <button type="button" class="table-action-btn" data-bs-toggle="dropdown" data-tooltip="true" title="Movimentações" aria-expanded="false"><i class="uil uil-exchange"></i></button>
+                                        <ul class="dropdown-menu dropdown-menu-end">
+                                            <li><a class="dropdown-item" href="<?=$router->route("admin.manejo.pesagem.index", ["id_lote" => $d->id])?>"><i class="uil uil-weight me-1"></i> Pesagens</a></li>
+                                            <li><a class="dropdown-item" href="<?=$router->route("admin.manejo.localizacao.index", ["id_lote" => $d->id])?>"><i class="uil uil-location-point me-1"></i> Localização</a></li>
+                                            <li><a class="dropdown-item" href="<?=$router->route("admin.manejo.troca.dieta.index", ["id_lote" => $d->id])?>"><i class="uil uil-restaurant me-1"></i> Trocas de Dieta</a></li>
+                                            <li><a class="dropdown-item" href="<?=$router->route("admin.manejo.saida.index", ["id_lote" => $d->id])?>"><i class="uil uil-signout me-1"></i> Saídas</a></li>
+                                            <li><a class="dropdown-item" href="<?=$router->route("admin.manejo.mortalidade.index", ["id_lote" => $d->id])?>"><i class="uil uil-skull me-1"></i> Mortalidade</a></li>
+                                        </ul>
+                                    </div>
+                                    <?php if ($permissao["editar"]) : ?>
+                                        <a class="table-action-btn" data-tooltip="true" title="Editar" href="<?=$router->route("admin.manejo.lote.editar", ["id" => $d->hash])?>"><i class="uil-edit-alt"></i></a>
+                                    <?php endif ?>
+                                    <?php if ($permissao["excluir"]) : ?>
+                                        <button type="button" class="table-action-btn table-action-danger" data-tooltip="true" title="Excluir lote" onclick="Delete('manejo/lotes/delete', '<?=$d->hash?>')"><i class="uil uil-trash"></i></button>
+                                    <?php endif ?>
+                                </div>
+                            </td>
+                        </tr>
+                    <?php endforeach ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

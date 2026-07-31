@@ -1,0 +1,107 @@
+<?php $this->layout("app/template/base"); ?>
+
+<?php $this->start("page-actions") ?>
+<?php $this->end() ?>
+
+<form id="form-confinamento-curral" class="form-validate" action="<?=$url_action?>" method="POST">
+    <input type="hidden" name="csrf" value="<?=$csrf?>">
+    <?php if (!empty($curral->id)) : ?>
+        <input type="hidden" name="id" value="<?=$curral->hash()?>">
+    <?php endif ?>
+
+    <div class="card crud-form-card">
+        <div class="card-body">
+            <div class="crud-subsection mb-4">
+                <div class="crud-section-copy mb-3">
+                    <h5>Identificação</h5>
+                    <small>Dados básicos do curral.</small>
+                </div>
+
+                <div class="row">
+                    <div class="col-12 col-md-6">
+                        <div class="mb-3">
+                            <label for="curral-nome" class="form-label">Nome</label>
+                            <input type="text" class="form-control" id="curral-nome" name="nome" placeholder="Nome do curral" autocomplete="off" value="<?=$curral->nome ?? ""?>">
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="mb-3">
+                            <label for="curral-codigo" class="form-label">Código</label>
+                            <input type="text" class="form-control" id="curral-codigo" name="codigo" placeholder="Código" autocomplete="off" value="<?=$curral->codigo ?? ""?>">
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="mb-3">
+                            <label for="curral-unidade" class="form-label">Unidade</label>
+                            <select name="id_unidade" id="curral-unidade" class="form-select" data-search="false">
+                                <option value="">Selecione</option>
+                                <?php foreach (($unidades ?? []) as $unidade) : ?>
+                                    <option value="<?=$unidade->id?>" <?=isset($curral->id_unidade) && (int) $curral->id_unidade === (int) $unidade->id ? "selected" : ""?>><?=$unidade->nome?> (<?=$unidade->codigo?>)</option>
+                                <?php endforeach ?>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-3">
+                        <div class="mb-3">
+                            <label for="curral-capacidade" class="form-label">Capacidade</label>
+                            <input type="number" min="0" class="form-control" id="curral-capacidade" name="capacidade" placeholder="Capacidade" autocomplete="off" value="<?=$curral->capacidade ?? ""?>">
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-3">
+                        <div class="mb-3">
+                            <label for="curral-tipo-estrutura" class="form-label">Tipo de Estrutura</label>
+                            <input type="text" class="form-control" id="curral-tipo-estrutura" name="tipo_estrutura" placeholder="Tipo de Estrutura" autocomplete="off" value="<?=$curral->tipo_estrutura ?? ""?>">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="crud-subsection mb-4">
+                <div class="crud-section-copy mb-3">
+                    <h5>Situação</h5>
+                    <small>Status operacional do curral.</small>
+                </div>
+
+                <div class="row">
+                    <div class="col-12 col-md-4">
+                        <div class="mb-3">
+                            <label for="curral-status" class="form-label">Status</label>
+                            <input type="text" class="form-control" id="curral-status" name="status" placeholder="Status" autocomplete="off" value="<?=$curral->status ?? "ATIVO"?>">
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <div class="mb-3">
+                            <label for="curral-ativo" class="form-label">Ativo</label>
+                            <select name="ativo" id="curral-ativo" class="form-select" data-search="false">
+                                <option value="1" <?=(!isset($curral->ativo) || (int) $curral->ativo === 1) ? "selected" : ""?>>Sim</option>
+                                <option value="0" <?=isset($curral->ativo) && (int) $curral->ativo === 0 ? "selected" : ""?>>Não</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="crud-subsection">
+                <div class="crud-section-copy mb-3">
+                    <h5>Observações</h5>
+                    <small>Informações livres para apoio operacional.</small>
+                </div>
+
+                <div class="row">
+                    <div class="col-12">
+                        <div class="mb-3">
+                            <textarea class="form-control" id="curral-observacao" name="observacao" rows="5" placeholder="Observação"><?=$curral->observacao ?? ""?></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-3 pt-4 border-top">
+                <div class="d-grid gap-2 d-sm-block">
+                    <button class="btn btn-primary" type="submit">Salvar</button>
+                    <a href="<?=$router->route("admin.confinamento.curral.index")?>" class="btn btn-white"><i class="uil uil-left"></i> Voltar</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>

@@ -1,0 +1,122 @@
+<?php $this->layout("app/template/base"); ?>
+
+<?php $this->start("startScripts") ?>
+<script src="<?=asset("dist/echarts/dist/echarts.min.js")?>"></script>
+<script src="<?=asset("admin/js/echarts-locale-pt-br.js")?>"></script>
+<?php $this->end() ?>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" action="<?=$router->route("admin.relatorio.eficiencia.alimentar")?>" class="row g-2 align-items-end">
+            <div class="col-6 col-md-4">
+                <label class="form-label small text-muted mb-1">Data inicial</label>
+                <input type="date" name="data_inicial" class="form-control form-control-sm" value="<?=htmlspecialchars($dataInicial ?? "")?>" onchange="this.form.submit()">
+            </div>
+            <div class="col-6 col-md-4">
+                <label class="form-label small text-muted mb-1">Data final</label>
+                <input type="date" name="data_final" class="form-control form-control-sm" value="<?=htmlspecialchars($dataFinal ?? "")?>" onchange="this.form.submit()">
+            </div>
+            <div class="col-12 col-md-4">
+                <?php if ($dataInicial || $dataFinal) : ?>
+                    <a href="<?=$router->route("admin.relatorio.eficiencia.alimentar")?>" class="btn btn-sm btn-outline-secondary w-100">Limpar filtros</a>
+                <?php endif ?>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="callout-inline alert alert-light border small mb-4">
+    <i class="uil uil-info-circle"></i>
+    <strong>Como ler a Conversão Alimentar (CA):</strong> é o total de ração fornecida (kg) dividido pelo total de peso vivo ganho (kg) — <strong>quanto menor, mais eficiente</strong> a dieta. O ganho de peso é calculado por lote (última pesagem − primeira pesagem do período); quando um lote consumiu mais de uma fórmula, o ganho é distribuído entre elas na mesma proporção do kg fornecido de cada uma — é uma aproximação, já que o sistema não isola fisicamente o efeito de cada ração.
+</div>
+
+<?php if (!empty($linhas)) : ?>
+<div class="card crud-table-card mb-4">
+    <div class="card-body">
+        <h5 class="mb-3">Conversão Alimentar por fórmula</h5>
+        <div id="grafico-eficiencia-alimentar" style="width: 100%; height: 340px;"></div>
+    </div>
+</div>
+<?php endif ?>
+
+<div class="card crud-table-card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover table-sm crud-table">
+                <thead>
+                    <tr>
+                        <th>Fórmula</th>
+                        <th>Ração Fornecida</th>
+                        <th>Ganho de Peso (estimado)</th>
+                        <th>Conversão Alimentar</th>
+                        <th>Lotes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($linhas as $i => $l) : ?>
+                        <tr>
+                            <td><?=htmlspecialchars($l["nome"])?></td>
+                            <td><?=number_format($l["racao_kg"], 2, ",", ".")?> kg</td>
+                            <td><?=number_format($l["ganho_kg"], 2, ",", ".")?> kg</td>
+                            <td>
+                                <?php if ($l["conversao_alimentar"] === null) : ?>
+                                    <span class="text-muted">-</span>
+                                <?php else : ?>
+                                    <span class="badge filled-outlined <?=$i === 0 ? "bg-success" : "bg-secondary"?>">
+                                        <?=number_format($l["conversao_alimentar"], 2, ",", ".")?> : 1
+                                    </span>
+                                    <?php if ($i === 0) : ?>
+                                        <small class="text-success">mais eficiente</small>
+                                    <?php endif ?>
+                                <?php endif ?>
+                            </td>
+                            <td><?=$l["qtd_lotes"]?></td>
+                        </tr>
+                    <?php endforeach ?>
+                    <?php if (empty($linhas)) : ?>
+                        <tr>
+                            <td colspan="5" class="text-center text-muted">Sem dados suficientes (é preciso ao menos duas pesagens no período para calcular o ganho de peso do lote).</td>
+                        </tr>
+                    <?php endif ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<?php if (!empty($linhas)) : ?>
+<?php $this->start("endScripts") ?>
+<script>
+    (function () {
+        var el = document.getElementById("grafico-eficiencia-alimentar");
+        if (!el || typeof echarts === "undefined") return;
+
+        var chart = echarts.init(el, null, { locale: "PT-BR" });
+        var linhas = <?=json_encode($linhas, JSON_UNESCAPED_UNICODE)?>.filter(function (l) { return l.conversao_alimentar !== null; });
+
+        chart.setOption({
+            tooltip: {
+                trigger: "axis",
+                axisPointer: { type: "shadow" },
+                formatter: function (params) {
+                    if (!params.length) return "";
+                    var p = params[0];
+                    return "<strong>" + p.name + "</strong><br>" + p.marker + " CA: " + p.value.toLocaleString("pt-BR", { minimumFractionDigits: 2 }) + " : 1";
+                }
+            },
+            grid: { left: 120, right: 40, top: 20, bottom: 30 },
+            xAxis: { type: "value", name: "CA (kg ração / kg ganho)" },
+            yAxis: { type: "category", data: linhas.map(function (l) { return l.nome; }) },
+            series: [{
+                type: "bar",
+                data: linhas.map(function (l) { return l.conversao_alimentar; }),
+                itemStyle: { color: "#20c997" },
+                label: { show: true, position: "right", formatter: function (p) { return p.value.toLocaleString("pt-BR", { minimumFractionDigits: 2 }); } },
+            }],
+        });
+
+        window.addEventListener("resize", function () { chart.resize(); });
+    })();
+</script>
+<?php $this->end() ?>
+<?php endif ?>

@@ -1,0 +1,134 @@
+<?php $this->layout("app/template/base"); ?>
+
+<?php $this->start("startScripts") ?>
+<script src="<?=asset("dist/echarts/dist/echarts.min.js")?>"></script>
+<script src="<?=asset("admin/js/echarts-locale-pt-br.js")?>"></script>
+<?php $this->end() ?>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" action="<?=$router->route("admin.relatorio.evolucao.peso")?>" class="row g-2 align-items-end">
+            <div class="col-12 col-md-4">
+                <label class="form-label small text-muted mb-1">Lote</label>
+                <select name="id_lote" class="form-select form-select-sm select2" data-search="true" onchange="this.form.submit()">
+                    <option value="">Todos os lotes</option>
+                    <?php foreach ($lotes as $l) : ?>
+                        <option value="<?=$l->id?>" <?=$idLote === (int) $l->id ? "selected" : ""?>><?=$l->nome?> (<?=$l->codigo?>)</option>
+                    <?php endforeach ?>
+                </select>
+            </div>
+            <div class="col-6 col-md-3">
+                <label class="form-label small text-muted mb-1">Data inicial</label>
+                <input type="date" name="data_inicial" class="form-control form-control-sm" value="<?=htmlspecialchars($dataInicial ?? "")?>" onchange="this.form.submit()">
+            </div>
+            <div class="col-6 col-md-3">
+                <label class="form-label small text-muted mb-1">Data final</label>
+                <input type="date" name="data_final" class="form-control form-control-sm" value="<?=htmlspecialchars($dataFinal ?? "")?>" onchange="this.form.submit()">
+            </div>
+            <div class="col-12 col-md-2">
+                <?php if ($idLote || $dataInicial || $dataFinal) : ?>
+                    <a href="<?=$router->route("admin.relatorio.evolucao.peso")?>" class="btn btn-sm btn-outline-secondary w-100">Limpar filtros</a>
+                <?php endif ?>
+            </div>
+        </form>
+    </div>
+</div>
+
+<?php if (empty($pesagensPorLote)) : ?>
+    <div class="card">
+        <div class="card-body">
+            <p class="text-muted mb-0">Nenhuma pesagem registrada para o filtro selecionado.</p>
+        </div>
+    </div>
+<?php else : ?>
+    <div class="card crud-table-card mb-4">
+        <div class="card-body">
+            <h5 class="mb-3">Evolução do peso médio</h5>
+            <div id="grafico-evolucao-peso" style="width: 100%; height: 380px;"></div>
+        </div>
+    </div>
+<?php endif ?>
+
+<?php foreach ($pesagensPorLote as $idLoteGrupo => $pesagens) : ?>
+    <?php $primeira = $pesagens[0]; ?>
+    <div class="card crud-table-card mb-4">
+        <div class="card-body">
+            <h5 class="mb-3"><?=$primeira->lote_nome?> (<?=$primeira->lote_codigo?>)</h5>
+
+            <div class="table-responsive">
+                <table class="table table-striped table-hover table-sm crud-table">
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Tipo</th>
+                            <th>Peso Médio</th>
+                            <th>Peso Total</th>
+                            <th>GMD (kg/dia)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($pesagens as $p) : ?>
+                            <tr>
+                                <td><?=datebr($p->data_pesagem)?></td>
+                                <td><span class="badge filled-outlined bg-secondary"><?=$p->tipo?></span></td>
+                                <td><?=number_format((float) $p->peso_medio, 2, ",", ".")?> kg</td>
+                                <td><?=$p->peso_total !== null ? number_format((float) $p->peso_total, 2, ",", ".") . " kg" : "-"?></td>
+                                <td>
+                                    <?php if ($p->gmd !== null) : ?>
+                                        <span class="badge filled-outlined <?=$p->gmd >= 0 ? "bg-success" : "bg-danger"?>"><?=number_format($p->gmd, 3, ",", ".")?></span>
+                                    <?php else : ?>
+                                        -
+                                    <?php endif ?>
+                                </td>
+                            </tr>
+                        <?php endforeach ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+<?php endforeach ?>
+
+<?php if (!empty($graficoSeries)) : ?>
+<?php $this->start("endScripts") ?>
+<script>
+    (function () {
+        var el = document.getElementById("grafico-evolucao-peso");
+        if (!el || typeof echarts === "undefined") return;
+
+        var chart = echarts.init(el, null, { locale: "PT-BR" });
+        var series = <?=json_encode($graficoSeries, JSON_UNESCAPED_UNICODE)?>;
+
+        chart.setOption({
+            tooltip: {
+                trigger: "axis",
+                formatter: function (params) {
+                    if (!params.length) return "";
+                    var linhas = ["<strong>" + window.formatDataBr(params[0].axisValue) + "</strong>"];
+                    params.forEach(function (p) {
+                        if (p.value[1] === null || p.value[1] === undefined) return;
+                        linhas.push(p.marker + " " + p.seriesName + ": " + p.value[1].toLocaleString("pt-BR", { minimumFractionDigits: 2 }) + " kg");
+                    });
+                    return linhas.join("<br>");
+                }
+            },
+            legend: { data: series.map(function (s) { return s.nome; }), top: 0 },
+            grid: { left: 50, right: 20, top: 40, bottom: 30 },
+            xAxis: { type: "time" },
+            yAxis: { type: "value", name: "kg", axisLabel: { formatter: "{value} kg" } },
+            series: series.map(function (s) {
+                return {
+                    name: s.nome,
+                    type: "line",
+                    smooth: true,
+                    connectNulls: true,
+                    data: s.pontos.map(function (p) { return [p.data, p.peso_medio]; }),
+                };
+            }),
+        });
+
+        window.addEventListener("resize", function () { chart.resize(); });
+    })();
+</script>
+<?php $this->end() ?>
+<?php endif ?>

@@ -1,0 +1,99 @@
+<?php $this->layout("app/template/base"); ?>
+
+<?php $this->start("page-actions") ?>
+<?php $this->end() ?>
+
+<form id="form-nutricao-leitura-cocho" class="form-validate" action="<?=$url_action?>" method="POST">
+    <input type="hidden" name="csrf" value="<?=$csrf?>">
+    <?php if (!empty($leitura->id)) : ?>
+        <input type="hidden" name="id" value="<?=$leitura->hash()?>">
+    <?php endif ?>
+
+    <div class="card crud-form-card">
+        <div class="card-body">
+            <div class="crud-subsection mb-4">
+                <div class="crud-section-copy mb-3">
+                    <h5>Leitura de Cocho</h5>
+                    <small>Escore de sobra do cocho, padrão da indústria de 0 (limpo) a 4 (sobra excessiva).</small>
+                </div>
+
+                <div class="row">
+                    <?php if ($id_lote) : ?>
+                        <input type="hidden" name="id_lote" value="<?=$id_lote?>">
+                        <?php $loteAtual = null; foreach ($lotes as $l) { if ((int) $l->id === (int) $id_lote) { $loteAtual = $l; break; } } ?>
+                        <div class="col-12">
+                            <div class="alert alert-info mb-0">Lendo cocho do lote: <strong><?=$loteAtual->nome ?? "#$id_lote"?></strong></div>
+                        </div>
+                    <?php else : ?>
+                        <div class="col-12 col-md-6">
+                            <div class="mb-3">
+                                <label for="id_lote" class="form-label">Lote</label>
+                                <select name="id_lote" id="id_lote" class="form-select select2" data-search="true">
+                                    <option value="">Selecione</option>
+                                    <?php foreach ($lotes as $l) : ?>
+                                        <option value="<?=$l->id?>" <?=isset($leitura->id_lote) && (int) $leitura->id_lote === (int) $l->id ? "selected" : ""?>><?=$l->nome?> (<?=$l->codigo?>)</option>
+                                    <?php endforeach ?>
+                                </select>
+                            </div>
+                        </div>
+                    <?php endif ?>
+                    <div class="col-12 col-md-3">
+                        <div class="mb-3">
+                            <label for="data_leitura" class="form-label">Data</label>
+                            <input type="date" class="form-control" id="data_leitura" name="data_leitura" autocomplete="off" value="<?=!empty($leitura->data_leitura) ? dateus($leitura->data_leitura) : ""?>">
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-3">
+                        <div class="mb-3">
+                            <label for="id_curral" class="form-label">Curral</label>
+                            <select name="id_curral" id="id_curral" class="form-select select2" data-search="true">
+                                <option value="">Selecione</option>
+                                <?php foreach ($currais as $c) : ?>
+                                    <option value="<?=$c->id?>" <?=isset($leitura->id_curral) && (int) $leitura->id_curral === (int) $c->id ? "selected" : ""?>><?=$c->nome?></option>
+                                <?php endforeach ?>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Escore</label>
+                        <div class="row">
+                            <?php
+                                $escoreLabels = [0 => "Limpo", 1 => "Traços", 2 => "Leve sobra", 3 => "Sobra moderada", 4 => "Sobra excessiva"];
+                            ?>
+                            <?php foreach ($escoreLabels as $valor => $label) : ?>
+                                <div class="col-6 col-md-2">
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input" type="radio" name="escore" id="escore_<?=$valor?>" value="<?=$valor?>" <?=isset($leitura->escore) && (int) $leitura->escore === $valor ? "checked" : ""?>>
+                                        <label class="form-check-label" for="escore_<?=$valor?>"><?=$valor?> - <?=$label?></label>
+                                    </div>
+                                </div>
+                            <?php endforeach ?>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="crud-subsection">
+                <div class="crud-section-copy mb-3">
+                    <h5>Observações</h5>
+                    <small>Informações livres para apoio operacional.</small>
+                </div>
+
+                <div class="row">
+                    <div class="col-12">
+                        <div class="mb-3">
+                            <textarea class="form-control" id="observacao" name="observacao" rows="3" placeholder="Observação"><?=$leitura->observacao ?? ""?></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-3 pt-4 border-top">
+                <div class="d-grid gap-2 d-sm-block">
+                    <button class="btn btn-primary" type="submit">Salvar</button>
+                    <a href="<?=$url_voltar?>" class="btn btn-white"><i class="uil uil-left"></i> Voltar</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>

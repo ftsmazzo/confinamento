@@ -1,0 +1,179 @@
+<?php $this->layout("app/template/base"); ?>
+
+<?php $this->start("page-actions") ?>
+<?php $this->end() ?>
+
+<form id="form-manejo-lote" class="form-validate" action="<?=$url_action?>" method="POST">
+    <input type="hidden" name="csrf" value="<?=$csrf?>">
+    <?php if (!empty($lote->id)) : ?>
+        <input type="hidden" name="id" value="<?=$lote->hash()?>">
+    <?php endif ?>
+
+    <div class="card crud-form-card">
+        <div class="card-body">
+            <div class="crud-subsection mb-4">
+                <div class="crud-section-copy mb-3">
+                    <h5>Identificação</h5>
+                    <small>Dados básicos do lote.</small>
+                </div>
+
+                <div class="row">
+                    <div class="col-12 col-md-6">
+                        <div class="mb-3">
+                            <label for="nome" class="form-label">Nome</label>
+                            <input type="text" class="form-control" id="nome" name="nome" placeholder="Nome do lote" autocomplete="off" value="<?=$lote->nome ?? ""?>">
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="mb-3">
+                            <label for="codigo" class="form-label">Código</label>
+                            <input type="text" class="form-control" id="codigo" name="codigo" placeholder="Código" autocomplete="off" value="<?=$lote->codigo ?? ""?>">
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <div class="mb-3">
+                            <label for="data_formacao" class="form-label">Data de Formação</label>
+                            <input type="date" class="form-control" id="data_formacao" name="data_formacao" autocomplete="off" value="<?=!empty($lote->data_formacao) ? dateus($lote->data_formacao) : ""?>">
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <div class="mb-3">
+                            <label for="fase" class="form-label">Fase</label>
+                            <input type="text" class="form-control" id="fase" name="fase" placeholder="Ex: Recria, Engorda" autocomplete="off" value="<?=$lote->fase ?? ""?>">
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <div class="mb-3">
+                            <label for="objetivo" class="form-label">Objetivo</label>
+                            <input type="text" class="form-control" id="objetivo" name="objetivo" placeholder="Objetivo do lote" autocomplete="off" value="<?=$lote->objetivo ?? ""?>">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="crud-subsection mb-4">
+                <div class="crud-section-copy mb-3">
+                    <h5>Localização</h5>
+                    <small>Unidade e estrutura física onde o lote está alocado.</small>
+                </div>
+
+                <div class="row">
+                    <div class="col-12 col-md-4">
+                        <div class="mb-3">
+                            <label for="id_unidade" class="form-label">Unidade</label>
+                            <select name="id_unidade" id="id_unidade" class="form-select" data-search="false">
+                                <option value="">Selecione</option>
+                                <?php foreach (($unidades ?? []) as $unidade) : ?>
+                                    <option value="<?=$unidade->id?>" <?=isset($lote->id_unidade) && (int) $lote->id_unidade === (int) $unidade->id ? "selected" : ""?>><?=$unidade->nome?> (<?=$unidade->codigo?>)</option>
+                                <?php endforeach ?>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <div class="mb-3">
+                            <label for="id_curral" class="form-label">Curral</label>
+                            <select name="id_curral" id="id_curral" class="form-select select2" data-search="true">
+                                <option value="">Nenhum</option>
+                                <?php foreach (($currais ?? []) as $curral) : ?>
+                                    <option value="<?=$curral->id?>" <?=isset($lote->id_curral) && (int) $lote->id_curral === (int) $curral->id ? "selected" : ""?>><?=$curral->nome?> (<?=$curral->codigo?>)</option>
+                                <?php endforeach ?>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <div class="mb-3">
+                            <label for="id_piquete" class="form-label">Piquete</label>
+                            <select name="id_piquete" id="id_piquete" class="form-select select2" data-search="true">
+                                <option value="">Nenhum</option>
+                                <?php foreach (($piquetes ?? []) as $piquete) : ?>
+                                    <option value="<?=$piquete->id?>" <?=isset($lote->id_piquete) && (int) $lote->id_piquete === (int) $piquete->id ? "selected" : ""?>><?=$piquete->nome?> (<?=$piquete->codigo?>)</option>
+                                <?php endforeach ?>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="crud-subsection mb-4">
+                <div class="crud-section-copy mb-3">
+                    <h5>Entrada do Lote</h5>
+                    <small>Quantidade e peso agregados, sem controle individual por animal.</small>
+                </div>
+
+                <div class="row">
+                    <div class="col-12 col-md-3">
+                        <div class="mb-3">
+                            <label for="quantidade" class="form-label">Quantidade</label>
+                            <input type="number" min="0" class="form-control" id="quantidade" name="quantidade" placeholder="Nº de cabeças" autocomplete="off" value="<?=$loteEntrada->quantidade ?? ""?>">
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-3">
+                        <div class="mb-3">
+                            <label for="peso_medio" class="form-label">Peso Médio (kg)</label>
+                            <input type="text" class="form-control input-peso" id="peso_medio" name="peso_medio" placeholder="Peso médio" autocomplete="off" value="<?=$loteEntrada->peso_medio ?? ""?>">
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-3">
+                        <div class="mb-3">
+                            <label for="peso_total" class="form-label">Peso Total (kg)</label>
+                            <input type="text" class="form-control input-peso" id="peso_total" name="peso_total" placeholder="Peso total" autocomplete="off" value="<?=$loteEntrada->peso_total ?? ""?>">
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-3">
+                        <div class="mb-3">
+                            <label for="data_entrada" class="form-label">Data de Entrada</label>
+                            <input type="date" class="form-control" id="data_entrada" name="data_entrada" autocomplete="off" value="<?=!empty($loteEntrada->data_entrada) ? dateus($loteEntrada->data_entrada) : ""?>">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="crud-subsection mb-4">
+                <div class="crud-section-copy mb-3">
+                    <h5>Situação</h5>
+                    <small>Status operacional do lote.</small>
+                </div>
+
+                <div class="row">
+                    <div class="col-12 col-md-4">
+                        <div class="mb-3">
+                            <label for="status" class="form-label">Status</label>
+                            <input type="text" class="form-control" id="status" name="status" placeholder="Status" autocomplete="off" value="<?=$lote->status ?? "ATIVO"?>">
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <div class="mb-3">
+                            <label for="ativo" class="form-label">Ativo</label>
+                            <select name="ativo" id="ativo" class="form-select" data-search="false">
+                                <option value="1" <?=(!isset($lote->ativo) || (int) $lote->ativo === 1) ? "selected" : ""?>>Sim</option>
+                                <option value="0" <?=isset($lote->ativo) && (int) $lote->ativo === 0 ? "selected" : ""?>>Não</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="crud-subsection">
+                <div class="crud-section-copy mb-3">
+                    <h5>Observações</h5>
+                    <small>Informações livres para apoio operacional.</small>
+                </div>
+
+                <div class="row">
+                    <div class="col-12">
+                        <div class="mb-3">
+                            <textarea class="form-control" id="observacao" name="observacao" rows="5" placeholder="Observação"><?=$lote->observacao ?? ""?></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-3 pt-4 border-top">
+                <div class="d-grid gap-2 d-sm-block">
+                    <button class="btn btn-primary" type="submit">Salvar</button>
+                    <a href="<?=$router->route("admin.manejo.lote.index")?>" class="btn btn-white"><i class="uil uil-left"></i> Voltar</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>

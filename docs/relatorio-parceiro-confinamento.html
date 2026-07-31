@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Relatório Técnico — Sistema de Confinamento</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink: #1a2332;
+      --muted: #5c6b7a;
+      --line: #d8e0e8;
+      --paper: #f7f4ef;
+      --card: #ffffff;
+      --forest: #1f5c45;
+      --forest-soft: #e6f2ec;
+      --amber: #9a6b16;
+      --amber-soft: #f8efd9;
+      --clay: #8b3a2a;
+      --clay-soft: #f6e8e4;
+      --sky: #245b7a;
+      --sky-soft: #e5f1f7;
+      --ok: #1f5c45;
+      --warn: #9a6b16;
+      --gap: #8b3a2a;
+      --radius: 14px;
+      --shadow: 0 1px 0 rgba(26, 35, 50, 0.04);
+      --max: 1080px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: "Manrope", system-ui, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(1200px 500px at 10% -10%, #e8efe9 0%, transparent 55%),
+        radial-gradient(900px 400px at 100% 0%, #e9eef3 0%, transparent 50%),
+        var(--paper);
+      line-height: 1.55;
+    }
+
+    .wrap { max-width: var(--max); margin: 0 auto; padding: 32px 20px 80px; }
+
+    /* Cover */
+    .cover {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      padding: 40px 36px 34px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+    .cover::before {
+      content: "";
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: 8px;
+      background: var(--forest);
+    }
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--forest);
+      margin-bottom: 14px;
+    }
+    .eyebrow span {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--forest);
+    }
+    h1 {
+      font-family: "Fraunces", Georgia, serif;
+      font-weight: 700;
+      font-size: clamp(1.9rem, 3.5vw, 2.55rem);
+      line-height: 1.15;
+      margin: 0 0 12px;
+      letter-spacing: -0.02em;
+    }
+    .lede {
+      max-width: 62ch;
+      color: var(--muted);
+      font-size: 1.05rem;
+      margin: 0 0 22px;
+    }
+    .meta {
+      display: flex; flex-wrap: wrap; gap: 10px;
+    }
+    .chip {
+      font-size: 0.8rem;
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: var(--forest-soft);
+      color: var(--forest);
+      border: 1px solid #c5ddd0;
+    }
+    .chip.alt { background: var(--sky-soft); color: var(--sky); border-color: #bdd5e3; }
+
+    /* Stats */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin: 22px 0 0;
+    }
+    .stat {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 18px 16px;
+    }
+    .stat b {
+      display: block;
+      font-family: "Fraunces", Georgia, serif;
+      font-size: 1.85rem;
+      line-height: 1;
+      margin-bottom: 6px;
+      color: var(--ink);
+    }
+    .stat span { font-size: 0.82rem; color: var(--muted); font-weight: 500; }
+    .stat.ok b { color: var(--ok); }
+    .stat.warn b { color: var(--warn); }
+
+    /* Verdict */
+    .verdict {
+      margin-top: 18px;
+      background: linear-gradient(180deg, #f3f8f5, #eef5f1);
+      border: 1px solid #c7ddd1;
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      color: #234536;
+      font-size: 0.98rem;
+    }
+    .verdict strong { color: var(--forest); }
+
+    /* Nav */
+    nav.toc {
+      margin: 28px 0;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+    }
+    nav.toc h2 {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin: 0 0 12px;
+      font-weight: 700;
+      font-family: "Manrope", sans-serif;
+    }
+    nav.toc ol {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px 16px;
+    }
+    nav.toc a {
+      color: var(--ink);
+      text-decoration: none;
+      font-size: 0.92rem;
+      font-weight: 500;
+      display: flex;
+      gap: 8px;
+      padding: 6px 0;
+    }
+    nav.toc a:hover { color: var(--forest); }
+    nav.toc a em {
+      font-style: normal;
+      color: var(--forest);
+      font-weight: 700;
+      min-width: 1.2em;
+    }
+
+    /* Sections */
+    section {
+      margin: 36px 0;
+      scroll-margin-top: 20px;
+    }
+    .section-head {
+      display: flex;
+      align-items: baseline;
+      gap: 14px;
+      margin-bottom: 16px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid var(--ink);
+    }
+    .section-head .num {
+      font-family: "Fraunces", Georgia, serif;
+      font-size: 1.6rem;
+      color: var(--forest);
+      font-weight: 700;
+    }
+    h2 {
+      font-family: "Fraunces", Georgia, serif;
+      font-size: 1.55rem;
+      margin: 0;
+      letter-spacing: -0.01em;
+    }
+    h3 {
+      font-family: "Fraunces", Georgia, serif;
+      font-size: 1.15rem;
+      margin: 22px 0 10px;
+    }
+    p { margin: 0 0 12px; color: var(--ink); }
+    .muted { color: var(--muted); }
+    .small { font-size: 0.88rem; }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 18px 18px 16px;
+      box-shadow: var(--shadow);
+    }
+    .card h3 { margin-top: 0; }
+    .card.forest { background: var(--forest-soft); border-color: #c5ddd0; }
+    .card.amber { background: var(--amber-soft); border-color: #ead7a8; }
+    .card.sky { background: var(--sky-soft); border-color: #bdd5e3; }
+
+    ul.clean {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+    ul.clean li {
+      position: relative;
+      padding: 7px 0 7px 18px;
+      border-bottom: 1px solid var(--line);
+      font-size: 0.95rem;
+    }
+    ul.clean li:last-child { border-bottom: 0; }
+    ul.clean li::before {
+      content: "";
+      position: absolute;
+      left: 0; top: 15px;
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--forest);
+    }
+    ul.clean.gap li::before { background: var(--gap); }
+
+    /* Tables */
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--card);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+    th, td {
+      text-align: left;
+      padding: 11px 14px;
+      border-bottom: 1px solid var(--line);
+      vertical-align: top;
+    }
+    th {
+      background: #eef2f6;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--muted);
+      font-weight: 700;
+    }
+    tr:last-child td { border-bottom: 0; }
+    tr.gap td { background: #fbf3f1; }
+    tr.parcial td { background: #fbf7ee; }
+    tr.ok td { background: #f4faf6; }
+
+    .badge {
+      display: inline-block;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 6px;
+    }
+    .badge.ok { background: var(--forest-soft); color: var(--ok); }
+    .badge.warn { background: var(--amber-soft); color: var(--warn); }
+    .badge.gap { background: var(--clay-soft); color: var(--gap); }
+    .badge.alta { background: var(--clay-soft); color: var(--gap); }
+    .badge.media { background: var(--amber-soft); color: var(--warn); }
+    .badge.baixa { background: #eef2f6; color: var(--muted); }
+    .badge.p0 { background: var(--clay-soft); color: var(--gap); }
+    .badge.p1 { background: var(--amber-soft); color: var(--warn); }
+    .badge.p2 { background: #eef2f6; color: var(--muted); }
+
+    /* Formula diagram */
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+      margin: 14px 0;
+    }
+    .flow-step {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 14px 12px;
+      text-align: center;
+      position: relative;
+    }
+    .flow-step::after {
+      content: "→";
+      position: absolute;
+      right: -12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--forest);
+      font-weight: 700;
+      z-index: 1;
+    }
+    .flow-step:last-child::after { display: none; }
+    .flow-step .n {
+      font-family: "Fraunces", Georgia, serif;
+      font-size: 1.2rem;
+      color: var(--forest);
+      font-weight: 700;
+      display: block;
+      margin-bottom: 4px;
+    }
+    .flow-step .t {
+      font-size: 0.78rem;
+      font-weight: 600;
+      line-height: 1.3;
+    }
+    .formula-box {
+      font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+      font-size: 0.84rem;
+      background: #1a2332;
+      color: #e8eef4;
+      border-radius: 12px;
+      padding: 16px 18px;
+      line-height: 1.7;
+    }
+    .formula-box .c { color: #8fd0ad; }
+    .example {
+      margin-top: 12px;
+      padding: 12px 14px;
+      background: var(--amber-soft);
+      border-radius: 10px;
+      border: 1px solid #ead7a8;
+      font-size: 0.9rem;
+      color: #5d4210;
+    }
+
+    /* Coverage bars */
+    .bars { display: grid; gap: 12px; margin-top: 8px; }
+    .bar-row { display: grid; grid-template-columns: 140px 1fr 52px; gap: 10px; align-items: center; }
+    .bar-row label { font-size: 0.88rem; font-weight: 600; }
+    .track {
+      height: 12px;
+      background: #e6ebf0;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .fill {
+      height: 100%;
+      border-radius: 999px;
+    }
+    .fill.ok { width: 75%; background: var(--forest); }
+    .fill.warn { width: 40%; background: var(--amber); }
+    .bar-row em { font-style: normal; font-weight: 700; font-size: 0.88rem; }
+
+    /* Recommendations */
+    .recs {
+      counter-reset: rec;
+      display: grid;
+      gap: 10px;
+    }
+    .rec {
+      counter-increment: rec;
+      display: grid;
+      grid-template-columns: 42px 1fr;
+      gap: 12px;
+      align-items: start;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 14px 16px;
+    }
+    .rec::before {
+      content: counter(rec);
+      font-family: "Fraunces", Georgia, serif;
+      font-weight: 700;
+      font-size: 1.2rem;
+      color: var(--forest);
+      width: 36px; height: 36px;
+      border-radius: 10px;
+      background: var(--forest-soft);
+      display: grid;
+      place-items: center;
+    }
+
+    footer {
+      margin-top: 40px;
+      padding-top: 18px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    @media (max-width: 860px) {
+      .stats, .grid-2, .grid-3, nav.toc ol, .flow { grid-template-columns: 1fr; }
+      .flow-step::after { display: none; }
+      .bar-row { grid-template-columns: 1fr; gap: 4px; }
+      .cover { padding: 28px 22px; }
+    }
+
+    @media print {
+      body { background: #fff; }
+      .cover, .card, .table-wrap, .stat, .rec { break-inside: avoid; box-shadow: none; }
+      nav.toc { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+
+    <header class="cover">
+      <div class="eyebrow"><span></span> Relatório técnico · Uso interno</div>
+      <h1>Sistema de Confinamento — diagnóstico e plano de evolução</h1>
+      <p class="lede">
+        Análise do sistema atual cruzada com as planilhas da cliente e com o padrão
+        de mercado (TGC/Ponta, BeefSystem, iRancho e referências internacionais).
+        Objetivo: orientar o parceiro no que priorizar.
+      </p>
+      <div class="meta">
+        <span class="chip">68 tabelas MySQL</span>
+        <span class="chip">11 domínios funcionais</span>
+        <span class="chip alt">Fonte: código · SQL · manual · planilhas</span>
+      </div>
+
+      <div class="stats">
+        <div class="stat"><b>68</b><span>Tabelas no banco</span></div>
+        <div class="stat"><b>11</b><span>Módulos de negócio</span></div>
+        <div class="stat ok"><b>~75%</b><span>Cobertura farmácia</span></div>
+        <div class="stat warn"><b>~40%</b><span>Cobertura quadro de trato</span></div>
+      </div>
+
+      <div class="verdict">
+        <strong>Veredicto:</strong> o produto já é a espinha dorsal de um ERP de confinamento
+        (estrutura, manejo, nutrição, sanitário, estoque, financeiro). O diferencial que a
+        cliente sente na planilha — <strong>previsão automática de trato por curral</strong> —
+        ainda não está no software. Esse é o principal ponto de adaptação.
+      </div>
+    </header>
+
+    <nav class="toc" aria-label="Sumário">
+      <h2>Sumário</h2>
+      <ol>
+        <li><a href="#s1"><em>1</em> Mapa do sistema</a></li>
+        <li><a href="#s2"><em>2</em> Planilhas da cliente</a></li>
+        <li><a href="#s3"><em>3</em> Matriz de cobertura</a></li>
+        <li><a href="#s4"><em>4</em> Benchmark de mercado</a></li>
+        <li><a href="#s5"><em>5</em> Melhorias · Adequações · Correções</a></li>
+        <li><a href="#s6"><em>6</em> Recomendação objetiva</a></li>
+      </ol>
+    </nav>
+
+    <!-- 1 -->
+    <section id="s1">
+      <div class="section-head"><span class="num">01</span><h2>Mapa completo do sistema</h2></div>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Módulo</th><th>O que entrega</th></tr></thead>
+          <tbody>
+            <tr><td>Painel / Dashboard</td><td>Indicadores operacionais, GMD 60d, alertas, atalhos</td></tr>
+            <tr><td>Calendário</td><td>Trato, carência, validade, lembretes, contas</td></tr>
+            <tr><td>Clientes / Fornecedores</td><td>Cadastros, situações, ramos, importação</td></tr>
+            <tr><td>Financeiro</td><td>Pagar, receber, plano de contas, extrato, fluxo, DRE</td></tr>
+            <tr><td>Confinamento</td><td>Unidades, currais, piquetes, centros de custo</td></tr>
+            <tr><td>Manejo</td><td>Animais, lotes, entrada/saída, pesagem, dieta, mortalidade</td></tr>
+            <tr><td>Nutrição</td><td>Ingredientes, fórmulas, confecção, programação, trato, cocho</td></tr>
+            <tr><td>Sanitário</td><td>Medicamentos, protocolos, aplicações, ocorrências</td></tr>
+            <tr><td>Estoque</td><td>Produtos, categorias, locais, lotes, movimentações</td></tr>
+            <tr><td>Relatórios</td><td>Rentabilidade, GMD, mortalidade, consumo, eficiência</td></tr>
+            <tr><td>Usuários</td><td>Perfis, permissões, preferências</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="grid-2" style="margin-top:16px">
+        <div class="card forest">
+          <h3>O que faz bem</h3>
+          <ul class="clean">
+            <li>Ciclo animal completo (entrada → saída/mortalidade)</li>
+            <li>Sanitário com carência e trava de saída</li>
+            <li>Estoque com lote e validade no calendário</li>
+            <li>Trato: programação, fornecimento, cocho, eficiência</li>
+            <li>Financeiro com parcelamento, DRE e centro de custo</li>
+          </ul>
+        </div>
+        <div class="card amber">
+          <h3>O que não faz (ou faz pela metade)</h3>
+          <ul class="clean gap">
+            <li>Não estima peso diário sem pesagem</li>
+            <li>Não gera feed call automático em MS/MO</li>
+            <li>Não tem quadro único de fechamento diário</li>
+            <li>Não modela Linha / Giro da fazenda</li>
+            <li>Sem app offline / integração de balança</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2 -->
+    <section id="s2">
+      <div class="section-head"><span class="num">02</span><h2>Planilhas da cliente — o que produzem</h2></div>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3>Farmácia + Currais</h3>
+          <p class="muted small">~94 produtos · ~1.401 entradas · ~1.060 animais com peso</p>
+          <p class="small">Resultado: compras, saldo financeiro do estoque e mapa de pesos por curral.</p>
+          <div class="table-wrap" style="margin-top:10px">
+            <table>
+              <thead><tr><th>Aba</th><th>Função</th></tr></thead>
+              <tbody>
+                <tr><td>Entradas</td><td>Compra: código, data, qtd, valor, total</td></tr>
+                <tr><td>Cadastro-Estoque</td><td>Catálogo + saldo + valor estoque</td></tr>
+                <tr><td>Saídas</td><td>Estrutura pronta — sem lançamentos nesta cópia</td></tr>
+                <tr><td>Currais Linha 1/2</td><td>Pesos individuais por curral/lote</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Fornecimento de Trato</h3>
+          <p class="muted small">Fechamento Geral · ~1.067 cabeças</p>
+          <p class="small">Resultado: kg de ração previstos por curral e por horário, com base em peso projetado.</p>
+          <div class="table-wrap" style="margin-top:10px">
+            <table>
+              <thead><tr><th>Bloco</th><th>Função</th></tr></thead>
+              <tbody>
+                <tr><td>Cabeças / linha / giro</td><td>Snapshot operacional do dia</td></tr>
+                <tr><td>Peso + permanência</td><td>Base temporal no cocho</td></tr>
+                <tr><td>GMD 1,5 kg/d</td><td>Projeção de peso atual</td></tr>
+                <tr><td>%PV × %MS → kg MO</td><td>Motor nutricional</td></tr>
+                <tr><td>4 tratos 30/20/20/30</td><td>Previsto × ocorrido</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <h3>Motor da planilha de trato</h3>
+      <div class="flow">
+        <div class="flow-step"><span class="n">1</span><span class="t">Permanência<br>hoje − entrada</span></div>
+        <div class="flow-step"><span class="n">2</span><span class="t">Peso projetado<br>+ GMD × dias</span></div>
+        <div class="flow-step"><span class="n">3</span><span class="t">Consumo MS<br>× % peso vivo</span></div>
+        <div class="flow-step"><span class="n">4</span><span class="t">kg MO<br>÷ % MS dieta</span></div>
+        <div class="flow-step"><span class="n">5</span><span class="t">4 tratos<br>30 / 20 / 20 / 30</span></div>
+      </div>
+
+      <div class="formula-box">
+        <div><span class="c">permanência</span> = dia_atual − data_entrada</div>
+        <div><span class="c">peso_projetado</span> = peso_entrada + (GMD × permanência)</div>
+        <div><span class="c">consumo_MS_cab</span> = peso_projetado × %peso_vivo</div>
+        <div><span class="c">fornecimento_MO_cab</span> = consumo_MS_cab ÷ %MS_dieta</div>
+        <div><span class="c">trato_n</span> = fornecimento_MO_cab × %turno × cabeças</div>
+      </div>
+      <div class="example">
+        Exemplo Curral 1: 37 cab · GMD 1,5 · %PV 2,25% · MS 57,5% → <strong>~824 kg MO/dia</strong>
+      </div>
+    </section>
+
+    <!-- 3 -->
+    <section id="s3">
+      <div class="section-head"><span class="num">03</span><h2>Matriz de cobertura detalhada</h2></div>
+
+      <div class="card" style="margin-bottom:16px">
+        <h3 style="margin-top:0">Resumo visual</h3>
+        <div class="bars">
+          <div class="bar-row">
+            <label>Farmácia / estoque</label>
+            <div class="track"><div class="fill ok"></div></div>
+            <em>~75%</em>
+          </div>
+          <div class="bar-row">
+            <label>Quadro de trato</label>
+            <div class="track"><div class="fill warn"></div></div>
+            <em>~40%</em>
+          </div>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Necessidade</th><th>Origem</th><th>Status</th><th>Onde no sistema</th></tr>
+          </thead>
+          <tbody>
+            <tr class="ok"><td>Cadastro farmacêutico</td><td>Farmácia</td><td><span class="badge ok">Cobre</span></td><td>produto_estoque sanitário</td></tr>
+            <tr class="ok"><td>Entrada com custo</td><td>Farmácia</td><td><span class="badge ok">Cobre</span></td><td>movimentacao_estoque</td></tr>
+            <tr class="ok"><td>Saldo e valor</td><td>Farmácia</td><td><span class="badge ok">Cobre</span></td><td>saldo_atual + custo</td></tr>
+            <tr class="ok"><td>Validade por lote</td><td>Farmácia</td><td><span class="badge ok">Cobre</span></td><td>lote_estoque + calendário</td></tr>
+            <tr class="ok"><td>Carência de abate</td><td>Farmácia</td><td><span class="badge ok">Cobre+</span></td><td>aplicação + bloqueio saída</td></tr>
+            <tr class="parcial"><td>Baixa por uso no animal</td><td>Farmácia</td><td><span class="badge warn">Parcial</span></td><td>via aplicação sanitária</td></tr>
+            <tr class="ok"><td>Pesos por curral</td><td>Currais</td><td><span class="badge ok">Cobre</span></td><td>animal + pesagem</td></tr>
+            <tr class="ok"><td>Fases dieta</td><td>Trato</td><td><span class="badge ok">Cobre</span></td><td>fase_nutricional</td></tr>
+            <tr class="ok"><td>Registrar trato real</td><td>Trato</td><td><span class="badge ok">Cobre</span></td><td>fornecimento_trato</td></tr>
+            <tr class="parcial"><td>Programar turno</td><td>Trato</td><td><span class="badge warn">Parcial</span></td><td>manual, sem motor</td></tr>
+            <tr class="gap"><td>Peso projetado diário</td><td>Trato</td><td><span class="badge gap">Gap</span></td><td>só GMD de pesagem real</td></tr>
+            <tr class="gap"><td>%PV → MS → MO</td><td>Trato</td><td><span class="badge gap">Gap</span></td><td>param. existem, valores vazios</td></tr>
+            <tr class="gap"><td>Rateio 4 tratos auto</td><td>Trato</td><td><span class="badge gap">Gap</span></td><td>não calcula %</td></tr>
+            <tr class="gap"><td>Quadro fechamento dia</td><td>Trato</td><td><span class="badge gap">Gap</span></td><td>sem tela equivalente</td></tr>
+            <tr class="gap"><td>Giro / Linha</td><td>Trato</td><td><span class="badge gap">Gap</span></td><td>sem campos de negócio</td></tr>
+            <tr class="parcial"><td>Previsto × ocorrido</td><td>Trato</td><td><span class="badge warn">Parcial</span></td><td>relatório eficiência agregado</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 4 -->
+    <section id="s4">
+      <div class="section-head"><span class="num">04</span><h2>Benchmark — o que sistemas parecidos fazem</h2></div>
+      <p class="muted small">
+        Referências: TGC/Ponta Agro (~70% dos confinamentos BR), BeefSystem, iRancho;
+        internacionalmente BoviLedger, Feedlot IQ, ITS feedIT.
+      </p>
+
+      <div class="grid-3">
+        <div class="card sky">
+          <h3>Padrão de mercado</h3>
+          <p class="small">Curva de peso estimado, feed call MS/MO, previsto×realizado, ajuste por cocho, custo/cabeça, closeout/abate, baixa de ingredientes na fábrica.</p>
+        </div>
+        <div class="card amber">
+          <h3>Nosso sistema vs padrão</h3>
+          <p class="small">Forte em cadastros, sanitário com carência, estoque e financeiro. Fraco no “cérebro” diário de nutrição que a planilha já resolve.</p>
+        </div>
+        <div class="card forest">
+          <h3>Oportunidade</h3>
+          <p class="small">Não precisa virar TGC. Precisa fechar o gap da operação diária da cliente e importar o histórico das planilhas.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5 -->
+    <section id="s5">
+      <div class="section-head"><span class="num">05</span><h2>Três grupos de ação</h2></div>
+
+      <h3>5.1 Melhorias</h3>
+      <p class="muted small">Evoluções inspiradas em sistemas de referência — elevam o produto além do mínimo da planilha.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Prioridade</th><th>Melhoria</th><th>Referência</th><th>Como aplicar aqui</th></tr></thead>
+          <tbody>
+            <tr class="gap"><td><span class="badge alta">Alta</span></td><td>Curva de crescimento / peso estimado</td><td>TGC, BoviLedger, Feedlot IQ</td><td>GMD previsto + peso projetado automático</td></tr>
+            <tr class="gap"><td><span class="badge alta">Alta</span></td><td>Feed call MS e MO</td><td>TGC, BeefSystem, ITS</td><td>kg/cab e total curral via %PV e %MS</td></tr>
+            <tr class="gap"><td><span class="badge alta">Alta</span></td><td>Quadro operacional diário</td><td>iRancho, Ponta</td><td>Curral × dieta × 4 tratos previsto/ocorrido</td></tr>
+            <tr class="parcial"><td><span class="badge media">Média</span></td><td>Ajuste por leitura de cocho</td><td>TGC, BeefSystem</td><td>Escore existe; sugerir Δ% no próximo trato</td></tr>
+            <tr class="parcial"><td><span class="badge media">Média</span></td><td>Previsão de abate / closeout</td><td>TGC, Cattly</td><td>Data alvo por peso meta e GMD</td></tr>
+            <tr class="parcial"><td><span class="badge media">Média</span></td><td>Custo alimentar R$/cab e R$/@</td><td>TGC, BeefSystem</td><td>Fornecimento + custo fórmula + cabeças</td></tr>
+            <tr><td><span class="badge baixa">Baixa</span></td><td>App / offline no curral</td><td>iRancho, BeefSystem</td><td>Escopo futuro; web já responsivo</td></tr>
+            <tr><td><span class="badge baixa">Baixa</span></td><td>Integração balança / brinco</td><td>TGC</td><td>Roadmap; importação resolve curto prazo</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>5.2 Adequações</h3>
+      <p class="muted small">Ajustes para o jeito de trabalhar desta fazenda (planilhas Bichara / farmácia).</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Prio</th><th>Adequação</th><th>Detalhe</th></tr></thead>
+          <tbody>
+            <tr class="gap"><td><span class="badge p0">P0</span></td><td>Motor de previsão alinhado à planilha Bichara</td><td>Permanência, GMD parametrizável, %PV, %MS, 4 turnos 30/20/20/30</td></tr>
+            <tr class="gap"><td><span class="badge p0">P0</span></td><td>Popular formula_racao_parametro</td><td>MS% e consumo nas dietas (hoje 0 linhas)</td></tr>
+            <tr class="parcial"><td><span class="badge p1">P1</span></td><td>Campos Linha e Giro</td><td>A/VELHA, B/NOVA, RECEPÇÃO · Giro 1º/2º</td></tr>
+            <tr class="parcial"><td><span class="badge p1">P1</span></td><td>Importação farmácia</td><td>~94 produtos + ~1.401 entradas; separar validade/carência/fornecedor</td></tr>
+            <tr class="parcial"><td><span class="badge p1">P1</span></td><td>Importação rebanho</td><td>Currais, lotes, cabeças e pesos</td></tr>
+            <tr class="parcial"><td><span class="badge p1">P1</span></td><td>Saída farmácia → curral/lote</td><td>Espelhar consumo quando a operação passar a registrar</td></tr>
+            <tr><td><span class="badge p2">P2</span></td><td>Nomenclatura da operação</td><td>Labels no vocabulário da fazenda</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>5.3 Correções</h3>
+      <p class="muted small">Problemas técnicos, inconsistências ou UX quebrada já identificados no código/SQL.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Área</th><th>Problema</th><th>Ação</th></tr></thead>
+          <tbody>
+            <tr class="parcial"><td>Config</td><td><code>menu =&gt; 'vetical'</code> em config/app.php</td><td>Corrigir typo (vertical/horizontal)</td></tr>
+            <tr class="parcial"><td>Dados</td><td>formula_racao_parametro vazio</td><td>Preencher MS, PB, consumo etc.</td></tr>
+            <tr class="parcial"><td>UX financeiro</td><td>Edição de parcela quebrada</td><td>Restaurar edição ou modal inline</td></tr>
+            <tr><td>Operação</td><td>Programação de trato 100% manual</td><td>Ligar ao motor de previsão</td></tr>
+            <tr><td>Modelo</td><td>Tabelas legado (cartao, cashback, fidelidade)</td><td>Limpar ou isolar</td></tr>
+            <tr><td>Planilha</td><td>Saídas farmácia zeradas</td><td>Validar processo real de consumo</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 6 -->
+    <section id="s6">
+      <div class="section-head"><span class="num">06</span><h2>Recomendação objetiva ao parceiro</h2></div>
+      <div class="recs">
+        <div class="rec">Tratar o sistema como base sólida — não reescrever.</div>
+        <div class="rec">Priorizar o motor de trato + quadro diário (é o que a cliente usa todo dia).</div>
+        <div class="rec">Em paralelo, importar farmácia e rebanho (substitui as planilhas de estoque/pesos).</div>
+        <div class="rec">Corrigir typo de menu, popular parâmetros MS e limpar tabelas legado cedo (baixo custo, alto sinal de qualidade).</div>
+        <div class="rec">Só depois mirar melhorias “tipo TGC” (closeout, custo/@, app de campo).</div>
+      </div>
+    </section>
+
+    <footer>
+      Relatório técnico — Sistema de Confinamento · Gerado a partir do workspace (código, SQL, manual e planilhas) · Uso interno parceiro/cliente
+    </footer>
+  </div>
+</body>
+</html>

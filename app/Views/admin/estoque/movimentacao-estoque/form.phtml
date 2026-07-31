@@ -1,0 +1,168 @@
+<?php $this->layout("app/template/base"); ?>
+
+<?php $this->start("page-actions") ?>
+<?php $this->end() ?>
+
+<form id="form-estoque-movimentacao" class="form-validate" action="<?=$url_action?>" method="POST">
+    <input type="hidden" name="csrf" value="<?=$csrf?>">
+
+    <div class="card crud-form-card">
+        <div class="card-body">
+            <div class="crud-subsection mb-4">
+                <div class="crud-section-copy mb-3">
+                    <h5>Movimentação</h5>
+                    <small>Ao salvar, o saldo do produto (e do lote, se informado) é atualizado automaticamente conforme a natureza do tipo escolhido.</small>
+                </div>
+
+                <div class="row">
+                    <?php if ($id_produto) : ?>
+                        <input type="hidden" name="id_produto_estoque" value="<?=$id_produto?>">
+                        <?php $produtoAtual = null; foreach ($produtos as $p) { if ((int) $p->id === (int) $id_produto) { $produtoAtual = $p; break; } } ?>
+                        <div class="col-12">
+                            <div class="alert alert-info mb-0">Movimentando o produto: <strong><?=$produtoAtual->nome ?? "#$id_produto"?></strong></div>
+                        </div>
+                    <?php else : ?>
+                        <div class="col-12 col-md-6">
+                            <div class="mb-3">
+                                <label for="id_produto_estoque" class="form-label">Produto</label>
+                                <select name="id_produto_estoque" id="id_produto_estoque" class="form-select select2" data-search="true">
+                                    <option value="">Selecione</option>
+                                    <?php foreach ($produtos as $p) : ?>
+                                        <option value="<?=$p->id?>"><?=$p->nome?></option>
+                                    <?php endforeach ?>
+                                </select>
+                            </div>
+                        </div>
+                    <?php endif ?>
+                    <div class="col-12 col-md-4">
+                        <div class="mb-3">
+                            <label for="id_tipo_movimentacao_estoque" class="form-label">Tipo de Movimentação</label>
+                            <select name="id_tipo_movimentacao_estoque" id="id_tipo_movimentacao_estoque" class="form-select select2" data-search="true">
+                                <option value="">Selecione</option>
+                                <?php foreach ($tipos as $tipo) : ?>
+                                    <option value="<?=$tipo->id?>"><?=$tipo->descricao?> (<?=$tipo->natureza === "ENTRADA" ? "Entrada" : "Saída"?>)</option>
+                                <?php endforeach ?>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-2">
+                        <div class="mb-3">
+                            <label for="data_movimentacao" class="form-label">Data</label>
+                            <input type="date" class="form-control" id="data_movimentacao" name="data_movimentacao" autocomplete="off">
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-3">
+                        <div class="mb-3">
+                            <label for="id_lote_estoque" class="form-label">Lote (se aplicável)</label>
+                            <select name="id_lote_estoque" id="id_lote_estoque" class="form-select select2" data-search="true">
+                                <option value="">Nenhum</option>
+                                <?php foreach ($lotes as $lote) : ?>
+                                    <option value="<?=$lote->id?>"><?=$lote->codigo_lote?></option>
+                                <?php endforeach ?>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-3">
+                        <div class="mb-3">
+                            <label for="quantidade" class="form-label">Quantidade</label>
+                            <input type="text" class="form-control input-decimal" id="quantidade" name="quantidade" placeholder="0,0" autocomplete="off">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="crud-subsection mb-4">
+                <div class="crud-section-copy mb-3">
+                    <h5>Locais (para transferência)</h5>
+                    <small>Informe origem e destino quando o tipo de movimentação for uma transferência interna.</small>
+                </div>
+
+                <div class="row">
+                    <div class="col-12 col-md-6">
+                        <div class="mb-3">
+                            <label for="id_local_armazenagem_interno_origem" class="form-label">Local de Origem</label>
+                            <select name="id_local_armazenagem_interno_origem" id="id_local_armazenagem_interno_origem" class="form-select select2" data-search="true">
+                                <option value="">Selecione</option>
+                                <?php foreach ($locaisInternos as $local) : ?>
+                                    <option value="<?=$local->id?>"><?=$local->nome?></option>
+                                <?php endforeach ?>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="mb-3">
+                            <label for="id_local_armazenagem_interno_destino" class="form-label">Local de Destino</label>
+                            <select name="id_local_armazenagem_interno_destino" id="id_local_armazenagem_interno_destino" class="form-select select2" data-search="true">
+                                <option value="">Selecione</option>
+                                <?php foreach ($locaisInternos as $local) : ?>
+                                    <option value="<?=$local->id?>"><?=$local->nome?></option>
+                                <?php endforeach ?>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="crud-subsection mb-4">
+                <div class="crud-section-copy mb-3">
+                    <h5>Classificação (opcional)</h5>
+                    <small>Centro de custo e fornecedor relacionados a esta movimentação.</small>
+                </div>
+
+                <div class="row">
+                    <div class="col-12 col-md-6">
+                        <div class="mb-3">
+                            <label for="id_centro_custo" class="form-label">Centro de Custo</label>
+                            <select name="id_centro_custo" id="id_centro_custo" class="form-select select2" data-search="true">
+                                <option value="">Selecione</option>
+                                <?php foreach ($centrosCusto as $centro) : ?>
+                                    <option value="<?=$centro->id?>"><?=$centro->nome?></option>
+                                <?php endforeach ?>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="mb-3">
+                            <label for="id_fornecedor" class="form-label">Fornecedor (em compras)</label>
+                            <select name="id_fornecedor" id="id_fornecedor" class="form-select select2" data-search="true">
+                                <option value="">Selecione</option>
+                                <?php foreach ($fornecedores as $fornecedor) : ?>
+                                    <option value="<?=$fornecedor->id?>"><?=$fornecedor->razao?></option>
+                                <?php endforeach ?>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="crud-subsection">
+                <div class="crud-section-copy mb-3">
+                    <h5>Observações</h5>
+                    <small>Motivo e informações livres.</small>
+                </div>
+
+                <div class="row">
+                    <div class="col-12 col-md-4">
+                        <div class="mb-3">
+                            <label for="motivo" class="form-label">Motivo</label>
+                            <input type="text" class="form-control" id="motivo" name="motivo" placeholder="Motivo" autocomplete="off">
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-8">
+                        <div class="mb-3">
+                            <label for="observacao" class="form-label">Observação</label>
+                            <textarea class="form-control" id="observacao" name="observacao" rows="1" placeholder="Observação"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-3 pt-4 border-top">
+                <div class="d-grid gap-2 d-sm-block">
+                    <button class="btn btn-primary" type="submit">Salvar e Atualizar Saldo</button>
+                    <a href="<?=$url_voltar?>" class="btn btn-white"><i class="uil uil-left"></i> Voltar</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>

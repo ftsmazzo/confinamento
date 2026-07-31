@@ -1,0 +1,386 @@
+
+
+// @mixin respond-to($breakpoint) {
+//     // If the key exists in the map
+//     @if map-has-key($breakpoints, $breakpoint) {
+//     // Prints a media query based on the value
+//         @media (min-width: map-get($breakpoints, $breakpoint)) {
+//             @content;
+//         }
+//     }
+
+//     // If the key doesn't exist in the map
+//     @else {
+//         @warn "Unfortunately, no value could be retrieved from `#{$breakpoint}`. "
+//             + "Available breakpoints are: #{map-keys($breakpoints)}.";
+//     }
+// }
+
+
+
+// Columns generator
+@mixin columns($count, $breakpoint: null, $gap-x: 1rem, $gap-y: null, $vertical: false) {
+  // Se não passar gap-y, herda gap-x
+  @if $gap-y == null {
+    $gap-y: $gap-x;
+  }
+
+  $selector: if($breakpoint == null, ".columns-#{$count}", ".columns-#{$breakpoint}-#{$count}");
+
+  #{$selector} {
+    display: grid;
+
+    @if $vertical == true {
+      // fluxo vertical
+      grid-auto-flow: column;
+      grid-template-rows: repeat($count, 1fr);
+    } @else {
+      // fluxo padrão horizontal
+      grid-template-columns: repeat($count, 1fr);
+    }
+
+    column-gap: $gap-x;
+    row-gap: $gap-y;
+  }
+}
+
+// Columns generator
+@mixin columns_vertical($count, $breakpoint: null, $gap-x: 1rem, $gap-y: null, $vertical: true) {
+  // Se não passar gap-y, herda gap-x
+  @if $gap-y == null {
+    $gap-y: $gap-x;
+  }
+
+  $selector: if($breakpoint == null, ".columns-vertical-#{$count}", ".columns-vertical-#{$breakpoint}-#{$count}");
+
+  #{$selector} {
+    columns: $count;
+    column-gap: $gap-x;
+    row-gap: $gap-y;
+  }
+}
+
+/* Margins */
+
+@mixin m($tam, $in:"rem") {
+    margin: #{$tam}#{$in};
+}
+
+@mixin mb($tam, $in:"rem") {
+    margin-bottom:#{$tam}#{$in};
+}
+
+@mixin mt($tam, $in:"rem") {
+    margin-top:#{$tam}#{$in};
+}
+
+@mixin ml($tam, $in:"rem") {
+    margin-left:#{$tam}#{$in};
+}
+
+@mixin mr($tam, $in:"rem") {
+    margin-right:#{$tam}#{$in};
+}
+
+@mixin my($tam, $in:"rem") {
+    margin-top:#{$tam}#{$in};
+    margin-bottom:#{$tam}#{$in};
+}
+
+@mixin mx($tam, $in:"rem") {
+    margin-left:#{$tam}#{$in};
+    margin-right:#{$tam}#{$in};
+}
+
+/* Paddings */
+
+@mixin p($tam, $in:"rem") {
+    padding:#{$tam}#{$in};
+}
+
+@mixin pb($tam, $in:"rem") {
+    padding-bottom:#{$tam}#{$in};
+}
+
+@mixin pt($tam, $in:"rem") {
+    padding-top:#{$tam}#{$in};
+}
+
+@mixin pl($tam, $in:"rem") {
+    padding-left:#{$tam}#{$in};
+}
+
+@mixin pr($tam, $in:"rem") {
+    padding-right:#{$tam}#{$in};
+}
+
+@mixin py($tam, $in:"rem") {
+    padding-top: #{$tam}#{$in};
+    padding-bottom:#{$tam}#{$in};
+}
+
+@mixin px($tam, $in:"rem") {
+    padding-left:#{$tam}#{$in};
+    padding-right:#{$tam}#{$in};
+}
+
+@mixin tag($tag) {
+    $ampersand: & + '';
+    $selectors: simple-selectors(str-replace($ampersand, ' ', ''));
+
+    $main-selector: nth($selectors, -1);
+    $previous-selectors: str-replace($ampersand, $main-selector, '');
+
+    @at-root {
+       #{$previous-selectors}#{$tag}#{$main-selector} {
+        @content;
+      }
+    }
+}
+
+/* String */
+
+@function str-replace($string, $search, $replace: '') {
+    $index: str-index($string, $search);
+    @if $index {
+      @return str-slice($string, 1, $index - 1) + $replace + str-replace(str-slice($string, $index + str-length($search)), $search, $replace);
+    }
+    @return $string;
+}
+
+/* Border Radius */
+
+@mixin radius($r0, $r1:null, $r2:null, $r3:null) {
+
+    @if ($r0 and $r1 and $r2 and $r3) {
+
+        border-radius: #{$r0}px #{$r1}px #{$r2}px #{$r3}px;
+    }
+    @else {
+
+        border-radius: #{$r0}px;
+    }
+}
+
+@mixin transition($transition:all .3s ease-in-out) {
+    -webkit-transition: $transition;
+       -moz-transition: $transition;
+         -o-transition: $transition;
+            transition: $transition;
+}
+
+@mixin box-shadow($params) {
+    -webkit-box-shadow: $params;
+       -moz-box-shadow: $params;
+         -o-box-shadow: $params;
+            box-shadow: $params;
+}
+
+@mixin opacity($param) {
+    opacity: calc($param/100);
+    -webkit-filter: opacity($param);
+    filter: opacity($param);
+}
+
+/* Fonts */
+
+@mixin fs($tam, $m:"rem") {
+    font-size: $tam+$m;
+}
+
+/** Converter PX to REM **/
+@mixin _fs($tam, $default:16) {
+    font-size: calc($tam / $default)+rem;
+}
+
+@mixin _fsi($tam, $default:16) {
+    font-size: calc($tam / $default)+rem !important;
+}
+
+@mixin _lh($tam, $default:16) {
+    line-height: calc($tam/$default)+rem;
+}
+
+@mixin _lhi($tam, $default:16) {
+    line-height: calc($tam/$default)+rem !important;
+}
+
+/* Gradients Backgrounds */
+
+@mixin gradient($from, $to, $dir:"vert", $percent:100) {
+    background: $from;
+    @if ($dir=="vert") {
+        background: linear-gradient(180deg, $from 0%, $to #{$percent}+"%");
+    } @else {
+        background: linear-gradient(90deg, $from 0%, $to #{$percent}+"%");
+    }
+}
+
+@mixin radialGradient($from, $to) {
+    background: $to;
+    background: radial-gradient(circle, $to 0%, $from 100%);
+}
+
+/* Shadows */
+
+@mixin no-shadown {
+    -webkit-box-shadow: none;
+       -moz-box-shadow: none;
+            box-shadow: none;
+
+}
+
+@mixin shadown {
+    -webkit-box-shadow: 0 0.46875rem 2.1875rem rgba(4,9,20,0.03), 0 0.9375rem 1.40625rem rgba(4,9,20,0.03), 0 0.25rem 0.53125rem rgba(4,9,20,0.05), 0 0.125rem 0.1875rem rgba(4,9,20,0.03);
+       -moz-box-shadow: 0 0.46875rem 2.1875rem rgba(4,9,20,0.03), 0 0.9375rem 1.40625rem rgba(4,9,20,0.03), 0 0.25rem 0.53125rem rgba(4,9,20,0.05), 0 0.125rem 0.1875rem rgba(4,9,20,0.03);
+            box-shadow: 0 0.46875rem 2.1875rem rgba(4,9,20,0.03), 0 0.9375rem 1.40625rem rgba(4,9,20,0.03), 0 0.25rem 0.53125rem rgba(4,9,20,0.05), 0 0.125rem 0.1875rem rgba(4,9,20,0.03);
+}
+
+// ANIMATIONS
+@keyframes spin {
+    0% {
+        transform: rotate(0)
+    }
+    100% {
+        transform: rotate(-360deg)
+    }
+}
+
+@keyframes zoomIcon {
+    from {
+        transform: translateX(-50%, -50%) scale(0); /* Escala inicial e centralização */
+        opacity: 0; /* Opacidade inicial */
+    }
+    to {
+        transform: translate(-50%, -50%) scale(1); /* Escala final e centralização */
+        opacity: 1; /* Opacidade final */
+    }
+}
+
+
+@function str-replace($string, $search, $replace: '') {
+    $index: str-index($string, $search);
+
+    @if $index {
+      @return str-slice($string, 1, $index - 1) + $replace + str-replace(str-slice($string, $index + str-length($search)), $search, $replace);
+    }
+
+    @return $string;
+}
+
+// BOLINHAS DE NAVEGAÇÃO DE SLIDES
+@mixin navigation_style($color, $style) {
+
+    @if $style == border {
+
+        background-color: transparent;
+        border-color: $color;
+
+    } @else {
+
+        background-color: $color;
+        border-color: transparent;
+        border-width: 0;
+    }
+}
+
+@mixin banner_dots($direction, $pos_x, $pos_y) {
+
+    // bottom: 15px;
+
+    @include respond-to("md") {
+        // bottom: 40px;
+    }
+
+    @include respond-to("lg") {
+
+        @if $direction == "vertical" {
+
+            margin-right: unset;
+            margin-left: unset;
+            display: unset;
+            width: 32px;
+            height: fit-content;
+
+            @if $pos_x == "center" {
+                left: 50%;
+                transform:translateX(-50%);
+            } @else if $pos_x == "right" {
+                right:15px;
+                left:unset;
+            } @else if $pos_x=="left" {
+                left:15px;
+                right:unset;
+            }
+
+            @if $pos_y == "center" {
+                top: 50%;
+                transform:translateY(-50%);
+            } @else if $pos_y == "top" {
+                top: var(--banner_pagination_vert_top);
+                bottom:unset;
+            } @else if $pos_y == "bottom" {
+                bottom: var(--banner_pagination_vert_bottom);
+                top:unset;
+            }
+
+            [data-bs-target] {
+                margin-bottom: 8px;
+                margin-right: 0;
+                margin-left: 0;
+            }
+
+        } @else if $direction == "horizontal" {
+
+            @if $pos_x == "right" {
+
+                right: 15px;
+                left: unset;
+                margin-right: 0;
+                margin-left: 0;
+
+            } @else if $pos_x == "left" {
+
+                left:15px;
+                right:unset;
+                margin-right: 0;
+                margin-left: 0;
+            }
+
+            @if $pos_y == "center" {
+
+                top: 50%;
+                transform:translateY(-50%);
+                height: fit-content;
+
+            } @else if $pos_y == "top" {
+
+                top: 45px;
+                bottom:unset;
+
+            } @else if $pos_y == "bottom" {
+
+                bottom: 0;
+                top: unset;
+            }
+
+        }
+    }
+
+}
+
+// @for $i from 1 through 24 {
+//   $angle: $i * 15;
+
+//   .rotate-#{$angle} {
+//     transform: rotate(#{$angle}deg);
+
+//     // Se for <i class="fa..."> ou <i class="uil...">
+//     &.fa,
+//     &[class^="fa-"],
+//     &.uil,
+//     &[class^="uil-"] {
+//       display: inline-block;
+//     }
+//   }
+// }

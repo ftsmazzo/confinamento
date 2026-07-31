@@ -1,0 +1,77 @@
+<?php $this->layout("app/template/base"); ?>
+
+<?php $this->start("page-actions") ?>
+    <?php if ($lote) : ?>
+        <a class="btn btn-white btn-sm" href="<?=$router->route("admin.manejo.lote.editar", ["id" => $lote->hash()])?>"><i class="uil uil-left"></i> Voltar ao Lote</a>
+    <?php elseif ($animal) : ?>
+        <a class="btn btn-white btn-sm" href="<?=$router->route("admin.manejo.animal.editar", ["id" => $animal->hash()])?>"><i class="uil uil-left"></i> Voltar ao Animal</a>
+    <?php endif ?>
+<?php $this->end() ?>
+
+<?php $this->start("page-buttons") ?>
+    <?php if (!empty($permissao["inserir"])) : ?>
+        <a class="btn btn-primary" href="<?=$router->route("admin.manejo.ocorrencia.novo", array_filter(["id_lote" => $lote->id ?? null, "id_animal" => $animal->id ?? null]))?>"><i class="fa fa-plus fa-fw"></i> Nova Ocorrência</a>
+    <?php endif ?>
+<?php $this->end() ?>
+
+<div class="card crud-table-card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover table-sm table-datatable table-datatable-alt crud-table">
+                <thead>
+                    <tr>
+                        <?php if (!$lote && !$animal) : ?>
+                            <th>Lote/Animal</th>
+                        <?php endif ?>
+                        <th>Data</th>
+                        <th>Título</th>
+                        <th>Categoria</th>
+                        <th>Responsável</th>
+                        <th>Anexos</th>
+                        <?php if ($permissao["editar"] || $permissao["excluir"]) : ?>
+                            <th class="text-end actions-column"></th>
+                        <?php endif ?>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($dados as $d) : ?>
+                        <tr>
+                            <?php if (!$lote && !$animal) : ?>
+                                <td><?=$d->vinculo_print?></td>
+                            <?php endif ?>
+                            <td><?=datebr($d->data_ocorrencia)?></td>
+                            <td>
+                                <?php if ($permissao["editar"]) : ?>
+                                    <a class="edit" href="<?=$router->route("admin.manejo.ocorrencia.editar", ["id" => $d->hash])?>"><?=$d->titulo?></a>
+                                <?php else : ?>
+                                    <span><?=$d->titulo?></span>
+                                <?php endif ?>
+                            </td>
+                            <td><?=$d->categoria ? "<span class=\"badge filled-outlined bg-secondary\">{$d->categoria}</span>" : "-"?></td>
+                            <td><?=$d->responsavel ?: "-"?></td>
+                            <td>
+                                <?php if ($d->total_anexos > 0) : ?>
+                                    <span class="badge filled-outlined bg-info"><i class="uil uil-paperclip"></i> <?=$d->total_anexos?></span>
+                                <?php else : ?>
+                                    <span class="text-muted">-</span>
+                                <?php endif ?>
+                            </td>
+                            <?php if ($permissao["editar"] || $permissao["excluir"]) : ?>
+                                <td class="text-end actions-column">
+                                    <div class="table-actions">
+                                        <?php if ($permissao["editar"]) : ?>
+                                            <a class="table-action-btn" data-tooltip="true" title="Editar" href="<?=$router->route("admin.manejo.ocorrencia.editar", ["id" => $d->hash])?>"><i class="uil-edit-alt"></i></a>
+                                        <?php endif ?>
+                                        <?php if ($permissao["excluir"]) : ?>
+                                            <button type="button" class="table-action-btn table-action-danger" data-tooltip="true" title="Excluir ocorrência" onclick="Delete('manejo/ocorrencias/delete', '<?=$d->hash?>')"><i class="uil uil-trash"></i></button>
+                                        <?php endif ?>
+                                    </div>
+                                </td>
+                            <?php endif ?>
+                        </tr>
+                    <?php endforeach ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

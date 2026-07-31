@@ -1,0 +1,132 @@
+<?php $this->layout("app/template/base"); ?>
+
+<?php $this->start("page-actions") ?>
+<?php $this->end() ?>
+
+<form id="form-manejo-pesagem" class="form-validate" action="<?=$url_action?>" method="POST">
+    <input type="hidden" name="csrf" value="<?=$csrf?>">
+    <?php if (!empty($pesagem->id)) : ?>
+        <input type="hidden" name="id" value="<?=$pesagem->hash()?>">
+    <?php endif ?>
+
+    <div class="card crud-form-card">
+        <div class="card-body">
+            <div class="crud-subsection mb-4">
+                <div class="crud-section-copy mb-3">
+                    <h5>Vínculo</h5>
+                    <small>A pesagem pertence a um lote (agregado) ou a um animal individual.</small>
+                </div>
+
+                <div class="row">
+                    <?php if ($id_lote) : ?>
+                        <input type="hidden" name="id_lote" value="<?=$id_lote?>">
+                        <?php $loteAtual = null; foreach ($lotes as $l) { if ((int) $l->id === (int) $id_lote) { $loteAtual = $l; break; } } ?>
+                        <div class="col-12">
+                            <div class="alert alert-info mb-0">Pesando o lote: <strong><?=$loteAtual->nome ?? "#$id_lote"?></strong></div>
+                        </div>
+                    <?php elseif ($id_animal) : ?>
+                        <input type="hidden" name="id_animal" value="<?=$id_animal?>">
+                        <?php $animalAtual = null; foreach ($animais as $a) { if ((int) $a->id === (int) $id_animal) { $animalAtual = $a; break; } } ?>
+                        <div class="col-12">
+                            <div class="alert alert-info mb-0">Pesando o animal: <strong><?=$animalAtual->identificacao ?? "#$id_animal"?></strong></div>
+                        </div>
+                    <?php else : ?>
+                        <div class="col-12 col-md-6">
+                            <div class="mb-3">
+                                <label for="id_lote" class="form-label">Lote</label>
+                                <select name="id_lote" id="id_lote" class="form-select select2" data-search="true">
+                                    <option value="">Nenhum</option>
+                                    <?php foreach ($lotes as $lote) : ?>
+                                        <option value="<?=$lote->id?>" <?=isset($pesagem->id_lote) && (int) $pesagem->id_lote === (int) $lote->id ? "selected" : ""?>><?=$lote->nome?> (<?=$lote->codigo?>)</option>
+                                    <?php endforeach ?>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <div class="mb-3">
+                                <label for="id_animal" class="form-label">Animal</label>
+                                <select name="id_animal" id="id_animal" class="form-select select2" data-search="true">
+                                    <option value="">Nenhum</option>
+                                    <?php foreach ($animais as $animal) : ?>
+                                        <option value="<?=$animal->id?>" <?=isset($pesagem->id_animal) && (int) $pesagem->id_animal === (int) $animal->id ? "selected" : ""?>><?=$animal->identificacao?></option>
+                                    <?php endforeach ?>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <small class="text-muted">Selecione apenas um dos dois: Lote OU Animal.</small>
+                        </div>
+                    <?php endif ?>
+                </div>
+            </div>
+
+            <div class="crud-subsection mb-4">
+                <div class="crud-section-copy mb-3">
+                    <h5>Pesagem</h5>
+                    <small>Data, tipo e peso registrados.</small>
+                </div>
+
+                <div class="row">
+                    <div class="col-12 col-md-3">
+                        <div class="mb-3">
+                            <label for="data_pesagem" class="form-label">Data</label>
+                            <input type="date" class="form-control" id="data_pesagem" name="data_pesagem" autocomplete="off" value="<?=!empty($pesagem->data_pesagem) ? dateus($pesagem->data_pesagem) : ""?>">
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-3">
+                        <div class="mb-3">
+                            <label for="tipo" class="form-label">Tipo</label>
+                            <select name="tipo" id="tipo" class="form-select" data-search="false">
+                                <option value="INICIAL" <?=isset($pesagem->tipo) && $pesagem->tipo === "INICIAL" ? "selected" : ""?>>Inicial</option>
+                                <option value="INTERMEDIARIA" <?=!isset($pesagem->tipo) || $pesagem->tipo === "INTERMEDIARIA" ? "selected" : ""?>>Intermediária</option>
+                                <option value="FINAL" <?=isset($pesagem->tipo) && $pesagem->tipo === "FINAL" ? "selected" : ""?>>Final</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-3">
+                        <div class="mb-3">
+                            <label for="peso_medio" class="form-label">Peso Médio (kg)</label>
+                            <input type="text" class="form-control input-peso" id="peso_medio" name="peso_medio" placeholder="Peso médio por cabeça" autocomplete="off" value="<?=$pesagem->peso_medio ?? ""?>">
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-3">
+                        <div class="mb-3">
+                            <label for="peso_total" class="form-label">Peso Total (kg)</label>
+                            <input type="text" class="form-control input-peso" id="peso_total" name="peso_total" placeholder="Peso total do lote" autocomplete="off" value="<?=$pesagem->peso_total ?? ""?>">
+                        </div>
+                    </div>
+                    <?php if ($id_lote || (isset($pesagem->id_lote) && $pesagem->id_lote)) : ?>
+                        <div class="col-12 col-md-3">
+                            <div class="mb-3">
+                                <label for="quantidade" class="form-label">Quantidade Pesada</label>
+                                <input type="number" min="0" class="form-control" id="quantidade" name="quantidade" placeholder="Nº de cabeças" autocomplete="off" value="<?=$pesagem->quantidade ?? ""?>">
+                            </div>
+                        </div>
+                    <?php endif ?>
+                </div>
+            </div>
+
+            <div class="crud-subsection">
+                <div class="crud-section-copy mb-3">
+                    <h5>Observações</h5>
+                    <small>Informações livres para apoio operacional.</small>
+                </div>
+
+                <div class="row">
+                    <div class="col-12">
+                        <div class="mb-3">
+                            <textarea class="form-control" id="observacao" name="observacao" rows="4" placeholder="Observação"><?=$pesagem->observacao ?? ""?></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-3 pt-4 border-top">
+                <div class="d-grid gap-2 d-sm-block">
+                    <button class="btn btn-primary" type="submit">Salvar</button>
+                    <a href="<?=$url_voltar?>" class="btn btn-white"><i class="uil uil-left"></i> Voltar</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>

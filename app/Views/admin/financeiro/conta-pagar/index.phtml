@@ -1,0 +1,339 @@
+<?php $this->layout("app/template/base"); ?>
+
+<?php $this->start("styles") ?>
+<style>
+    .table.crud-table .table-actions .table-action-btn.table-action-success{color:#198754;border-color:#b8e4c9;background:#f0fdf4}
+    .table.crud-table .table-actions .table-action-btn.table-action-success:hover{background:#dcfce7;border-color:#86d9a3}
+    .table-action-btn.table-action-success{color:#198754;border-color:#b8e4c9;background:#f0fdf4}
+    .table-action-btn.table-action-success:hover{background:#dcfce7;border-color:#86d9a3}
+    .grupo-row{cursor:pointer;background:#f8f9fa}
+    .grupo-row:hover{background:#e9ecef}
+</style>
+<?php $this->end() ?>
+
+<?php $this->start("page-buttons") ?>
+    <div class="d-flex justify-content-between align-items-center w-100">
+        <div>
+            <?php if (!empty($permissao["inserir"])) : ?>
+                <a class="btn btn-primary" href="<?=$router->route("admin.financeiro.conta.pagar.novo")?>">
+                    <i class="fa fa-plus fa-fw"></i> Nova Conta
+                </a>
+            <?php endif ?>
+        </div>
+        <div class="btn-group">
+            <a href="?view=list" class="btn btn-sm <?=$view_mode === "list" ? "btn-dark" : "btn-outline-secondary"?>"><i class="uil uil-list-ul"></i> Lista</a>
+            <a href="?view=grouped" class="btn btn-sm <?=$view_mode === "grouped" ? "btn-dark" : "btn-outline-secondary"?>"><i class="uil uil-layer-group"></i> Agrupado</a>
+        </div>
+    </div>
+<?php $this->end() ?>
+
+<?php if ($view_mode === "grouped") :
+    $grupos = [];
+    $avulsos = [];
+    foreach ($dados as $c) {
+        if ($c->parcela_origem_id) {
+            $key = (int) $c->parcela_origem_id;
+            if (!isset($grupos[$key])) {
+                $grupos[$key] = [
+                    "descricao" => $c->descricao,
+                    "fornecedor" => $c->fornecedor_nome ?? "-",
+                    "qtd" => 0,
+                    "total" => 0,
+                    "pendentes" => 0,
+                    "pagas" => 0,
+                    "itens" => [],
+                ];
+            }
+            $grupos[$key]["qtd"]++;
+            $grupos[$key]["total"] += (float) $c->valor;
+            $grupos[$key]["pendentes"] += ($c->status === "PENDENTE" ? 1 : 0);
+            $grupos[$key]["pagas"] += ($c->status === "PAGO" ? 1 : 0);
+            $grupos[$key]["itens"][] = $c;
+        } else {
+            $avulsos[] = $c;
+        }
+    }
+?>
+<div class="card crud-table-card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover table-sm crud-table" id="tabela-grupos">
+                <thead>
+                    <tr>
+                        <th>Descrição</th>
+                        <th>Fornecedor</th>
+                        <th>Parcelas</th>
+                        <th class="text-end">Valor Total</th>
+                        <th class="text-center">Pendentes</th>
+                        <th class="text-center">Pagas</th>
+                        <?php if ($permissao["editar"] || $permissao["excluir"]) : ?>
+                            <th class="text-end actions-column"></th>
+                        <?php endif ?>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($grupos as $key => $g) : ?>
+                        <tr class="grupo-row" data-grupo="<?=$key?>" onclick="abrirDetalheGrupo(<?=$key?>)">
+                            <td><?=htmlspecialchars($g["descricao"])?></td>
+                            <td><?=htmlspecialchars($g["fornecedor"])?></td>
+                            <td><?=$g["qtd"]?> parcela<?=$g["qtd"] == 1 ? "" : "s"?></td>
+                            <td class="text-end fw-bold">R$ <?=number_format($g["total"], 2, ",", ".")?></td>
+                            <td class="text-center"><?=$g["pendentes"] > 0 ? '<span class="badge bg-warning">' . $g["pendentes"] . '</span>' : '-'?></td>
+                            <td class="text-center"><?=$g["pagas"] > 0 ? '<span class="badge bg-success">' . $g["pagas"] . '</span>' : '-'?></td>
+                            <?php if ($permissao["editar"] || $permissao["excluir"]) : ?>
+                                <td class="text-end actions-column">
+                                    <div class="table-actions">
+                                        <?php if ($permissao["editar"]) : ?>
+                                            <a class="table-action-btn" data-tooltip="true" title="Editar" href="<?=$router->route("admin.financeiro.conta.pagar.editar", ["id" => $g["itens"][0]->id])?>" onclick="event.stopPropagation()">
+                                                <i class="uil-edit-alt"></i>
+                                            </a>
+                                        <?php endif ?>
+                                        <?php if ($permissao["excluir"]) : ?>
+                                            <button type="button" class="table-action-btn table-action-danger" data-tooltip="true" title="Excluir" onclick="Delete('financeiro/conta-pagar/delete', '<?=$g["itens"][0]->id?>')">
+                                                <i class="uil uil-trash"></i>
+                                            </button>
+                                        <?php endif ?>
+                                    </div>
+                                </td>
+                            <?php endif ?>
+                        </tr>
+                    <?php endforeach ?>
+                    <?php foreach ($avulsos as $d) : ?>
+                        <tr>
+                            <td>
+                                <?php if ($permissao["editar"]) : ?>
+                                    <a class="edit" href="<?=$router->route("admin.financeiro.conta.pagar.editar", ["id" => $d->id])?>">
+                                        <?=$d->descricao?>
+                                    </a>
+                                <?php else : ?>
+                                    <span><?=$d->descricao?></span>
+                                <?php endif ?>
+                            </td>
+                            <td><?=$d->fornecedor_nome ?? '-'?></td>
+                            <td>-</td>
+                            <td class="text-end">R$ <?=number_format((float) $d->valor, 2, ',', '.')?></td>
+                            <td class="text-center"><?=$d->status === "PENDENTE" ? '<span class="badge bg-warning">1</span>' : '-'?></td>
+                            <td class="text-center"><?=$d->status === "PAGO" ? '<span class="badge bg-success">1</span>' : '-'?></td>
+                            <?php if ($permissao["editar"] || $permissao["excluir"]) : ?>
+                                <td class="text-end actions-column">
+                                    <div class="table-actions">
+                                        <?php if ($permissao["editar"] && $d->status !== "PAGO") : ?>
+                                            <button type="button" class="table-action-btn table-action-success" data-tooltip="true" title="Baixar" onclick="abrirBaixar('<?=$d->id?>', '<?=date("d/m/Y", strtotime($d->data_vencimento))?>', '<?=$d->descricao?>', 'pagar')">
+                                                <i class="uil uil-check-circle"></i>
+                                            </button>
+                                        <?php endif ?>
+                                        <?php if ($permissao["editar"]) : ?>
+                                            <a class="table-action-btn" data-tooltip="true" title="Editar" href="<?=$router->route("admin.financeiro.conta.pagar.editar", ["id" => $d->id])?>">
+                                                <i class="uil-edit-alt"></i>
+                                            </a>
+                                        <?php endif ?>
+                                        <?php if ($permissao["excluir"]) : ?>
+                                            <button type="button" class="table-action-btn table-action-danger" data-tooltip="true" title="Excluir" onclick="Delete('financeiro/conta-pagar/delete', '<?=$d->id?>')">
+                                                <i class="uil uil-trash"></i>
+                                            </button>
+                                        <?php endif ?>
+                                    </div>
+                                </td>
+                            <?php endif ?>
+                        </tr>
+                    <?php endforeach ?>
+                    <?php if (empty($grupos) && empty($avulsos)) : ?>
+                        <tr><td colspan="<?=($permissao["editar"] || $permissao["excluir"]) ? 7 : 6?>" class="text-center text-muted py-4">Nenhum lançamento encontrado.</td></tr>
+                    <?php endif ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modal-detalhe-grupo" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modal-grupo-titulo"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-sm mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Parcela</th>
+                                <th>Vencimento</th>
+                                <th class="text-end">Valor</th>
+                                <th>Pagamento</th>
+                                <th>Status</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="modal-grupo-corpo"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-white" data-bs-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<?php else : ?>
+
+<div class="card crud-table-card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover table-sm table-datatable table-datatable-alt crud-table">
+                <thead>
+                    <tr>
+                        <th>Descrição</th>
+                        <th>Fornecedor</th>
+                        <th>Valor</th>
+                        <th>Vencimento</th>
+                        <th>Parcela</th>
+                        <th>Pagamento</th>
+                        <th>Status</th>
+                        <?php if ($permissao["editar"] || $permissao["excluir"]) : ?>
+                            <th class="text-end actions-column"></th>
+                        <?php endif ?>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($dados as $d) : ?>
+                        <tr>
+                            <td>
+                                <?php if ($permissao["editar"]) : ?>
+                                    <a class="edit" href="<?=$router->route("admin.financeiro.conta.pagar.editar", ["id" => $d->id])?>">
+                                        <?=$d->descricao?>
+                                    </a>
+                                <?php else : ?>
+                                    <span><?=$d->descricao?></span>
+                                <?php endif ?>
+                            </td>
+                            <td><?=$d->fornecedor_nome ?? '-'?></td>
+                            <td class="text-nowrap">R$ <?=number_format((float) $d->valor, 2, ',', '.')?></td>
+                            <td class="text-nowrap"><?=date("d/m/Y", strtotime($d->data_vencimento))?></td>
+                            <td class="text-nowrap"><?=(($d->parcela_total ?? 1) > 1) ? ($d->parcela_numero . '/' . $d->parcela_total) : '-'?></td>
+                            <td class="text-nowrap"><?=!empty($d->data_pagamento) ? date("d/m/Y", strtotime($d->data_pagamento)) : '-'?></td>
+                            <td>
+                                <span class="badge <?=\App\Models\Financeiro\ContaPagar::statusBadge($d->status)?>">
+                                    <?=\App\Models\Financeiro\ContaPagar::statusLabel($d->status)?>
+                                </span>
+                            </td>
+                            <?php if ($permissao["editar"] || $permissao["excluir"]) : ?>
+                                <td class="text-end actions-column">
+                                    <div class="table-actions">
+                                        <?php if ($permissao["editar"] && $d->status !== "PAGO") : ?>
+                                            <button type="button" class="table-action-btn table-action-success" data-tooltip="true" title="Baixar" onclick="abrirBaixar('<?=$d->id?>', '<?=date("d/m/Y", strtotime($d->data_vencimento))?>', '<?=$d->descricao?>', 'pagar')">
+                                                <i class="uil uil-check-circle"></i>
+                                            </button>
+                                        <?php endif ?>
+                                        <?php if ($permissao["editar"]) : ?>
+                                            <a class="table-action-btn" data-tooltip="true" title="Editar" href="<?=$router->route("admin.financeiro.conta.pagar.editar", ["id" => $d->id])?>">
+                                                <i class="uil-edit-alt"></i>
+                                            </a>
+                                        <?php endif ?>
+                                        <?php if ($permissao["excluir"]) : ?>
+                                            <button type="button" class="table-action-btn table-action-danger" data-tooltip="true" title="Excluir" onclick="Delete('financeiro/conta-pagar/delete', '<?=$d->id?>')">
+                                                <i class="uil uil-trash"></i>
+                                            </button>
+                                        <?php endif ?>
+                                    </div>
+                                </td>
+                            <?php endif ?>
+                        </tr>
+                    <?php endforeach ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<?php endif ?>
+
+<div class="modal fade" id="modal-baixar" tabindex="-1">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-content">
+            <form id="form-baixar" method="POST">
+                <div class="modal-header">
+                    <h5 class="modal-title">Baixar Conta</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p id="baixar-descricao" class="mb-2"></p>
+                    <div class="mb-2">
+                        <label class="form-label small text-muted">Data do pagamento</label>
+                        <input type="date" name="data_pagamento" id="baixar-data" class="form-control" value="<?=date("Y-m-d")?>">
+                    </div>
+                    <input type="hidden" name="id" id="baixar-id">
+                    <input type="hidden" name="csrf" value="<?=$csrf?>">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-white" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-success">Confirmar Baixa</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<?php $this->start("endScripts") ?>
+<script>
+    window._gruposData = <?=json_encode($grupos ?? [], JSON_UNESCAPED_UNICODE)?>;
+
+    function abrirDetalheGrupo(key) {
+        var g = window._gruposData[key];
+        if (!g) return;
+
+        document.getElementById("modal-grupo-titulo").textContent = g.descricao + " — " + g.fornecedor;
+
+        var tbody = document.getElementById("modal-grupo-corpo");
+        tbody.innerHTML = "";
+
+        g.itens.forEach(function (item) {
+            var tr = document.createElement("tr");
+            tr.innerHTML =
+                '<td>' + item.parcela_numero + '/' + item.parcela_total + '</td>' +
+                '<td>' + new Date(item.data_vencimento + 'T00:00:00').toLocaleDateString("pt-BR") + '</td>' +
+                '<td class="text-end">R$ ' + parseFloat(item.valor).toLocaleString("pt-BR", {minimumFractionDigits:2,maximumFractionDigits:2}) + '</td>' +
+                '<td>' + (item.data_pagamento ? new Date(item.data_pagamento + 'T00:00:00').toLocaleDateString("pt-BR") : '-') + '</td>' +
+                '<td><span class="badge ' + (item.status === 'PAGO' ? 'bg-success' : 'bg-warning') + '">' + (item.status === 'PAGO' ? 'Pago' : 'Pendente') + '</span></td>' +
+                '<td class="text-end">' +
+                    (item.status !== 'PAGO' ? '<div class="table-actions"><button type="button" class="table-action-btn table-action-success" title="Baixar" onclick="abrirBaixar(\'' + item.id + '\', \'' + item.data_vencimento + '\', \'' + g.descricao + '\', \'pagar\')"><i class="uil uil-check-circle"></i></button></div>' : '') +
+                '</td>';
+            tbody.appendChild(tr);
+        });
+
+        new bootstrap.Modal(document.getElementById("modal-detalhe-grupo")).show();
+    }
+
+    function abrirBaixar(id, vencimento, descricao, tipo) {
+        document.getElementById("baixar-id").value = id;
+        document.getElementById("baixar-descricao").textContent = descricao + " — Venc. " + vencimento;
+        document.getElementById("baixar-data").value = new Date().toISOString().split("T")[0];
+        new bootstrap.Modal(document.getElementById("modal-baixar")).show();
+    }
+
+    document.getElementById("form-baixar").addEventListener("submit", function (e) {
+        e.preventDefault();
+        var form = this;
+        var data = new FormData(form);
+
+        fetch("<?=$router->route("admin.financeiro.conta.pagar.baixar")?>", {
+            method: "POST",
+            body: data
+        })
+        .then(function (r) { return r.json(); })
+        .then(function (resp) {
+            if (resp.error) {
+                alert(resp.message);
+            } else {
+                bootstrap.Modal.getInstance(document.getElementById("modal-baixar")).hide();
+                window.location.reload();
+            }
+        })
+        .catch(function () {
+            alert("Erro ao baixar conta.");
+        });
+    });
+</script>
+<?php $this->end() ?>

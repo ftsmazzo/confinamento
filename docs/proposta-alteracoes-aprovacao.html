@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Proposta de Alterações — Sistema de Confinamento</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink: #1a2332;
+      --muted: #5c6b7a;
+      --line: #d8e0e8;
+      --paper: #f7f4ef;
+      --card: #ffffff;
+      --forest: #1f5c45;
+      --forest-soft: #e6f2ec;
+      --amber: #9a6b16;
+      --amber-soft: #f8efd9;
+      --clay: #8b3a2a;
+      --clay-soft: #f6e8e4;
+      --sky: #245b7a;
+      --sky-soft: #e5f1f7;
+      --plum: #4a3f6b;
+      --plum-soft: #eeeaf5;
+      --radius: 14px;
+      --max: 980px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Manrope", system-ui, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(1000px 420px at 5% -8%, #e8efe9 0%, transparent 55%),
+        radial-gradient(700px 360px at 100% 0%, #ebe6f2 0%, transparent 48%),
+        var(--paper);
+      line-height: 1.55;
+    }
+    .wrap { max-width: var(--max); margin: 0 auto; padding: 36px 20px 80px; }
+
+    .cover {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      padding: 40px 36px 32px;
+      position: relative;
+      overflow: hidden;
+    }
+    .cover::before {
+      content: "";
+      position: absolute; inset: 0 auto 0 0; width: 8px;
+      background: var(--forest);
+    }
+    .eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 0.78rem; font-weight: 600; letter-spacing: 0.08em;
+      text-transform: uppercase; color: var(--forest); margin-bottom: 14px;
+    }
+    .eyebrow i {
+      width: 8px; height: 8px; border-radius: 50%; background: var(--forest);
+      font-style: normal;
+    }
+    h1 {
+      font-family: "Fraunces", Georgia, serif;
+      font-size: clamp(1.8rem, 3.2vw, 2.4rem);
+      line-height: 1.15; margin: 0 0 12px; letter-spacing: -0.02em;
+    }
+    .lede { max-width: 62ch; color: var(--muted); font-size: 1.05rem; margin: 0 0 18px; }
+    .meta { display: flex; flex-wrap: wrap; gap: 8px; }
+    .chip {
+      font-size: 0.78rem; font-weight: 600; padding: 6px 12px; border-radius: 999px;
+      background: var(--forest-soft); color: var(--forest); border: 1px solid #c5ddd0;
+    }
+    .chip.alt { background: var(--plum-soft); color: var(--plum); border-color: #d4cce6; }
+    .chip.neutral { background: #eef2f6; color: var(--muted); border-color: var(--line); }
+
+    .decision {
+      margin-top: 20px;
+      background: linear-gradient(180deg, #f3f8f5, #eef5f1);
+      border: 1px solid #c7ddd1;
+      border-radius: 14px;
+      padding: 18px 20px;
+      color: #234536;
+    }
+    .decision strong { color: var(--forest); }
+
+    section { margin: 34px 0; }
+    .section-head {
+      display: flex; align-items: baseline; gap: 12px;
+      margin-bottom: 14px; padding-bottom: 10px;
+      border-bottom: 2px solid var(--ink);
+    }
+    .section-head .num {
+      font-family: "Fraunces", Georgia, serif;
+      font-size: 1.5rem; color: var(--forest); font-weight: 700;
+    }
+    h2 {
+      font-family: "Fraunces", Georgia, serif;
+      font-size: 1.45rem; margin: 0; letter-spacing: -0.01em;
+    }
+    h3 {
+      font-family: "Fraunces", Georgia, serif;
+      font-size: 1.08rem; margin: 0 0 8px;
+    }
+    p { margin: 0 0 12px; }
+    .muted { color: var(--muted); }
+    .small { font-size: 0.88rem; }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 16px 18px;
+    }
+    .card.ok { background: var(--forest-soft); border-color: #c5ddd0; }
+    .card.warn { background: var(--amber-soft); border-color: #ead7a8; }
+    .card.gap { background: var(--clay-soft); border-color: #e8cfc7; }
+    .card.sky { background: var(--sky-soft); border-color: #bdd5e3; }
+    .card.plum { background: var(--plum-soft); border-color: #d4cce6; }
+
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: var(--card);
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+    th, td {
+      text-align: left; padding: 11px 13px;
+      border-bottom: 1px solid var(--line); vertical-align: top;
+    }
+    th {
+      background: #eef2f6;
+      font-size: 0.72rem; text-transform: uppercase;
+      letter-spacing: 0.05em; color: var(--muted); font-weight: 700;
+    }
+    tr:last-child td { border-bottom: 0; }
+    tr.p0 td { background: #f4faf6; }
+    tr.p1 td { background: #fbf7ee; }
+    tr.p2 td { background: #f8f9fb; }
+
+    .badge {
+      display: inline-block;
+      font-size: 0.68rem; font-weight: 700;
+      letter-spacing: 0.03em; text-transform: uppercase;
+      padding: 3px 8px; border-radius: 6px; white-space: nowrap;
+    }
+    .badge.p0 { background: var(--forest-soft); color: var(--forest); }
+    .badge.p1 { background: var(--amber-soft); color: var(--amber); }
+    .badge.p2 { background: #eef2f6; color: var(--muted); }
+    .badge.corr { background: var(--plum-soft); color: var(--plum); }
+    .badge.imp { background: var(--sky-soft); color: var(--sky); }
+    .badge.cli { background: var(--forest-soft); color: var(--forest); }
+    .badge.prop { background: var(--amber-soft); color: var(--amber); }
+
+    .item {
+      display: grid;
+      grid-template-columns: 72px 1fr;
+      gap: 14px;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 16px 18px;
+      margin-bottom: 10px;
+    }
+    .item .id {
+      font-family: "Fraunces", Georgia, serif;
+      font-size: 1.15rem; font-weight: 700; color: var(--forest);
+      width: 56px; height: 56px; border-radius: 12px;
+      background: var(--forest-soft);
+      display: grid; place-items: center;
+    }
+    .item h3 { margin: 0 0 6px; }
+    .item p { margin: 0; color: var(--muted); font-size: 0.9rem; }
+    .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+
+    .out-list { margin: 0; padding: 0; list-style: none; }
+    .out-list li {
+      padding: 9px 0 9px 18px; position: relative;
+      border-bottom: 1px solid rgba(0,0,0,.06); font-size: 0.92rem;
+    }
+    .out-list li:last-child { border-bottom: 0; }
+    .out-list li::before {
+      content: ""; position: absolute; left: 0; top: 16px;
+      width: 7px; height: 7px; border-radius: 50%; background: var(--clay);
+    }
+
+    .approve {
+      background: var(--ink);
+      color: #e8eef4;
+      border-radius: 18px;
+      padding: 28px 24px;
+      margin-top: 8px;
+    }
+    .approve h2 {
+      font-family: "Fraunces", Georgia, serif;
+      color: #fff; font-size: 1.35rem; margin: 0 0 12px;
+      border: 0; padding: 0;
+    }
+    .approve p { color: #c5d0db; margin: 0 0 10px; }
+    .approve strong { color: #fff; }
+    .approve .checklist {
+      margin: 16px 0 0; padding: 0; list-style: none;
+    }
+    .approve .checklist li {
+      display: flex; gap: 10px; align-items: flex-start;
+      padding: 8px 0; border-top: 1px solid rgba(255,255,255,.1);
+      font-size: 0.92rem; color: #d7e0e9;
+    }
+    .approve .checklist li span {
+      color: #8fd0ad; font-weight: 700; min-width: 1.2em;
+    }
+
+    footer {
+      margin-top: 36px; padding-top: 16px; border-top: 1px solid var(--line);
+      color: var(--muted); font-size: 0.82rem;
+    }
+
+    @media (max-width: 800px) {
+      .grid-2, .grid-3 { grid-template-columns: 1fr; }
+      .item { grid-template-columns: 1fr; }
+      .cover { padding: 28px 22px; }
+    }
+    @media print {
+      body { background: #fff; }
+      .cover, .card, .item, .table-wrap, .approve { break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+
+    <header class="cover">
+      <div class="eyebrow"><i></i> Proposta de alterações para aprovação</div>
+      <h1>Pacote de entrega — adaptação do sistema às planilhas da cliente</h1>
+      <p class="lede">
+        Decisão de escopo fechada após cruzar a proposta original (Abril/2026),
+        o sistema já entregue e as duas planilhas operacionais da fazenda.
+        Este documento lista <strong>somente o que será feito</strong> nesta rodada —
+        para avaliação e aprovação.
+      </p>
+      <div class="meta">
+        <span class="chip">Execução: nossa equipe</span>
+        <span class="chip alt">Cliente: confinamento (planilhas Bichara / farmácia)</span>
+        <span class="chip neutral">Base: sistema atual + proposta de escopo</span>
+      </div>
+
+      <div class="decision">
+        <strong>Decisão tomada:</strong> completar o que a proposta já cobre e a cliente usa todo dia
+        (motor e quadro de trato + importação dos dados), com adequações leves de vocabulário e
+        correções técnicas. Não abrir frentes fora do combinado (app, balança, logística, closeout avançado)
+        nem expandir o que já foi entregue além da proposta (calendário, financeiro amplo).
+      </div>
+    </header>
+
+    <!-- Resumo -->
+    <section>
+      <div class="section-head"><span class="num">01</span><h2>Resumo executivo</h2></div>
+      <div class="grid-3">
+        <div class="card ok">
+          <h3>Problema</h3>
+          <p class="small" style="margin:0">A cliente opera com Excel (trato diário e farmácia/currais). O sistema tem as telas, mas não calcula o trato nem tem os dados migrados.</p>
+        </div>
+        <div class="card sky">
+          <h3>Solução</h3>
+          <p class="small" style="margin:0">Fechar o ciclo nutricional prometido na proposta, migrar os dados das planilhas e corrigir defeitos que atrapalham o uso.</p>
+        </div>
+        <div class="card plum">
+          <h3>Resultado esperado</h3>
+          <p class="small" style="margin:0">Operação diária no sistema no lugar da planilha de trato; farmácia e rebanho no cadastro; produto mais estável.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- O QUE ENTREGAMOS - THE MAIN SECTION -->
+    <section>
+      <div class="section-head"><span class="num">02</span><h2>O que será entregue (para aprovação)</h2></div>
+      <p class="muted small">Lista completa do pacote. Tudo abaixo faz parte desta proposta de alterações.</p>
+
+      <div class="item">
+        <div class="id">01</div>
+        <div>
+          <h3>Motor de previsão de trato</h3>
+          <p>
+            Cálculo automático por curral/lote: permanência, peso projetado (GMD parametrizável),
+            consumo por % do peso vivo, conversão MS → matéria natural (% MS da dieta) e rateio
+            nos 4 turnos (padrão 30% / 20% / 20% / 30%, editável). Gera as quantidades previstas
+            na programação de trato.
+          </p>
+          <div class="tags">
+            <span class="badge p0">Prioridade máxima</span>
+            <span class="badge prop">Coberto pela proposta</span>
+            <span class="badge cli">Solicitação da cliente</span>
+            <span class="badge imp">Melhoria operacional</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="item">
+        <div class="id">02</div>
+        <div>
+          <h3>Quadro diário de trato (visão operacional)</h3>
+          <p>
+            Tela de fechamento do dia no modelo da planilha da cliente: por linha/curral —
+            cabeças, dieta, kg previstos e ocorridos por turno, total do dia.
+            Substitui o “Fechamento Geral” do Excel no uso cotidiano.
+          </p>
+          <div class="tags">
+            <span class="badge p0">Prioridade máxima</span>
+            <span class="badge prop">Coberto pela proposta</span>
+            <span class="badge cli">Solicitação da cliente</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="item">
+        <div class="id">03</div>
+        <div>
+          <h3>Parâmetros nutricionais nas fórmulas</h3>
+          <p>
+            Preencher e usar de fato matéria seca (%), consumo previsto e parâmetros já
+            existentes na estrutura do sistema (hoje cadastráveis, porém sem valores nas fórmulas).
+            Sem isso o motor de previsão não fecha.
+          </p>
+          <div class="tags">
+            <span class="badge p0">Prioridade máxima</span>
+            <span class="badge prop">Entrega faltante da proposta</span>
+            <span class="badge corr">Correção de dados</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="item">
+        <div class="id">04</div>
+        <div>
+          <h3>Importação da farmácia</h3>
+          <p>
+            Migrar o catálogo (~94 produtos), saldos e histórico de entradas da planilha
+            Farmácia-Currais para estoque/sanitário, com validade e carência estruturados
+            (hoje misturados em texto livre na planilha).
+          </p>
+          <div class="tags">
+            <span class="badge p0">Prioridade alta</span>
+            <span class="badge cli">Solicitação da cliente</span>
+            <span class="badge prop">Implantação sobre escopo existente</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="item">
+        <div class="id">05</div>
+        <div>
+          <h3>Importação do rebanho / currais</h3>
+          <p>
+            Migrar currais, lotes e pesos individuais das abas Currais Linha 1 e 2
+            (~1.060 animais com peso) + cabeças/datas da planilha de trato, para o
+            módulo de manejo já existente.
+          </p>
+          <div class="tags">
+            <span class="badge p0">Prioridade alta</span>
+            <span class="badge cli">Solicitação da cliente</span>
+            <span class="badge prop">Implantação sobre escopo existente</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="item">
+        <div class="id">06</div>
+        <div>
+          <h3>Campos Linha e Giro</h3>
+          <p>
+            Adequação leve ao vocabulário da fazenda (ex.: A/VELHA, B/NOVA, RECEPÇÃO e Giro 1º/2º)
+            como campos no lote/curral — sem criar módulo novo de estrutura.
+          </p>
+          <div class="tags">
+            <span class="badge p1">Prioridade média</span>
+            <span class="badge cli">Adequação recomendada</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="item">
+        <div class="id">07</div>
+        <div>
+          <h3>Sugestão de ajuste a partir da leitura de cocho</h3>
+          <p>
+            Com o motor ativo, sugerir variação percentual no próximo trato com base no escore
+            de cocho já registrado no sistema (leitura + ajuste já previstos na proposta).
+          </p>
+          <div class="tags">
+            <span class="badge p1">Prioridade média</span>
+            <span class="badge prop">Coberto pela proposta</span>
+            <span class="badge imp">Melhoria</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="item">
+        <div class="id">08</div>
+        <div>
+          <h3>Correções técnicas do sistema</h3>
+          <p>
+            Pacote de higiene do que já foi entregue: corrigir typo de menu (<code>vetical</code>),
+            restaurar edição de parcela financeira, limpar/isolar tabelas legado
+            (cartão, cashback, fidelidade) e revisar inconsistências que atrapalham operação.
+          </p>
+          <div class="tags">
+            <span class="badge p1">Prioridade média</span>
+            <span class="badge corr">Correção</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="item">
+        <div class="id">09</div>
+        <div>
+          <h3>Indicador de custo alimentar no quadro (extensão leve)</h3>
+          <p>
+            Exibir no quadro diário ou relatório existente o custo alimentar estimado
+            (R$/cabeça/dia), usando custo da fórmula × fornecimento — sem módulo financeiro novo.
+          </p>
+          <div class="tags">
+            <span class="badge p2">Prioridade complementar</span>
+            <span class="badge prop">Alinhado a indicadores da proposta</span>
+            <span class="badge imp">Melhoria</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tabela consolidada -->
+    <section>
+      <div class="section-head"><span class="num">03</span><h2>Matriz consolidada do pacote</h2></div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Entrega</th>
+              <th>Origem</th>
+              <th>Prioridade</th>
+              <th>Complexidade</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="p0"><td>01</td><td>Motor de previsão de trato</td><td>Proposta + planilha cliente</td><td><span class="badge p0">Máxima</span></td><td>Média</td></tr>
+            <tr class="p0"><td>02</td><td>Quadro diário de trato</td><td>Proposta + planilha cliente</td><td><span class="badge p0">Máxima</span></td><td>Média</td></tr>
+            <tr class="p0"><td>03</td><td>Parâmetros nutricionais nas fórmulas</td><td>Entrega faltante</td><td><span class="badge p0">Máxima</span></td><td>Baixa</td></tr>
+            <tr class="p0"><td>04</td><td>Importação farmácia</td><td>Planilha cliente</td><td><span class="badge p0">Alta</span></td><td>Média</td></tr>
+            <tr class="p0"><td>05</td><td>Importação rebanho/currais</td><td>Planilha cliente</td><td><span class="badge p0">Alta</span></td><td>Média</td></tr>
+            <tr class="p1"><td>06</td><td>Campos Linha e Giro</td><td>Adequação</td><td><span class="badge p1">Média</span></td><td>Baixa</td></tr>
+            <tr class="p1"><td>07</td><td>Sugestão por leitura de cocho</td><td>Proposta / melhoria</td><td><span class="badge p1">Média</span></td><td>Média</td></tr>
+            <tr class="p1"><td>08</td><td>Correções técnicas</td><td>Qualidade do entregue</td><td><span class="badge p1">Média</span></td><td>Baixa</td></tr>
+            <tr class="p2"><td>09</td><td>Custo alimentar no quadro</td><td>Indicadores da proposta</td><td><span class="badge p2">Complementar</span></td><td>Baixa/Média</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Fora -->
+    <section>
+      <div class="section-head"><span class="num">04</span><h2>O que fica de fora desta proposta</h2></div>
+      <div class="grid-2">
+        <div class="card gap">
+          <h3>Não incluído (evitar estouro de escopo)</h3>
+          <ul class="out-list">
+            <li>App mobile / operação offline no curral</li>
+            <li>Integração com balança, brinco ou RFID</li>
+            <li>Módulo logístico (veículos, frete, rotas, motoristas)</li>
+            <li>Inventário físico formal (salvo cobrança futura à parte)</li>
+            <li>Rateio avançado de custos indiretos</li>
+            <li>Closeout / previsão de abate estilo sistemas de mercado</li>
+            <li>Ampliação de calendário, BI ou financeiro além do já existente</li>
+          </ul>
+        </div>
+        <div class="card warn">
+          <h3>Por que fica de fora</h3>
+          <p class="small">
+            Não estavam no uso crítico das planilhas da cliente, aumentam prazo e complexidade,
+            e/ou já extrapolam o que foi prometido na proposta original.
+            O foco desta rodada é <strong>substituir o Excel operacional</strong> com o que o
+            sistema já deveria fazer.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Como vamos fazer -->
+    <section>
+      <div class="section-head"><span class="num">05</span><h2>Como será executado</h2></div>
+      <div class="grid-2">
+        <div class="card ok">
+          <h3>Ordem de trabalho</h3>
+          <p class="small" style="margin:0">
+            1) Parâmetros nutricionais → 2) Motor de previsão → 3) Quadro diário →
+            4) Importação farmácia e rebanho → 5) Linha/Giro → 6) Cocho + custo alimentar →
+            7) Correções em paralelo quando não bloquearem o núcleo.
+          </p>
+        </div>
+        <div class="card sky">
+          <h3>Critério de pronto</h3>
+          <p class="small" style="margin:0">
+            Um dia típico da fazenda (trato previsto/ocorrido + saldos de farmácia + currais com
+            animais/pesos) consegue ser feito no sistema sem depender das duas planilhas.
+          </p>
+        </div>
+      </div>
+      <div class="card plum" style="margin-top:12px">
+        <h3>Responsável pela execução</h3>
+        <p class="small" style="margin:0">
+          Desenvolvimento e implantação deste pacote serão realizados por <strong>nossa equipe</strong>
+          (análise, adaptação do sistema, importação e validação), sobre a base já entregue —
+          sem reescrever o produto.
+        </p>
+      </div>
+    </section>
+
+    <!-- Checklist final -->
+    <section>
+      <div class="section-head"><span class="num">06</span><h2>Checklist do pacote</h2></div>
+      <div class="approve">
+        <h2>Pontos que vamos alterar</h2>
+        <p>
+          Escopo desta rodada — itens <strong>01 a 09</strong>. O que está na seção
+          “O que fica de fora” não entra.
+        </p>
+        <ul class="checklist">
+          <li><span>✓</span> Motor de previsão de trato</li>
+          <li><span>✓</span> Quadro diário de trato</li>
+          <li><span>✓</span> Parâmetros nutricionais nas fórmulas</li>
+          <li><span>✓</span> Importação farmácia</li>
+          <li><span>✓</span> Importação rebanho/currais</li>
+          <li><span>✓</span> Campos Linha e Giro</li>
+          <li><span>✓</span> Sugestão por leitura de cocho</li>
+          <li><span>✓</span> Correções técnicas</li>
+          <li><span>✓</span> Custo alimentar no quadro (complementar)</li>
+        </ul>
+      </div>
+    </section>
+
+    <footer>
+      Proposta de alterações — Sistema de Confinamento · Pacote operacional (trato + dados + correções) · Documento para aprovação
+    </footer>
+  </div>
+</body>
+</html>

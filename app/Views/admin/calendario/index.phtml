@@ -1,0 +1,268 @@
+<?php $this->layout("app/template/base"); ?>
+
+<?php $this->start("styles") ?>
+<link rel="stylesheet" href="<?=asset("dist/fullcalendar/fullcalendar.min.css")?>">
+<style>
+    .fc-evento-trato { background-color: #20c997; border-color: #20c997; }
+    .fc-evento-carencia { background-color: #dc3545; border-color: #dc3545; }
+    .fc-evento-validade { background-color: #fd7e14; border-color: #fd7e14; }
+    .fc-evento-lembrete { background-color: #0d6efd; border-color: #0d6efd; }
+    .fc-evento-lembrete.concluido { background-color: #adb5bd; border-color: #adb5bd; text-decoration: line-through; }
+    .fc-evento-conta-pagar { background-color: #e68533; border-color: #e68533; }
+    .fc-evento-conta-receber { background-color: #198754; border-color: #198754; }
+
+    .calendario-legenda { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 16px; }
+    .calendario-legenda label { display: inline-flex; align-items: center; gap: 6px; font-size: 0.85rem; color: #495057; cursor: pointer; }
+    .calendario-legenda label input { cursor: pointer; }
+    .calendario-legenda .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+
+    #calendario .fc-daygrid-event { cursor: pointer; }
+    #calendario .fc-daygrid-day-frame { cursor: pointer; }
+    #calendario { background: #fff; }
+</style>
+<?php $this->end() ?>
+
+<?php $this->start("startScripts") ?>
+<script src="<?=asset("dist/fullcalendar/fullcalendar.min.js")?>"></script>
+<script src="<?=asset("dist/fullcalendar/locale-pt-br.js")?>"></script>
+<?php $this->end() ?>
+
+<?php $this->start("page-buttons") ?>
+    <?php if (!empty($permissao["inserir"])) : ?>
+        <a class="btn btn-primary" href="<?=$router->route("admin.calendario.lembrete.novo")?>"><i class="fa fa-plus fa-fw"></i> Novo Lembrete</a>
+    <?php endif ?>
+<?php $this->end() ?>
+
+<div class="card">
+    <div class="card-body">
+        <div class="calendario-legenda">
+            <label><input type="checkbox" class="calendario-filtro" value="trato" checked> <span class="dot" style="background:#20c997"></span> Programação de Trato</label>
+            <label><input type="checkbox" class="calendario-filtro" value="carencia" checked> <span class="dot" style="background:#dc3545"></span> Fim de Carência Sanitária</label>
+            <label><input type="checkbox" class="calendario-filtro" value="validade" checked> <span class="dot" style="background:#fd7e14"></span> Validade de Insumo</label>
+            <label><input type="checkbox" class="calendario-filtro" value="lembrete" checked> <span class="dot" style="background:#0d6efd"></span> Lembrete</label>
+            <label><input type="checkbox" class="calendario-filtro" value="conta-pagar" checked> <span class="dot" style="background:#e68533"></span> Contas a Pagar</label>
+            <label><input type="checkbox" class="calendario-filtro" value="conta-receber" checked> <span class="dot" style="background:#198754"></span> Contas a Receber</label>
+        </div>
+        <div id="calendario"></div>
+    </div>
+</div>
+
+<!-- Modal de detalhe do evento -->
+<div class="modal fade" id="modal-evento" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modal-evento-titulo">Evento</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p id="modal-evento-data" class="text-muted mb-2"></p>
+                <p id="modal-evento-detalhe" class="mb-2"></p>
+                <p id="modal-evento-descricao" class="mb-0"></p>
+            </div>
+            <div class="modal-footer">
+                <a id="modal-evento-link" href="#" class="btn btn-white" style="display:none;">Abrir tela relacionada</a>
+                <a id="modal-evento-editar" href="#" class="btn btn-outline-primary" style="display:none;">Editar lembrete</a>
+                <button type="button" id="modal-evento-excluir" class="btn btn-outline-danger" style="display:none;">Excluir lembrete</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<?php $this->start("endScripts") ?>
+<script>
+    (function () {
+        var el = document.getElementById("calendario");
+        if (!el || typeof FullCalendar === "undefined") return;
+
+        var urlEventos = "<?=$router->route("admin.calendario.eventos")?>";
+        var urlPreferencia = "<?=$router->route("admin.calendario.preferencia.eventos")?>";
+        var urlEditarLembreteBase = "<?=$router->route("admin.calendario.lembrete.editar", ["id" => "__ID__"])?>";
+        var urlNovoLembreteBase = "<?=$router->route("admin.calendario.lembrete.novo", ["data" => "__DATA__"])?>";
+        var csrfToken = "<?=$csrf?>";
+        var podeInserirLembrete = <?=!empty($permissao["inserir"]) ? "true" : "false"?>;
+
+        var podeEditarLembrete = <?=!empty($permissao["editar"]) ? "true" : "false"?>;
+        var podeEditarTrato = <?=!empty($permissao["editar_trato"]) ? "true" : "false"?>;
+        var podeEditarValidade = <?=!empty($permissao["editar_validade"]) ? "true" : "false"?>;
+        var podeArrastarAlgumTipo = podeEditarLembrete || podeEditarTrato || podeEditarValidade;
+
+        // config de "mover" por tipo de evento: url do endpoint, nome
+        // do campo de data esperado no POST, e se o usuário atual tem
+        // permissão de editar aquele tipo específico.
+        var moverConfigPorTipo = {
+            lembrete: { url: "<?=$router->route("admin.calendario.lembrete.mover")?>", campoData: "data_lembrete", pode: podeEditarLembrete },
+            trato: { url: "<?=$router->route("admin.calendario.programacao.trato.mover")?>", campoData: "data", pode: podeEditarTrato },
+            validade: { url: "<?=$router->route("admin.calendario.validade.insumo.mover")?>", campoData: "data", pode: podeEditarValidade }
+        };
+
+        var iconePorTipo = {
+            trato: "uil-utensils",
+            carencia: "uil-shield-exclamation",
+            validade: "uil-calendar-exclamation",
+            lembrete: "uil-bell"
+        };
+
+        var calendarioVisao = "<?=$calendario_visao?>";
+
+        var calendar = new FullCalendar.Calendar(el, {
+            locale: "pt-br",
+            height: "auto",
+            initialView: calendarioVisao,
+            headerToolbar: {
+                left: "prev,next today",
+                center: "title",
+                right: "dayGridMonth,dayGridWeek"
+            },
+            editable: podeArrastarAlgumTipo,
+            eventStartEditable: podeArrastarAlgumTipo,
+            dateClick: function (info) {
+                if (!podeInserirLembrete) return;
+                window.location.href = urlNovoLembreteBase.replace("__DATA__", info.dateStr);
+            },
+            eventAllow: function (dropInfo, draggedEvent) {
+                // carência sanitária nunca é arrastável (é um valor
+                // calculado, não um campo direto) -- os demais tipos só
+                // são arrastáveis se o usuário tiver permissão de editar
+                // aquele módulo específico.
+                var config = moverConfigPorTipo[draggedEvent.extendedProps.tipo];
+                return !!(config && config.pode);
+            },
+            eventDrop: function (info) {
+                var props = info.event.extendedProps;
+                var config = moverConfigPorTipo[props.tipo];
+                var novaData = info.event.startStr.substring(0, 10);
+
+                if (!config) {
+                    info.revert();
+                    return;
+                }
+
+                var payload = { csrf: csrfToken, id: props.hash };
+                payload[config.campoData] = novaData;
+
+                $.ajax({
+                    url: config.url,
+                    method: "POST",
+                    dataType: "json",
+                    data: payload
+                }).done(function (resp) {
+                    if (resp && resp.error) {
+                        info.revert();
+                    }
+                }).fail(function () {
+                    info.revert();
+                });
+            },
+            events: function (info, successCallback, failureCallback) {
+                var tiposAtivos = [];
+                document.querySelectorAll(".calendario-filtro:checked").forEach(function (cb) {
+                    tiposAtivos.push(cb.value);
+                });
+                $.ajax({
+                    url: urlEventos,
+                    method: "GET",
+                    dataType: "json",
+                    data: {
+                        data_inicial: info.startStr.substring(0, 10),
+                        data_final: info.endStr.substring(0, 10)
+                    }
+                }).done(function (resp) {
+                    var eventos = (resp && resp.data ? resp.data : []).filter(function (e) {
+                        return tiposAtivos.indexOf(e.tipo) !== -1;
+                    }).map(function (e) {
+                        return {
+                            title: e.titulo,
+                            start: e.data,
+                            allDay: true,
+                            classNames: ["fc-evento-" + e.tipo, e.concluido ? "concluido" : ""],
+                            extendedProps: e
+                        };
+                    });
+                    successCallback(eventos);
+                }).fail(function () {
+                    failureCallback();
+                });
+            },
+            eventClick: function (info) {
+                var props = info.event.extendedProps;
+                var modalEl = document.getElementById("modal-evento");
+
+                document.getElementById("modal-evento-titulo").innerHTML =
+                    '<i class="uil ' + (iconePorTipo[props.tipo] || "uil-calendar-alt") + '"></i> ' + info.event.title;
+                document.getElementById("modal-evento-data").textContent =
+                    new Date(props.data + "T00:00:00").toLocaleDateString("pt-BR");
+                document.getElementById("modal-evento-detalhe").textContent = props.detalhe || "";
+                document.getElementById("modal-evento-descricao").textContent = props.descricao || "";
+
+                var linkEl = document.getElementById("modal-evento-link");
+                var editarEl = document.getElementById("modal-evento-editar");
+                var excluirEl = document.getElementById("modal-evento-excluir");
+
+                if (props.tipo === "lembrete") {
+                    linkEl.style.display = "none";
+                    <?php if (!empty($permissao["editar"])) : ?>
+                    editarEl.style.display = "inline-block";
+                    editarEl.href = urlEditarLembreteBase.replace("__ID__", props.hash);
+                    <?php endif ?>
+                    <?php if (!empty($permissao["excluir"])) : ?>
+                    excluirEl.style.display = "inline-block";
+                    excluirEl.onclick = function () {
+                        Delete("calendario/lembretes/delete", props.hash);
+                    };
+                    <?php endif ?>
+                } else {
+                    editarEl.style.display = "none";
+                    excluirEl.style.display = "none";
+                    if (props.url) {
+                        linkEl.style.display = "inline-block";
+                        linkEl.href = props.url;
+                    } else {
+                        linkEl.style.display = "none";
+                    }
+                }
+
+                new bootstrap.Modal(modalEl).show();
+            }
+        });
+
+        calendar.render();
+
+        // Carregar preferência salva do usuário
+        var eventosPref = "<?=$calendario_eventos?>".split(",");
+        document.querySelectorAll(".calendario-filtro").forEach(function (cb) {
+            cb.checked = eventosPref.indexOf(cb.value) !== -1;
+        });
+
+        // Ao marcar/desmarcar, salvar e recarregar eventos
+        document.querySelectorAll(".calendario-filtro").forEach(function (cb) {
+            cb.addEventListener("change", function () {
+                var ativos = [];
+                document.querySelectorAll(".calendario-filtro:checked").forEach(function (c) {
+                    ativos.push(c.value);
+                });
+                $.ajax({
+                    url: urlPreferencia,
+                    method: "POST",
+                    dataType: "json",
+                    data: { eventos: ativos.join(","), csrf: csrfToken }
+                });
+                calendar.refetchEvents();
+            });
+        });
+
+        // Salvar visão (mês/semana) quando o usuário alternar
+        calendar.on("datesSet", function (info) {
+            if (info.view.type !== calendarioVisao) {
+                calendarioVisao = info.view.type;
+                $.ajax({
+                    url: urlPreferencia,
+                    method: "POST",
+                    dataType: "json",
+                    data: { visao: calendarioVisao, csrf: csrfToken }
+                });
+            }
+        });
+    })();
+</script>
+<?php $this->end() ?>

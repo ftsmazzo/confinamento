@@ -1,0 +1,250 @@
+<?php $this->layout("app/template/base"); ?>
+
+<?php $this->start("startScripts") ?>
+<script src="<?=asset("dist/echarts/dist/echarts.min.js")?>"></script>
+<script src="<?=asset("admin/js/echarts-locale-pt-br.js")?>"></script>
+<?php $this->end() ?>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" action="<?=$router->route("admin.relatorio.rentabilidade")?>" class="row g-2 align-items-end">
+            <div class="col-6 col-md-4">
+                <label class="form-label small text-muted mb-1">Data inicial (data de saída)</label>
+                <input type="date" name="data_inicial" class="form-control form-control-sm" value="<?=htmlspecialchars($dataInicial ?? "")?>" onchange="this.form.submit()">
+            </div>
+            <div class="col-6 col-md-4">
+                <label class="form-label small text-muted mb-1">Data final (data de saída)</label>
+                <input type="date" name="data_final" class="form-control form-control-sm" value="<?=htmlspecialchars($dataFinal ?? "")?>" onchange="this.form.submit()">
+            </div>
+            <div class="col-12 col-md-4">
+                <?php if ($dataInicial || $dataFinal) : ?>
+                    <a href="<?=$router->route("admin.relatorio.rentabilidade")?>" class="btn btn-sm btn-outline-secondary w-100">Limpar filtros</a>
+                <?php endif ?>
+            </div>
+        </form>
+    </div>
+</div>
+
+<?php
+    $totalEntrada = 0;
+    $totalRacao = 0;
+    $totalSanitario = 0;
+    $totalReceita = 0;
+    $totalCustoComSaida = 0;
+    $totalArrobasComSaida = 0;
+    $totalCabecasComSaida = 0;
+    foreach ($lotes as $l) {
+        $totalEntrada += $l->custo_entrada;
+        $totalRacao += $l->custo_racao;
+        $totalSanitario += $l->custo_sanitario;
+        $totalReceita += $l->receita_saida;
+
+        if ($l->tem_saida) {
+            $totalCustoComSaida += $l->custo_total;
+            $totalArrobasComSaida += $l->peso_saida_kg / 15;
+            $totalCabecasComSaida += $l->quantidade_vendida;
+        }
+    }
+    $totalCusto = $totalEntrada + $totalRacao + $totalSanitario;
+    $totalResultado = $totalReceita - $totalCusto;
+    $custoPorArrobaGeral = $totalArrobasComSaida > 0 ? $totalCustoComSaida / $totalArrobasComSaida : null;
+    $custoPorCabecaGeral = $totalCabecasComSaida > 0 ? $totalCustoComSaida / $totalCabecasComSaida : null;
+    $margemGeral = $totalReceita > 0 ? $totalResultado / $totalReceita * 100 : null;
+?>
+
+<div class="row mb-4">
+    <div class="col-6 col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <small class="text-muted">Custo Total (compra + ração + sanidade)</small>
+                <h4 class="mb-0">R$ <?=number_format($totalCusto, 2, ",", ".")?></h4>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <small class="text-muted">Receita Total (vendas registradas)</small>
+                <h4 class="mb-0">R$ <?=number_format($totalReceita, 2, ",", ".")?></h4>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <small class="text-muted">Resultado Consolidado</small>
+                <h4 class="mb-0 <?=$totalResultado >= 0 ? "text-success" : "text-danger"?>">R$ <?=number_format($totalResultado, 2, ",", ".")?></h4>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <small class="text-muted">Lotes</small>
+                <h4 class="mb-0"><?=count($lotes)?></h4>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-6 col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <small class="text-muted">Custo por Arroba (média, lotes com saída)</small>
+                <h4 class="mb-0"><?=$custoPorArrobaGeral !== null ? "R$ " . number_format($custoPorArrobaGeral, 2, ",", ".") : "—"?></h4>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <small class="text-muted">Custo por Cabeça (média, lotes com saída)</small>
+                <h4 class="mb-0"><?=$custoPorCabecaGeral !== null ? "R$ " . number_format($custoPorCabecaGeral, 2, ",", ".") : "—"?></h4>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <small class="text-muted">Margem Líquida</small>
+                <h4 class="mb-0 <?=$margemGeral !== null && $margemGeral < 0 ? "text-danger" : "text-success"?>"><?=$margemGeral !== null ? number_format($margemGeral, 1, ",", ".") . "%" : "—"?></h4>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="callout-inline alert alert-light border small mb-4">
+    <i class="uil uil-info-circle"></i>
+    <strong>Custo por arroba (@):</strong> aproximação calculada a partir do <em>peso vivo</em> de saída ÷ 15 kg — não é o peso de carcaça real (que só é conhecido após o abate no frigorífico), mas serve como referência comparativa entre lotes.
+</div>
+
+<?php if (!empty($graficoReceitaDiaria)) : ?>
+<div class="card crud-table-card mb-4">
+    <div class="card-body">
+        <h5 class="mb-3">Receita de saídas ao longo do tempo</h5>
+        <div id="grafico-rentabilidade" style="width: 100%; height: 340px;"></div>
+    </div>
+</div>
+<?php endif ?>
+
+<div class="card crud-table-card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover table-sm table-datatable table-datatable-alt crud-table">
+                <thead>
+                    <tr>
+                        <th>Lote</th>
+                        <th>Custo Entrada</th>
+                        <th>Custo Ração</th>
+                        <th>Custo Sanitário</th>
+                        <th>Custo Total</th>
+                        <th>Receita (Saída)</th>
+                        <th>Resultado</th>
+                        <th>Custo/@</th>
+                        <th>Custo/Cabeça</th>
+                        <th>Margem</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($lotes as $l) : ?>
+                        <tr>
+                            <td><?=$l->nome?> (<?=$l->codigo?>)</td>
+                            <td>R$ <?=number_format($l->custo_entrada, 2, ",", ".")?></td>
+                            <td>
+                                R$ <?=number_format($l->custo_racao, 2, ",", ".")?>
+                                <?php if ($l->quantidade_racao_kg > 0) : ?>
+                                    <br><small class="text-muted"><?=number_format($l->quantidade_racao_kg, 0, ",", ".")?> kg</small>
+                                <?php endif ?>
+                            </td>
+                            <td>R$ <?=number_format($l->custo_sanitario, 2, ",", ".")?></td>
+                            <td><strong>R$ <?=number_format($l->custo_total, 2, ",", ".")?></strong></td>
+                            <td>
+                                <?php if ($l->tem_saida) : ?>
+                                    R$ <?=number_format($l->receita_saida, 2, ",", ".")?>
+                                    <br><small class="text-muted"><?=$l->quantidade_vendida?> cabeça(s)</small>
+                                <?php else : ?>
+                                    <span class="badge filled-outlined bg-secondary">Sem saída</span>
+                                <?php endif ?>
+                            </td>
+                            <td>
+                                <?php if ($l->tem_saida) : ?>
+                                    <span class="badge filled-outlined <?=$l->resultado >= 0 ? "bg-success" : "bg-danger"?>">
+                                        R$ <?=number_format($l->resultado, 2, ",", ".")?>
+                                    </span>
+                                <?php else : ?>
+                                    <span class="badge filled-outlined bg-warning" data-tooltip="true" title="Ainda sem venda registrada; valor mostra custo acumulado até agora">
+                                        -R$ <?=number_format($l->custo_total, 2, ",", ".")?> (em aberto)
+                                    </span>
+                                <?php endif ?>
+                            </td>
+                            <td><?=$l->custo_por_arroba !== null ? "R$ " . number_format($l->custo_por_arroba, 2, ",", ".") : "-"?></td>
+                            <td><?=$l->custo_por_cabeca !== null ? "R$ " . number_format($l->custo_por_cabeca, 2, ",", ".") : "-"?></td>
+                            <td>
+                                <?php if ($l->margem_percentual !== null) : ?>
+                                    <span class="badge filled-outlined <?=$l->margem_percentual >= 0 ? "bg-success" : "bg-danger"?>"><?=number_format($l->margem_percentual, 1, ",", ".")?>%</span>
+                                <?php else : ?>
+                                    -
+                                <?php endif ?>
+                            </td>
+                            <td class="text-end actions-column">
+                                <a class="table-action-btn" data-tooltip="true" title="Evolução de Peso" href="<?=$router->route("admin.relatorio.evolucao.peso", ["id_lote" => $l->id])?>"><i class="uil uil-chart-line"></i></a>
+                            </td>
+                        </tr>
+                    <?php endforeach ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<?php if (!empty($graficoReceitaDiaria)) : ?>
+<?php $this->start("endScripts") ?>
+<script>
+    (function () {
+        var el = document.getElementById("grafico-rentabilidade");
+        if (!el || typeof echarts === "undefined") return;
+
+        var chart = echarts.init(el, null, { locale: "PT-BR" });
+        var pontos = <?=json_encode($graficoReceitaDiaria, JSON_UNESCAPED_UNICODE)?>;
+
+        chart.setOption({
+            tooltip: {
+                trigger: "axis",
+                formatter: function (params) {
+                    if (!params.length) return "";
+                    var linhas = ["<strong>" + window.formatDataBr(params[0].axisValue) + "</strong>"];
+                    params.forEach(function (p) {
+                        if (p.value[1] === null || p.value[1] === undefined) return;
+                        linhas.push(p.marker + " " + p.seriesName + ": R$ " + p.value[1].toLocaleString("pt-BR", { minimumFractionDigits: 2 }));
+                    });
+                    return linhas.join("<br>");
+                }
+            },
+            legend: { data: ["Receita do dia", "Receita acumulada"], top: 0 },
+            grid: { left: 70, right: 20, top: 40, bottom: 30 },
+            xAxis: { type: "time" },
+            yAxis: { type: "value", name: "R$", axisLabel: { formatter: "R$ {value}" } },
+            series: [
+                {
+                    name: "Receita do dia",
+                    type: "line",
+                    smooth: true,
+                    data: pontos.map(function (p) { return [p.data, p.valor]; }),
+                },
+                {
+                    name: "Receita acumulada",
+                    type: "line",
+                    smooth: true,
+                    areaStyle: {},
+                    data: pontos.map(function (p) { return [p.data, p.acumulado]; }),
+                },
+            ],
+        });
+
+        window.addEventListener("resize", function () { chart.resize(); });
+    })();
+</script>
+<?php $this->end() ?>
+<?php endif ?>

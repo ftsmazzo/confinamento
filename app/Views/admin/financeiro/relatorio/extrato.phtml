@@ -1,0 +1,167 @@
+<?php $this->layout("app/template/base"); ?>
+
+<?php $this->start("startScripts") ?>
+<script src="<?=asset("dist/echarts/dist/echarts.min.js")?>"></script>
+<script src="<?=asset("admin/js/echarts-locale-pt-br.js")?>"></script>
+<?php $this->end() ?>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" action="<?=$router->route("admin.financeiro.relatorio.extrato")?>" class="row g-2 align-items-end">
+            <div class="col-6 col-md-4">
+                <label class="form-label small text-muted mb-1">Data inicial</label>
+                <input type="date" name="data_inicial" class="form-control form-control-sm" value="<?=$dataInicial?>">
+            </div>
+            <div class="col-6 col-md-4">
+                <label class="form-label small text-muted mb-1">Data final</label>
+                <input type="date" name="data_final" class="form-control form-control-sm" value="<?=$dataFinal?>">
+            </div>
+            <div class="col-12 col-md-4">
+                <button type="submit" class="btn btn-sm btn-primary w-100">Filtrar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+        <div class="card border-0 bg-soft-success shadow-none">
+            <div class="card-body text-center py-3">
+                <h6 class="text-muted mb-1">Total a Receber</h6>
+                <h4 class="mb-0 text-success">R$ <?=number_format($totalReceber, 2, ',', '.')?></h4>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card border-0 bg-soft-danger shadow-none">
+            <div class="card-body text-center py-3">
+                <h6 class="text-muted mb-1">Total a Pagar</h6>
+                <h4 class="mb-0 text-danger">R$ <?=number_format($totalPagar, 2, ',', '.')?></h4>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card border-0 bg-soft-success shadow-none">
+            <div class="card-body text-center py-3">
+                <h6 class="text-muted mb-1">Realizado</h6>
+                <h4 class="mb-0 text-success">R$ <?=number_format($pagos, 2, ',', '.')?></h4>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card border-0 bg-soft-warning shadow-none">
+            <div class="card-body text-center py-3">
+                <h6 class="text-muted mb-1">Pendente</h6>
+                <h4 class="mb-0 text-warning">R$ <?=number_format($pendentes, 2, ',', '.')?></h4>
+            </div>
+        </div>
+    </div>
+</div>
+
+<?php if (!empty($graficoMensal)) : ?>
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">Comparativo Mensal</h5>
+    </div>
+    <div class="card-body">
+        <div id="chart-extrato" style="height:350px;"></div>
+    </div>
+</div>
+<script>
+    (function() {
+        var raw = <?=json_encode($graficoMensal)?>;
+        var meses = [], entradas = [], saidas = [];
+        raw.forEach(function(r) {
+            var d = r.mes.split('-');
+            meses.push(d[1] + '/' + d[0]);
+            entradas.push(parseFloat(r.entradas));
+            saidas.push(parseFloat(r.saidas));
+        });
+        var chart = echarts.init(document.getElementById('chart-extrato'), null, {locale: 'PT-BR'});
+        chart.setOption({
+            tooltip: {
+                trigger: 'axis',
+                valueFormatter: function(v) { return 'R$ ' + Number(v).toLocaleString('pt-BR', {minimumFractionDigits: 2}); }
+            },
+            legend: { data: ['Entradas', 'Saídas'], bottom: 0 },
+            grid: { left: '3%', right: '4%', bottom: '50px', top: '10px', containLabel: true },
+            xAxis: {
+                type: 'category',
+                data: meses,
+                axisLabel: { rotate: 30 }
+            },
+            yAxis: {
+                type: 'value',
+                axisLabel: {
+                    formatter: function(v) { return 'R$ ' + (v / 1000).toFixed(0) + 'k'; }
+                }
+            },
+            series: [
+                {
+                    name: 'Entradas',
+                    type: 'line',
+                    data: entradas,
+                    smooth: true,
+                    lineStyle: { color: '#28a745', width: 3 },
+                    itemStyle: { color: '#28a745' },
+                    areaStyle: { color: 'rgba(40, 167, 69, 0.1)' }
+                },
+                {
+                    name: 'Saídas',
+                    type: 'line',
+                    data: saidas,
+                    smooth: true,
+                    lineStyle: { color: '#dc3545', width: 3 },
+                    itemStyle: { color: '#dc3545' },
+                    areaStyle: { color: 'rgba(220, 53, 69, 0.1)' }
+                }
+            ]
+        });
+        window.addEventListener('resize', function() { chart.resize(); });
+    })();
+</script>
+<?php endif ?>
+
+<div class="card crud-table-card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover table-sm datatable-no-paging">
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Tipo</th>
+                        <th>Descrição</th>
+                        <th>Pessoa</th>
+                        <th>Plano de Contas</th>
+                        <th>Valor</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($lancamentos as $l) : ?>
+                        <tr>
+                            <td class="text-nowrap"><?=date("d/m/Y", strtotime($l->data_vencimento))?></td>
+                            <td>
+                                <span class="badge <?=$l->tipo_badge?>"><?=$l->tipo_label?></span>
+                            </td>
+                            <td><?=$l->descricao?></td>
+                            <td><?=$l->pessoa_nome ?? '-'?></td>
+                            <td><?=$l->plano_conta_nome ?? '-'?></td>
+                            <td class="text-nowrap">R$ <?=number_format((float) $l->valor, 2, ',', '.')?></td>
+                            <td>
+                                <?php
+                                    $statusLabels = ["PENDENTE" => "Pendente", "PAGO" => "Pago", "RECEBIDO" => "Recebido", "CANCELADO" => "Cancelado"];
+                                    $statusBadges = ["PENDENTE" => "bg-warning", "PAGO" => "bg-success", "RECEBIDO" => "bg-success", "CANCELADO" => "bg-secondary"];
+                                    $s = $l->status ?? "PENDENTE";
+                                ?>
+                                <span class="badge <?=$statusBadges[$s] ?? "bg-secondary"?>">
+                                    <?=$statusLabels[$s] ?? $s?>
+                                </span>
+                            </td>
+                        </tr>
+                    <?php endforeach ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

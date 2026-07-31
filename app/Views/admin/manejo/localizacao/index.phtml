@@ -1,0 +1,63 @@
+<?php $this->layout("app/template/base"); ?>
+
+<?php $this->start("page-actions") ?>
+    <?php if ($lote) : ?>
+        <a class="btn btn-white btn-sm" href="<?=$router->route("admin.manejo.lote.editar", ["id" => $lote->hash()])?>"><i class="uil uil-left"></i> Voltar ao Lote</a>
+    <?php endif ?>
+<?php $this->end() ?>
+
+<?php $this->start("page-buttons") ?>
+    <?php if (!empty($permissao["inserir"])) : ?>
+        <a class="btn btn-primary" href="<?=$router->route("admin.manejo.localizacao.novo", array_filter(["id_lote" => $lote->id ?? null]))?>"><i class="fa fa-plus fa-fw"></i> Nova Movimentação</a>
+    <?php endif ?>
+<?php $this->end() ?>
+
+<div class="card crud-table-card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover table-sm table-datatable table-datatable-alt crud-table">
+                <thead>
+                    <tr>
+                        <?php if (!$lote) : ?>
+                            <th>Lote</th>
+                        <?php endif ?>
+                        <th>Data</th>
+                        <th>Origem</th>
+                        <th>Destino</th>
+                        <th>Quantidade</th>
+                        <th>Motivo</th>
+                        <?php if ($permissao["editar"] || $permissao["excluir"]) : ?>
+                            <th class="text-end actions-column"></th>
+                        <?php endif ?>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($dados as $d) : ?>
+                        <tr>
+                            <?php if (!$lote) : ?>
+                                <td><?=$d->vinculo_print?></td>
+                            <?php endif ?>
+                            <td><?=datebr($d->data_movimentacao)?></td>
+                            <td><?=$d->origem_print?></td>
+                            <td><?=$d->destino_print?></td>
+                            <td><?=$d->quantidade !== null ? (int) $d->quantidade : "Lote inteiro"?></td>
+                            <td><?=$d->motivo ?: "-"?></td>
+                            <?php if ($permissao["editar"] || $permissao["excluir"]) : ?>
+                                <td class="text-end actions-column">
+                                    <div class="table-actions">
+                                        <?php if ($permissao["editar"]) : ?>
+                                            <a class="table-action-btn" data-tooltip="true" title="Editar" href="<?=$router->route("admin.manejo.localizacao.editar", ["id" => $d->hash])?>"><i class="uil-edit-alt"></i></a>
+                                        <?php endif ?>
+                                        <?php if ($permissao["excluir"]) : ?>
+                                            <button type="button" class="table-action-btn table-action-danger" data-tooltip="true" title="Excluir registro" onclick="Delete('manejo/localizacoes/delete', '<?=$d->hash?>')"><i class="uil uil-trash"></i></button>
+                                        <?php endif ?>
+                                    </div>
+                                </td>
+                            <?php endif ?>
+                        </tr>
+                    <?php endforeach ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,17 @@
+<form id="form-fase-nutricional" class="form-validate" action="<?=$url_action?>" method="POST">
+    <input type="hidden" name="csrf" value="<?=$csrf?>">
+    <?php if (!empty($fase->id)) : ?>
+        <input type="hidden" name="id" value="<?=$fase->hash()?>">
+    <?php endif ?>
+
+    <div class="row g-3">
+        <div class="col-8">
+            <label for="descricao" class="form-label" title="Campo Obrigatório">Descrição <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="descricao" name="descricao" placeholder="Ex: Adaptação, Crescimento, Terminação" required value="<?=$fase->descricao ?? ""?>">
+        </div>
+        <div class="col-4">
+            <label for="ordem" class="form-label">Ordem</label>
+            <input type="number" class="form-control" id="ordem" name="ordem" placeholder="0" autocomplete="off" min="0" value="<?=$fase->ordem ?? ""?>">
+        </div>
+    </div>
+</form>

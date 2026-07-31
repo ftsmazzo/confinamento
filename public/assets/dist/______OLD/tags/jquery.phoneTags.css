@@ -1,0 +1,7 @@
+.tags-container { min-height: 60px; }
+.tag { font-size: 0.9em; padding: 0.5em 0.75em; }
+.tag .remover-tag { margin-left: 8px; cursor: pointer; font-weight: bold; opacity: 0.7; line-height: 1; }
+.tag .remover-tag:hover { opacity: 1; }
+.limit-info { font-size: 0.8rem; color: #6c757d; text-align: right; height: 1em; margin-top: -10px; margin-bottom: 15px;}
+@keyframes shake { 0%, 100% { transform: translateX(0 ); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+.tag.duplicate { animation: shake 0.4s; }

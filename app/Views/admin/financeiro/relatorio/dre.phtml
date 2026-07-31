@@ -1,0 +1,99 @@
+<?php $this->layout("app/template/base"); ?>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" action="<?=$router->route("admin.financeiro.relatorio.dre")?>" class="row g-2 align-items-end">
+            <div class="col-6 col-md-4">
+                <label class="form-label small text-muted mb-1">Data inicial (pagamento/recebimento)</label>
+                <input type="date" name="data_inicial" class="form-control form-control-sm" value="<?=$dataInicial?>">
+            </div>
+            <div class="col-6 col-md-4">
+                <label class="form-label small text-muted mb-1">Data final</label>
+                <input type="date" name="data_final" class="form-control form-control-sm" value="<?=$dataFinal?>">
+            </div>
+            <div class="col-12 col-md-4">
+                <button type="submit" class="btn btn-sm btn-primary w-100">Filtrar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12 col-lg-6">
+        <div class="card crud-table-card h-100">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">Receitas</h5>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-striped table-hover table-sm mb-0">
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Conta</th>
+                            <th class="text-end">Valor</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($receitas as $r) : ?>
+                            <tr>
+                                <td><?=$r->codigo?></td>
+                                <td><?=$r->nome?></td>
+                                <td class="text-end text-nowrap">R$ <?=number_format((float) $r->total, 2, ',', '.')?></td>
+                            </tr>
+                        <?php endforeach ?>
+                    </tbody>
+                    <tfoot>
+                        <tr class="fw-bold">
+                            <td colspan="2">Total de Receitas</td>
+                            <td class="text-end text-nowrap text-success">R$ <?=number_format($totalReceitas, 2, ',', '.')?></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-lg-6 mt-3 mt-lg-0">
+        <div class="card crud-table-card h-100">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0">Despesas</h5>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-striped table-hover table-sm mb-0">
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Conta</th>
+                            <th class="text-end">Valor</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($despesas as $d) : ?>
+                            <tr>
+                                <td><?=$d->codigo?></td>
+                                <td><?=$d->nome?></td>
+                                <td class="text-end text-nowrap">R$ <?=number_format((float) $d->total, 2, ',', '.')?></td>
+                            </tr>
+                        <?php endforeach ?>
+                    </tbody>
+                    <tfoot>
+                        <tr class="fw-bold">
+                            <td colspan="2">Total de Despesas</td>
+                            <td class="text-end text-nowrap text-danger">R$ <?=number_format($totalDespesas, 2, ',', '.')?></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mt-3">
+    <div class="card-body text-center">
+        <h5 class="mb-1">Resultado do Período</h5>
+        <h2 class="<?=$resultado >= 0 ? "text-success" : "text-danger"?>">
+            R$ <?=number_format($resultado, 2, ',', '.')?>
+        </h2>
+        <small class="text-muted">Período: <?=date("d/m/Y", strtotime($dataInicial))?> a <?=date("d/m/Y", strtotime($dataFinal))?></small>
+    </div>
+</div>

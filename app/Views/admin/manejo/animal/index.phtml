@@ -1,0 +1,61 @@
+<?php $this->layout("app/template/base"); ?>
+
+<?php $this->start("page-buttons") ?>
+    <?php if (!empty($permissao["inserir"])) : ?>
+        <a class="btn btn-primary" href="<?=$router->route("admin.manejo.animal.novo")?>"><i class="fa fa-plus fa-fw"></i> Novo Animal</a>
+    <?php endif ?>
+<?php $this->end() ?>
+
+<div class="card crud-table-card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover table-sm table-datatable table-datatable-alt crud-table">
+                <thead>
+                    <tr>
+                        <th>Identificação</th>
+                        <th>Sexo</th>
+                        <th>Raça</th>
+                        <th>Lote</th>
+                        <th>Fornecedor</th>
+                        <th>Status</th>
+                        <th class="text-end actions-column"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($dados as $d) : ?>
+                        <tr>
+                            <td>
+                                <?php if ($permissao["editar"]) : ?>
+                                    <a class="edit" href="<?=$router->route("admin.manejo.animal.editar", ["id" => $d->hash])?>"><?=$d->identificacao?></a>
+                                <?php else : ?>
+                                    <span><?=$d->identificacao?></span>
+                                <?php endif ?>
+                            </td>
+                            <td><?=$d->sexo ?: "-"?></td>
+                            <td><?=$d->raca ?: "-"?></td>
+                            <td>
+                                <?=$d->lote_nome ?: "-"?>
+                                <?php if (!empty($d->lote_codigo)) : ?>
+                                    <small><?=$d->lote_codigo?></small>
+                                <?php endif ?>
+                            </td>
+                            <td><?=$d->fornecedor_razao ?: "-"?></td>
+                            <td><?=$d->situacao_badge ?: "-"?></td>
+                            <td class="text-end actions-column">
+                                <div class="table-actions">
+                                    <a class="table-action-btn" data-tooltip="true" title="Pesagens" href="<?=$router->route("admin.manejo.pesagem.index", ["id_animal" => $d->id])?>"><i class="uil uil-weight"></i></a>
+                                    <?php if ($permissao["editar"]) : ?>
+                                        <a class="table-action-btn" data-tooltip="true" title="Editar" href="<?=$router->route("admin.manejo.animal.editar", ["id" => $d->hash])?>"><i class="uil-edit-alt"></i></a>
+                                    <?php endif ?>
+                                    <?php if ($permissao["excluir"]) : ?>
+                                        <button type="button" class="table-action-btn table-action-danger" data-tooltip="true" title="Excluir animal" onclick="Delete('manejo/animais/delete', '<?=$d->hash?>')"><i class="uil uil-trash"></i></button>
+                                    <?php endif ?>
+                                </div>
+                            </td>
+                        </tr>
+                    <?php endforeach ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

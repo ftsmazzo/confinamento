@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Proposta × Entrega × Planilhas — Conclusão de Escopo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink: #1a2332;
+      --muted: #5c6b7a;
+      --line: #d8e0e8;
+      --paper: #f7f4ef;
+      --card: #ffffff;
+      --forest: #1f5c45;
+      --forest-soft: #e6f2ec;
+      --amber: #9a6b16;
+      --amber-soft: #f8efd9;
+      --clay: #8b3a2a;
+      --clay-soft: #f6e8e4;
+      --sky: #245b7a;
+      --sky-soft: #e5f1f7;
+      --plum: #4a3f6b;
+      --plum-soft: #eeeaf5;
+      --radius: 14px;
+      --shadow: 0 1px 0 rgba(26, 35, 50, 0.04);
+      --max: 1100px;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: "Manrope", system-ui, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(1100px 480px at 0% -5%, #e8efe9 0%, transparent 55%),
+        radial-gradient(800px 380px at 100% 0%, #ebe6f2 0%, transparent 48%),
+        var(--paper);
+      line-height: 1.55;
+    }
+    .wrap { max-width: var(--max); margin: 0 auto; padding: 32px 20px 80px; }
+
+    .cover {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      padding: 40px 36px 34px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+    .cover::before {
+      content: "";
+      position: absolute; inset: 0 auto 0 0; width: 8px;
+      background: var(--plum);
+    }
+    .eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 0.78rem; font-weight: 600; letter-spacing: 0.08em;
+      text-transform: uppercase; color: var(--plum); margin-bottom: 14px;
+    }
+    .eyebrow span { width: 8px; height: 8px; border-radius: 50%; background: var(--plum); }
+    h1 {
+      font-family: "Fraunces", Georgia, serif;
+      font-weight: 700;
+      font-size: clamp(1.75rem, 3.2vw, 2.35rem);
+      line-height: 1.15; margin: 0 0 12px; letter-spacing: -0.02em;
+    }
+    .lede { max-width: 70ch; color: var(--muted); font-size: 1.02rem; margin: 0 0 18px; }
+    .meta { display: flex; flex-wrap: wrap; gap: 10px; }
+    .chip {
+      font-size: 0.8rem; font-weight: 600; padding: 6px 12px; border-radius: 999px;
+      background: var(--plum-soft); color: var(--plum); border: 1px solid #d4cce6;
+    }
+    .chip.alt { background: var(--forest-soft); color: var(--forest); border-color: #c5ddd0; }
+
+    .stats {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: 22px;
+    }
+    .stat {
+      background: var(--card); border: 1px solid var(--line);
+      border-radius: var(--radius); padding: 18px 16px;
+    }
+    .stat b {
+      display: block; font-family: "Fraunces", Georgia, serif;
+      font-size: 1.7rem; line-height: 1; margin-bottom: 6px;
+    }
+    .stat span { font-size: 0.82rem; color: var(--muted); font-weight: 500; }
+    .stat.ok b { color: var(--forest); }
+    .stat.warn b { color: var(--amber); }
+    .stat.gap b { color: var(--clay); }
+    .stat.extra b { color: var(--plum); }
+
+    .verdict {
+      margin-top: 18px;
+      background: linear-gradient(180deg, #f4f1f9, #eeeaf5);
+      border: 1px solid #d4cce6; border-radius: var(--radius);
+      padding: 18px 20px; color: #2f2944; font-size: 0.98rem;
+    }
+    .verdict strong { color: var(--plum); }
+
+    nav.toc {
+      margin: 28px 0; background: var(--card); border: 1px solid var(--line);
+      border-radius: var(--radius); padding: 18px 20px;
+    }
+    nav.toc h2 {
+      font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.08em;
+      color: var(--muted); margin: 0 0 12px; font-weight: 700;
+      font-family: "Manrope", sans-serif;
+    }
+    nav.toc ol {
+      margin: 0; padding: 0; list-style: none;
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px 16px;
+    }
+    nav.toc a {
+      color: var(--ink); text-decoration: none; font-size: 0.9rem;
+      font-weight: 500; display: flex; gap: 8px; padding: 6px 0;
+    }
+    nav.toc a:hover { color: var(--plum); }
+    nav.toc a em { font-style: normal; color: var(--plum); font-weight: 700; min-width: 1.2em; }
+
+    section { margin: 36px 0; scroll-margin-top: 20px; }
+    .section-head {
+      display: flex; align-items: baseline; gap: 14px;
+      margin-bottom: 16px; padding-bottom: 10px; border-bottom: 2px solid var(--ink);
+    }
+    .section-head .num {
+      font-family: "Fraunces", Georgia, serif; font-size: 1.6rem;
+      color: var(--plum); font-weight: 700;
+    }
+    h2 {
+      font-family: "Fraunces", Georgia, serif; font-size: 1.5rem;
+      margin: 0; letter-spacing: -0.01em;
+    }
+    h3 { font-family: "Fraunces", Georgia, serif; font-size: 1.12rem; margin: 22px 0 10px; }
+    p { margin: 0 0 12px; }
+    .muted { color: var(--muted); }
+    .small { font-size: 0.88rem; }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+
+    .card {
+      background: var(--card); border: 1px solid var(--line);
+      border-radius: var(--radius); padding: 18px; box-shadow: var(--shadow);
+    }
+    .card h3 { margin-top: 0; }
+    .card.ok { background: var(--forest-soft); border-color: #c5ddd0; }
+    .card.warn { background: var(--amber-soft); border-color: #ead7a8; }
+    .card.gap { background: var(--clay-soft); border-color: #e8cfc7; }
+    .card.extra { background: var(--plum-soft); border-color: #d4cce6; }
+    .card.sky { background: var(--sky-soft); border-color: #bdd5e3; }
+
+    .table-wrap {
+      overflow-x: auto; border: 1px solid var(--line);
+      border-radius: var(--radius); background: var(--card);
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+    th, td { text-align: left; padding: 10px 13px; border-bottom: 1px solid var(--line); vertical-align: top; }
+    th {
+      background: #eef2f6; font-size: 0.72rem; text-transform: uppercase;
+      letter-spacing: 0.05em; color: var(--muted); font-weight: 700;
+    }
+    tr:last-child td { border-bottom: 0; }
+    tr.ok td { background: #f4faf6; }
+    tr.parcial td { background: #fbf7ee; }
+    tr.nao td { background: #fbf3f1; }
+    tr.extra td { background: #f6f3fb; }
+
+    .badge {
+      display: inline-block; font-size: 0.7rem; font-weight: 700;
+      letter-spacing: 0.03em; text-transform: uppercase;
+      padding: 3px 8px; border-radius: 6px; white-space: nowrap;
+    }
+    .badge.ok { background: var(--forest-soft); color: var(--forest); }
+    .badge.warn { background: var(--amber-soft); color: var(--amber); }
+    .badge.nao { background: var(--clay-soft); color: var(--clay); }
+    .badge.extra { background: var(--plum-soft); color: var(--plum); }
+    .badge.cobertura { background: var(--forest-soft); color: var(--forest); }
+    .badge.adequacao { background: var(--amber-soft); color: var(--amber); }
+    .badge.fora { background: var(--clay-soft); color: var(--clay); }
+    .badge.diff-baixa { background: var(--forest-soft); color: var(--forest); }
+    .badge.diff-media { background: var(--amber-soft); color: var(--amber); }
+    .badge.diff-alta { background: var(--clay-soft); color: var(--clay); }
+
+    .legend { display: flex; flex-wrap: wrap; gap: 10px; margin: 0 0 14px; }
+
+    ul.clean { margin: 0; padding: 0; list-style: none; }
+    ul.clean li {
+      position: relative; padding: 7px 0 7px 18px;
+      border-bottom: 1px solid rgba(0,0,0,.06); font-size: 0.92rem;
+    }
+    ul.clean li:last-child { border-bottom: 0; }
+    ul.clean li::before {
+      content: ""; position: absolute; left: 0; top: 15px;
+      width: 7px; height: 7px; border-radius: 50%; background: var(--forest);
+    }
+    .card.gap ul.clean li::before,
+    .card.warn ul.clean li::before { background: var(--amber); }
+    .card.extra ul.clean li::before { background: var(--plum); }
+
+    /* Conclusion blocks XYZ */
+    .xyz {
+      display: grid;
+      gap: 14px;
+    }
+    .xyz-block {
+      border-radius: var(--radius);
+      border: 1px solid var(--line);
+      overflow: hidden;
+      background: var(--card);
+    }
+    .xyz-block header {
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 1px solid var(--line);
+    }
+    .xyz-block header .letter {
+      font-family: "Manrope", sans-serif;
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      min-width: 72px;
+      height: 36px;
+      padding: 0 8px;
+      border-radius: 10px;
+      display: grid; place-items: center;
+      white-space: nowrap;
+    }
+    .xyz-block header h3 { margin: 0; font-size: 1.1rem; }
+    .xyz-block header p { margin: 0; font-size: 0.85rem; color: var(--muted); }
+    .xyz-block .body { padding: 16px 18px; }
+    .xyz-block.promised header { background: #eef2f6; }
+    .xyz-block.promised .letter { background: #dde5ee; color: var(--ink); }
+    .xyz-block.delivered header { background: var(--forest-soft); }
+    .xyz-block.delivered .letter { background: #c5ddd0; color: var(--forest); }
+    .xyz-block.missing header { background: var(--amber-soft); }
+    .xyz-block.missing .letter { background: #ead7a8; color: var(--amber); }
+    .xyz-block.beyond header { background: var(--plum-soft); }
+    .xyz-block.beyond .letter { background: #d4cce6; color: var(--plum); }
+
+    .path-step {
+      display: grid;
+      grid-template-columns: 56px 1fr;
+      gap: 14px;
+      margin-bottom: 12px;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 16px;
+    }
+    .path-step .n {
+      font-family: "Fraunces", Georgia, serif;
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--plum);
+      width: 44px; height: 44px;
+      border-radius: 10px;
+      background: var(--plum-soft);
+      display: grid; place-items: center;
+    }
+    .path-step h4 { margin: 0 0 6px; font-size: 1rem; }
+    .path-step p { margin: 0; font-size: 0.9rem; color: var(--muted); }
+    .path-meta {
+      display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px;
+    }
+    .path-meta span {
+      font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.04em; padding: 4px 8px; border-radius: 6px;
+      background: #eef2f6; color: var(--muted);
+    }
+
+    .risk-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .risk {
+      border-left: 4px solid var(--clay);
+      background: var(--clay-soft);
+      border-radius: 0 12px 12px 0;
+      padding: 14px 16px;
+    }
+    .risk.ok { border-left-color: var(--forest); background: var(--forest-soft); }
+    .risk.warn { border-left-color: var(--amber); background: var(--amber-soft); }
+    .risk h4 { margin: 0 0 6px; font-size: 0.95rem; }
+    .risk p { margin: 0; font-size: 0.88rem; color: var(--ink); }
+
+    .final-box {
+      margin-top: 18px;
+      background: var(--ink);
+      color: #e8eef4;
+      border-radius: 16px;
+      padding: 24px 22px;
+    }
+    .final-box h3 {
+      font-family: "Fraunces", Georgia, serif;
+      color: #fff;
+      margin: 0 0 12px;
+      font-size: 1.25rem;
+    }
+    .final-box p { color: #c5d0db; margin: 0 0 10px; font-size: 0.95rem; }
+    .final-box p:last-child { margin-bottom: 0; }
+    .final-box strong { color: #fff; }
+
+    footer {
+      margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--line);
+      color: var(--muted); font-size: 0.82rem;
+    }
+
+    @media (max-width: 900px) {
+      .stats, .grid-2, .grid-3, nav.toc ol, .risk-grid { grid-template-columns: 1fr; }
+      .cover { padding: 28px 22px; }
+      .path-step { grid-template-columns: 1fr; }
+    }
+    @media print {
+      body { background: #fff; }
+      nav.toc { display: none; }
+      .cover, .card, .table-wrap, .stat, .xyz-block, .path-step, .final-box { break-inside: avoid; box-shadow: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+
+    <header class="cover">
+      <div class="eyebrow"><span></span> Análise de escopo · Documento interno</div>
+      <h1>Proposta × Entrega × Demandas das planilhas</h1>
+      <p class="lede">
+        Cruzamento entre o que a <strong>Proposta de Escopo (Abril/2026)</strong> prometeu,
+        o que o sistema entregou, o que ainda falta, o que veio além do combinado,
+        e o que as planilhas da cliente pedem agora — com um caminho claro do que
+        incluir, o que cortar e o que não avançar.
+      </p>
+      <div class="meta">
+        <span class="chip">proposta_detalhada_confinamento_gado.docx</span>
+        <span class="chip alt">Sistema + planilhas Farmácia / Trato</span>
+      </div>
+
+      <div class="stats">
+        <div class="stat ok"><b>~80%</b><span>Prometido e entregue (núcleo)</span></div>
+        <div class="stat warn"><b>~15%</b><span>Prometido e parcial</span></div>
+        <div class="stat gap"><b>~5%</b><span>Prometido e não entregue</span></div>
+        <div class="stat extra"><b>+</b><span>Entrega adicional</span></div>
+      </div>
+    </header>
+
+    <nav class="toc" aria-label="Sumário">
+      <h2>Sumário</h2>
+      <ol>
+        <li><a href="#s1"><em>1</em> Scorecard detalhado</a></li>
+        <li><a href="#s2"><em>2</em> Extras fora da proposta</a></li>
+        <li><a href="#s3"><em>3</em> Lacunas da proposta</a></li>
+        <li><a href="#s4"><em>4</em> Planilhas: cobertura e decisões</a></li>
+        <li><a href="#s5"><em>5</em> Dificuldade, risco e caminho</a></li>
+        <li><a href="#s6"><em>6</em> Conclusão final</a></li>
+      </ol>
+    </nav>
+
+    <!-- 1 -->
+    <section id="s1">
+      <div class="section-head"><span class="num">01</span><h2>Scorecard — o que a proposta prometeu</h2></div>
+      <div class="legend">
+        <span class="badge ok">Entregue</span>
+        <span class="badge warn">Parcial</span>
+        <span class="badge nao">Não entregue</span>
+        <span class="badge extra">Extra</span>
+      </div>
+
+      <h3>Módulos (visão geral da proposta)</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Prometido</th><th>Status</th><th>Entrega observada</th></tr></thead>
+          <tbody>
+            <tr class="ok"><td>Cadastros gerais</td><td><span class="badge ok">Entregue</span></td><td>Unidades, currais, piquetes, locais, centros de custo, usuários</td></tr>
+            <tr class="ok"><td>Operação animal</td><td><span class="badge ok">Entregue</span></td><td>Entrada, lote, localização, pesagem, dieta, saída, mortalidade</td></tr>
+            <tr class="ok"><td>Nutrição e ração</td><td><span class="badge ok">Entregue</span></td><td>Fórmulas, confecção c/ baixa, programação, trato, cocho, ajuste</td></tr>
+            <tr class="parcial"><td>Estoque</td><td><span class="badge warn">Parcial</span></td><td>Movimentações e validade ok; inventário formal não</td></tr>
+            <tr class="ok"><td>Sanitário</td><td><span class="badge ok">Entregue</span></td><td>Protocolos, aplicações, carência com bloqueio, baixa automática</td></tr>
+            <tr class="parcial"><td>Financeiro e custos</td><td><span class="badge warn">Parcial</span></td><td>Rentabilidade + pagar/receber; rateio genérico não</td></tr>
+            <tr class="parcial"><td>Relatórios e indicadores</td><td><span class="badge warn">Parcial</span></td><td>GMD, consumo, eficiência, mortalidade, rentabilidade; faltam alguns operacionais</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Cadastros e movimentações — detalhe</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Item da proposta</th><th>Status</th><th>Nota</th></tr></thead>
+          <tbody>
+            <tr class="ok"><td>Estrutura (unidade, curral, piquete, estoque, C.C.)</td><td><span class="badge ok">Entregue</span></td><td>—</td></tr>
+            <tr class="ok"><td>Pessoas (usuário, funcionário, fornecedor, cliente)</td><td><span class="badge ok">Entregue</span></td><td>—</td></tr>
+            <tr class="nao"><td>Logística (transportadora, veículo, frete, rota, motorista)</td><td><span class="badge nao">Não</span></td><td>Capítulo inteiro ausente</td></tr>
+            <tr class="ok"><td>Zootécnico núcleo (animal, lote, tipos entrada/saída, perda)</td><td><span class="badge ok">Entregue</span></td><td>—</td></tr>
+            <tr class="parcial"><td>Raça / categoria / origem dedicada</td><td><span class="badge warn">Parcial</span></td><td>Campo ou via fornecedor; sem mestres</td></tr>
+            <tr class="ok"><td>Sanitário completo + carência</td><td><span class="badge ok">Entregue</span></td><td>Regra de bloqueio atendida</td></tr>
+            <tr class="ok"><td>Nutrição (ingrediente, fórmula, fase, parâmetro)</td><td><span class="badge ok">Entregue</span></td><td>Valores de parâmetro nas fórmulas ainda vazios</td></tr>
+            <tr class="nao"><td>Equipamentos de fábrica / turnos de produção</td><td><span class="badge nao">Não</span></td><td>—</td></tr>
+            <tr class="ok"><td>Confecção com baixa automática de ingredientes</td><td><span class="badge ok">Entregue</span></td><td>Regra 7 atendida</td></tr>
+            <tr class="ok"><td>Programação / fornecimento / cocho / ajuste</td><td><span class="badge ok">Entregue</span></td><td>Telas ok; cálculo ainda manual</td></tr>
+            <tr class="ok"><td>Aplicação com baixa de medicamento</td><td><span class="badge ok">Entregue</span></td><td>—</td></tr>
+            <tr class="nao"><td>Inventário físico formal</td><td><span class="badge nao">Não</span></td><td>—</td></tr>
+            <tr class="nao"><td>Rateio de custos indiretos</td><td><span class="badge nao">Não</span></td><td>Fase 3 incompleta</td></tr>
+            <tr class="parcial"><td>Apuração custo × receita por lote</td><td><span class="badge warn">Parcial</span></td><td>Relatório de rentabilidade existe</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Regras de negócio (cap. 7)</h3>
+      <div class="grid-2">
+        <div class="card ok">
+          <h3>Atendidas</h3>
+          <ul class="clean">
+            <li>Auditoria básica (usuário/data)</li>
+            <li>Lote como entidade principal</li>
+            <li>Baixa automática de ingredientes na fabricação</li>
+            <li>Baixa automática de medicamentos</li>
+            <li>Carência bloqueia saída</li>
+            <li>Pesagens alimentam GMD</li>
+            <li>Histórico de transferência entre currais</li>
+            <li>Permissões por perfil</li>
+          </ul>
+        </div>
+        <div class="card warn">
+          <h3>Abertas / parciais</h3>
+          <ul class="clean">
+            <li>Inventário com justificativa obrigatória</li>
+            <li>Rateio de custos indiretos</li>
+            <li>Aprovação específica de exclusões/ajustes</li>
+            <li>Parâmetros nutricionais preenchidos nas fórmulas</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2 -->
+    <section id="s2">
+      <div class="section-head"><span class="num">02</span><h2>Entrega adicional — o que a aplicação tem e a proposta não pedia</h2></div>
+      <p class="muted small">
+        Itens já entregues além do documento. Valor agregado, mas <strong>não devem ser ampliados</strong>
+        nesta rodada — o risco é transformar extra em nova obrigação.
+      </p>
+      <div class="grid-3">
+        <div class="card extra">
+          <h3>Calendário operacional</h3>
+          <p class="small">Trato, carência, validade, lembretes e contas numa agenda única.</p>
+        </div>
+        <div class="card extra">
+          <h3>Contas a pagar / receber</h3>
+          <p class="small">Parcelas, baixa, DRE, fluxo e extrato — mais amplo que “custos por lote”.</p>
+        </div>
+        <div class="card extra">
+          <h3>Dashboard e atalhos</h3>
+          <p class="small">Indicadores, alertas e lançamentos rápidos.</p>
+        </div>
+        <div class="card extra">
+          <h3>Eficiência de trato / alimentar</h3>
+          <p class="small">Relatórios de previsto×realizado e conversão além da lista básica.</p>
+        </div>
+        <div class="card extra">
+          <h3>Manual / tutorial no sistema</h3>
+          <p class="small">Documentação acessível pela interface.</p>
+        </div>
+        <div class="card extra">
+          <h3>Preferências de usuário</h3>
+          <p class="small">Visões salvas de listas e calendário.</p>
+        </div>
+      </div>
+      <div class="card warn" style="margin-top:14px">
+        <h3>Regra de contenção para a entrega adicional</h3>
+        <p class="small" style="margin:0">
+          Manter o que já existe. Não abrir melhorias novas em cima desses extras
+          (ex.: calendário avançado, BI financeiro, app). Qualquer evolução dessa entrega adicional
+          só entra se for correção de defeito, não feature.
+        </p>
+      </div>
+    </section>
+
+    <!-- 3 -->
+    <section id="s3">
+      <div class="section-head"><span class="num">03</span><h2>Ainda pendente — o que a proposta prometeu e ainda falta</h2></div>
+      <div class="grid-2">
+        <div class="card gap">
+          <h3>Pode permanecer fora (baixo impacto operacional atual)</h3>
+          <ul class="clean">
+            <li>Módulo logístico completo</li>
+            <li>Transportadoras / motoristas</li>
+            <li>Equipamentos de fábrica e turnos de produção</li>
+            <li>Cadastros mestres de raça / categoria animal</li>
+            <li>Contas caixa/banco dedicadas</li>
+          </ul>
+        </div>
+        <div class="card warn">
+          <h3>Relevante se a operação cobrar o escopo original</h3>
+          <ul class="clean">
+            <li>Inventário físico formal</li>
+            <li>Rateio de custos indiretos (Fase 3)</li>
+            <li>Alguns relatórios operacionais (ocupação, histórico de dieta)</li>
+            <li>Preencher parâmetros MS/% nas fórmulas</li>
+            <li>Tornar a programação de trato calculada (hoje manual)</li>
+          </ul>
+        </div>
+      </div>
+      <p class="small muted" style="margin-top:12px">
+        Leitura por fases da proposta: Fase 1 (base) e a maior parte da Fase 2 (controle técnico)
+        estão entregues. Fase 3 (gestão econômica) começou (rentabilidade + financeiro) e não fechou rateio.
+      </p>
+    </section>
+
+    <!-- 4 -->
+    <section id="s4">
+      <div class="section-head"><span class="num">04</span><h2>Demandas das planilhas — cobertura e decisões</h2></div>
+      <p class="muted small">
+        A nova solicitação (cobrir o que as planilhas fazem) precisa ser filtrada pela proposta,
+        pela complexidade e pelo risco de estourar o que nunca foi prometido.
+      </p>
+
+      <div class="grid-3" style="margin-bottom:16px">
+        <div class="card ok">
+          <h3>Coberto pela proposta</h3>
+          <p class="small">Entregar/completar — está no documento original.</p>
+        </div>
+        <div class="card warn">
+          <h3>Adequação recomendada</h3>
+          <p class="small">Pequena adequação; alto retorno; baixo risco de escopo.</p>
+        </div>
+        <div class="card gap">
+          <h3>Fora desta rodada</h3>
+          <p class="small">Fora do combinado ou exige alteração grande demais agora.</p>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Demanda da planilha</th>
+              <th>Decisão</th>
+              <th>Âncora na proposta</th>
+              <th>Dificuldade</th>
+              <th>Decisão</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="ok">
+              <td>Farmácia: cadastro, compra, saldo, validade, carência</td>
+              <td><span class="badge cobertura">Coberto pela proposta</span></td>
+              <td>4.5 / 4.7 / 5.3 / 5.4</td>
+              <td><span class="badge diff-baixa">Baixa</span></td>
+              <td>Já no sistema → <strong>importar dados</strong></td>
+            </tr>
+            <tr class="ok">
+              <td>Pesos / animais por curral</td>
+              <td><span class="badge cobertura">Coberto pela proposta</span></td>
+              <td>4.4 / 5.1</td>
+              <td><span class="badge diff-baixa">Baixa</span></td>
+              <td>Já no sistema → <strong>importar rebanho</strong></td>
+            </tr>
+            <tr class="ok">
+              <td>Programação diária de trato por curral</td>
+              <td><span class="badge cobertura">Coberto pela proposta</span></td>
+              <td>5.2 Programação de trato</td>
+              <td><span class="badge diff-media">Média</span></td>
+              <td>Completar uso real (tela existe)</td>
+            </tr>
+            <tr class="ok">
+              <td>Cálculo kg: GMD, %PV, %MS, cabeças, 4 turnos</td>
+              <td><span class="badge cobertura">Coberto pela proposta</span></td>
+              <td>4.6 parâmetros + 5.2 + 8.2 consumo MS</td>
+              <td><span class="badge diff-media">Média</span></td>
+              <td><strong>Motor de previsão</strong> — completar o prometido</td>
+            </tr>
+            <tr class="ok">
+              <td>Quadro previsto × ocorrido (visão diária)</td>
+              <td><span class="badge cobertura">Coberto pela proposta</span></td>
+              <td>5.2 + eficiência / leitura de cocho</td>
+              <td><span class="badge diff-media">Média</span></td>
+              <td>UX da programação/fornecimento</td>
+            </tr>
+            <tr class="ok">
+              <td>Fases CRESCIMENTO / TERMINAÇÃO</td>
+              <td><span class="badge cobertura">Coberto pela proposta</span></td>
+              <td>4.6 fases nutricionais</td>
+              <td><span class="badge diff-baixa">Baixa</span></td>
+              <td>Já entregue</td>
+            </tr>
+            <tr class="parcial">
+              <td>Campos Linha e Giro</td>
+              <td><span class="badge adequacao">Adequação recomendada</span></td>
+              <td>Não explícito; estrutura lote/curral sim</td>
+              <td><span class="badge diff-baixa">Baixa</span></td>
+              <td>Incluir só como <strong>1–2 campos</strong>; sem módulo novo</td>
+            </tr>
+            <tr class="parcial">
+              <td>Sugestão de ajuste a partir do escore de cocho</td>
+              <td><span class="badge adequacao">Adequação recomendada</span></td>
+              <td>5.2 leitura + ajuste (já previstos)</td>
+              <td><span class="badge diff-media">Média</span></td>
+              <td>Incluir se sobrar capacidade após o motor</td>
+            </tr>
+            <tr class="parcial">
+              <td>Custo alimentar R$/cab/dia no quadro</td>
+              <td><span class="badge adequacao">Adequação recomendada</span></td>
+              <td>8.2 / 8.5 / 8.6</td>
+              <td><span class="badge diff-media">Média</span></td>
+              <td>Só como extensão de relatório existente</td>
+            </tr>
+            <tr class="nao">
+              <td>App offline / coleta no curral</td>
+              <td><span class="badge fora">Fora desta rodada</span></td>
+              <td>Não prometido</td>
+              <td><span class="badge diff-alta">Alta</span></td>
+              <td>Não entregar</td>
+            </tr>
+            <tr class="nao">
+              <td>Integração balança / brinco</td>
+              <td><span class="badge fora">Fora desta rodada</span></td>
+              <td>Não prometido</td>
+              <td><span class="badge diff-alta">Alta</span></td>
+              <td>Não entregar</td>
+            </tr>
+            <tr class="nao">
+              <td>Closeout / previsão de abate tipo TGC</td>
+              <td><span class="badge fora">Fora desta rodada</span></td>
+              <td>Indicadores sim; closeout completo não</td>
+              <td><span class="badge diff-alta">Alta</span></td>
+              <td>Não entregar nesta rodada</td>
+            </tr>
+            <tr class="nao">
+              <td>Ampliar a entrega adicional (calendário/BI/financeiro novo)</td>
+              <td><span class="badge fora">Fora desta rodada</span></td>
+              <td>Já está além da proposta</td>
+              <td><span class="badge diff-alta">Alta*</span></td>
+              <td>Congelar evolução da entrega adicional</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 5 -->
+    <section id="s5">
+      <div class="section-head"><span class="num">05</span><h2>Caminho proposto — o que entregar e o que não</h2></div>
+      <p class="muted small">
+        Critérios: (1) está na proposta? (2) a planilha precisa? (3) esforço/complexidade?
+        (4) risco de virar obrigação nova sobre o que já foi extra?
+      </p>
+
+      <h3>Ordem de execução</h3>
+      <div class="path-step">
+        <div class="n">1</div>
+        <div>
+          <h4>Completar o que a proposta já cobre — motor de trato + parâmetros + quadro diário</h4>
+          <p>
+            É a demanda central das planilhas e está ancorada nos itens 4.6, 5.2 e 8.2 da proposta.
+            Sem isso, a operação continua no Excel. Com isso, a proposta deixa de estar “só com tela”
+            e passa a cumprir a função prometida.
+          </p>
+          <div class="path-meta">
+            <span>Escopo: proposta</span>
+            <span>Complexidade: média</span>
+            <span>Risco comercial: baixo</span>
+            <span>Prioridade: máxima</span>
+          </div>
+        </div>
+      </div>
+      <div class="path-step">
+        <div class="n">2</div>
+        <div>
+          <h4>Implantar dados — farmácia e rebanho/currais</h4>
+          <p>
+            Não é feature nova: é carga dos cadastros e movimentações já existentes.
+            Remove a dependência das planilhas de estoque e pesos.
+          </p>
+          <div class="path-meta">
+            <span>Escopo: implantação</span>
+            <span>Complexidade: baixa/média</span>
+            <span>Risco: qualidade dos dados</span>
+            <span>Prioridade: alta</span>
+          </div>
+        </div>
+      </div>
+      <div class="path-step">
+        <div class="n">3</div>
+        <div>
+          <h4>Incluir adequações com teto — Linha/Giro (campos) e, se couber, sugestão de cocho</h4>
+          <p>
+            Só o mínimo para o vocabulário da fazenda. Se Linha/Giro virar estrutura nova de “linhas
+            de confinamento”, corta. Sugestão via cocho só depois do motor estável.
+          </p>
+          <div class="path-meta">
+            <span>Escopo: adequação leve</span>
+            <span>Complexidade: baixa</span>
+            <span>Risco: creep de escopo</span>
+            <span>Prioridade: média</span>
+          </div>
+        </div>
+      </div>
+      <div class="path-step">
+        <div class="n">4</div>
+        <div>
+          <h4>Correções técnicas (defeitos) — sem ampliar produto</h4>
+          <p>
+            Typo de menu, edição de parcela financeira, limpeza de tabelas legado.
+            São higiene do que já foi entregue, não novas promessas.
+          </p>
+          <div class="path-meta">
+            <span>Tipo: correção</span>
+            <span>Complexidade: baixa</span>
+            <span>Risco comercial: nulo</span>
+            <span>Prioridade: contínua</span>
+          </div>
+        </div>
+      </div>
+      <div class="path-step">
+        <div class="n">5</div>
+        <div>
+          <h4>Congelar o fora desta rodada e a expansão da entrega adicional</h4>
+          <p>
+            Não abrir app, balança, closeout avançado, logística, rateio profundo nem evolução
+            da entrega adicional já existente (calendário/financeiro/BI). Isso evita pagar duas vezes:
+            uma pelo que não foi prometido e outra pelo que já foi entregue além.
+          </p>
+          <div class="path-meta">
+            <span>Decisão: não entregar</span>
+            <span>Motivo: fora da proposta + alto custo</span>
+            <span>Risco se avançar: estouro de prazo/expectativa</span>
+          </div>
+        </div>
+      </div>
+
+      <h3>Mapa de riscos</h3>
+      <div class="risk-grid">
+        <div class="risk ok">
+          <h4>Risco controlado — completar o que a proposta já cobre</h4>
+          <p>Alinha proposta + planilha. Complexidade média, retorno imediato na operação diária.</p>
+        </div>
+        <div class="risk warn">
+          <h4>Risco médio — adequação sem teto</h4>
+          <p>“Só mais um campo” vira módulo. Mitigação: limite explícito (campos, não estrutura nova).</p>
+        </div>
+        <div class="risk">
+          <h4>Risco alto — entregar o fora desta rodada</h4>
+          <p>Itens fora da proposta, caros, e deslocam o foco do que ainda está incompleto no combinado.</p>
+        </div>
+        <div class="risk">
+          <h4>Risco alto — avançar na entrega adicional</h4>
+          <p>Itens de entrega adicional, se forem ampliados, viram expectativa permanente sem cobertura contratual.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6 CONCLUSION -->
+    <section id="s6">
+      <div class="section-head"><span class="num">06</span><h2>Conclusão final</h2></div>
+
+      <div class="xyz">
+        <div class="xyz-block promised">
+          <header>
+            <div class="letter">Escopo</div>
+            <div>
+              <h3>Escopo prometido</h3>
+              <p>ERP de confinamento: cadastros, operação animal, nutrição/trato, estoque, sanitário, custos e indicadores — em 3 fases.</p>
+            </div>
+          </header>
+          <div class="body">
+            <p class="small" style="margin:0">
+              Núcleo: estrutura física, lotes/animais, fórmulas e tratos, estoque, protocolos com carência,
+              baixas automáticas, indicadores (GMD, consumo, mortalidade, rentabilidade) e evolução por fases
+              até gestão econômica.
+            </p>
+          </div>
+        </div>
+
+        <div class="xyz-block delivered">
+          <header>
+            <div class="letter">Entregue</div>
+            <div>
+              <h3>Já entregue</h3>
+              <p>~80% do núcleo das Fases 1 e 2, com início da Fase 3.</p>
+            </div>
+          </header>
+          <div class="body">
+            <ul class="clean">
+              <li>Operação animal completa (entrada → saída/mortalidade)</li>
+              <li>Nutrição com confecção, programação, fornecimento, cocho e ajuste</li>
+              <li>Sanitário com carência e bloqueio de saída</li>
+              <li>Estoque operacional (sem inventário formal)</li>
+              <li>Rentabilidade por lote + indicadores técnicos principais</li>
+              <li>Regras críticas de baixa automática atendidas</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="xyz-block missing">
+          <header>
+            <div class="letter">Pendente</div>
+            <div>
+              <h3>Ainda pendente</h3>
+              <p>Itens secundários + fechamento fino do que já está na tela.</p>
+            </div>
+          </header>
+          <div class="body">
+            <div class="grid-2">
+              <div>
+                <p class="small"><strong>Pode ficar de lado agora:</strong> logística, fábrica/equipamentos, mestres de raça/categoria, contas caixa/banco.</p>
+              </div>
+              <div>
+                <p class="small"><strong>Precisa atenção se a operação exigir o escopo:</strong> inventário formal, rateio, parâmetros MS preenchidos, programação de trato <em>calculada</em> (não só cadastrada).</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="xyz-block beyond">
+          <header>
+            <div class="letter">Adicional</div>
+            <div>
+              <h3>Entrega adicional</h3>
+              <p>Funcionalidades além do combinado, já no ar — manter, não expandir.</p>
+            </div>
+          </header>
+          <div class="body">
+            <p class="small" style="margin:0">
+              Calendário operacional, contas a pagar/receber com parcelas e DRE/fluxo, dashboard,
+              relatórios de eficiência de trato/alimentar, manual no sistema e preferências de usuário.
+              <strong>Decisão:</strong> congelar evolução desses eixos nesta rodada (exceto correção de defeito).
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <h3 style="margin-top:28px">Quanto às planilhas</h3>
+      <div class="grid-3">
+        <div class="card ok">
+          <h3>Coberto pela proposta</h3>
+          <p class="small">Farmácia/estoque sanitário, rebanho/pesagens, programação de trato, cálculo via parâmetros nutricionais, previsto×ocorrido, fases de dieta. <strong>Entregar/completar.</strong></p>
+        </div>
+        <div class="card warn">
+          <h3>Adequação recomendada</h3>
+          <p class="small">Linha/Giro como campos simples; sugestão de ajuste por cocho se houver folga; custo alimentar só como extensão de relatório. <strong>Com teto explícito.</strong></p>
+        </div>
+        <div class="card gap">
+          <h3>Fora desta rodada</h3>
+          <p class="small">App offline, balança/brinco, closeout tipo TGC, logística, rateio profundo e qualquer ampliação da entrega adicional. <strong>Fora desta rodada.</strong></p>
+        </div>
+      </div>
+
+      <div class="final-box">
+        <h3>Síntese decisória</h3>
+        <p>
+          <strong>Escopo prometido:</strong> um sistema completo de confinamento por módulos e fases.
+          <strong>Já entregue:</strong> o núcleo operacional e técnico (~80%), com financeiro parcial.
+          <strong>Ainda pendente:</strong> sobretudo logística/inventário/rateio (secundário) e o fechamento
+          funcional da programação de trato (crítico para as planilhas).
+        </p>
+        <p>
+          Há <strong>entrega adicional</strong> além da proposta — isso é crédito, não licença para
+          continuar expandindo esses eixos.
+        </p>
+        <p>
+          Das planilhas: o que é <strong>coberto pela proposta</strong> deve ser completado;
+          o que é <strong>adequação recomendada</strong> entra com limite;
+          o que está <strong>fora desta rodada</strong> não se entrega.
+          O caminho é completar o motor/quadro de trato + importar dados
+          + correções pontuais — e parar aí, para não avançar no que não foi prometido nem no que
+          já foi entregue além do combinado.
+        </p>
+      </div>
+    </section>
+
+    <footer>
+      Análise de escopo · Proposta (Abril/2026) × Sistema entregue × Planilhas Farmácia-Currais e Fornecimento de Trato · Documento interno
+    </footer>
+  </div>
+</body>
+</html>

@@ -1,0 +1,101 @@
+<?php $this->layout("app/template/base"); ?>
+
+<?php $this->start("page-actions") ?>
+<?php $this->end() ?>
+
+<form id="form-nutricao-ajuste-consumo" class="form-validate" action="<?=$url_action?>" method="POST">
+    <input type="hidden" name="csrf" value="<?=$csrf?>">
+    <?php if (!empty($ajuste->id)) : ?>
+        <input type="hidden" name="id" value="<?=$ajuste->hash()?>">
+    <?php endif ?>
+
+    <div class="card crud-form-card">
+        <div class="card-body">
+            <div class="crud-subsection mb-4">
+                <div class="crud-section-copy mb-3">
+                    <h5>Ajuste de Consumo</h5>
+                    <small>Correção técnica formal da quantidade de ração prevista, geralmente motivada por uma leitura de cocho.</small>
+                </div>
+
+                <div class="row">
+                    <?php if ($id_lote) : ?>
+                        <input type="hidden" name="id_lote" value="<?=$id_lote?>">
+                        <?php $loteAtual = null; foreach ($lotes as $l) { if ((int) $l->id === (int) $id_lote) { $loteAtual = $l; break; } } ?>
+                        <div class="col-12">
+                            <div class="alert alert-info mb-0">Ajustando consumo do lote: <strong><?=$loteAtual->nome ?? "#$id_lote"?></strong></div>
+                        </div>
+                    <?php else : ?>
+                        <div class="col-12 col-md-6">
+                            <div class="mb-3">
+                                <label for="id_lote" class="form-label">Lote</label>
+                                <select name="id_lote" id="id_lote" class="form-select select2" data-search="true">
+                                    <option value="">Selecione</option>
+                                    <?php foreach ($lotes as $l) : ?>
+                                        <option value="<?=$l->id?>" <?=isset($ajuste->id_lote) && (int) $ajuste->id_lote === (int) $l->id ? "selected" : ""?>><?=$l->nome?> (<?=$l->codigo?>)</option>
+                                    <?php endforeach ?>
+                                </select>
+                            </div>
+                        </div>
+                    <?php endif ?>
+                    <div class="col-12 col-md-6">
+                        <div class="mb-3">
+                            <label for="id_leitura_cocho" class="form-label">Leitura de Cocho (opcional)</label>
+                            <select name="id_leitura_cocho" id="id_leitura_cocho" class="form-select select2" data-search="true">
+                                <option value="">Nenhuma</option>
+                                <?php foreach ($leituras as $l) : ?>
+                                    <option value="<?=$l->id?>" <?=isset($ajuste->id_leitura_cocho) && (int) $ajuste->id_leitura_cocho === (int) $l->id ? "selected" : ""?>><?=datebr($l->data_leitura)?> - escore <?=$l->escore?></option>
+                                <?php endforeach ?>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-3">
+                        <div class="mb-3">
+                            <label for="data_ajuste" class="form-label">Data</label>
+                            <input type="date" class="form-control" id="data_ajuste" name="data_ajuste" autocomplete="off" value="<?=!empty($ajuste->data_ajuste) ? dateus($ajuste->data_ajuste) : ""?>">
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-3">
+                        <div class="mb-3">
+                            <label for="percentual_ajuste" class="form-label">Percentual de Ajuste</label>
+                            <input type="text" class="form-control" id="percentual_ajuste" name="percentual_ajuste" placeholder="Ex: 5 ou -3" autocomplete="off" value="<?=isset($ajuste->percentual_ajuste) ? number_format((float) $ajuste->percentual_ajuste, 2, ",", ".") : ""?>">
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-3">
+                        <div class="mb-3">
+                            <label for="quantidade_ajustada" class="form-label">Nova Quantidade (opcional)</label>
+                            <input type="text" class="form-control input-decimal" id="quantidade_ajustada" name="quantidade_ajustada" placeholder="0,00" autocomplete="off" value="<?=isset($ajuste->quantidade_ajustada) ? number_format((float) $ajuste->quantidade_ajustada, 2, ",", ".") : ""?>">
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-3">
+                        <div class="mb-3">
+                            <label for="motivo" class="form-label">Motivo</label>
+                            <input type="text" class="form-control" id="motivo" name="motivo" placeholder="Ex: sobra excessiva, ajuste de fase" autocomplete="off" value="<?=$ajuste->motivo ?? ""?>">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="crud-subsection">
+                <div class="crud-section-copy mb-3">
+                    <h5>Observações</h5>
+                    <small>Informações livres para apoio operacional.</small>
+                </div>
+
+                <div class="row">
+                    <div class="col-12">
+                        <div class="mb-3">
+                            <textarea class="form-control" id="observacao" name="observacao" rows="3" placeholder="Observação"><?=$ajuste->observacao ?? ""?></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-3 pt-4 border-top">
+                <div class="d-grid gap-2 d-sm-block">
+                    <button class="btn btn-primary" type="submit">Salvar</button>
+                    <a href="<?=$url_voltar?>" class="btn btn-white"><i class="uil uil-left"></i> Voltar</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>

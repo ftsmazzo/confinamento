@@ -1,0 +1,175 @@
+<?php $this->layout("app/template/base"); ?>
+
+<?php $this->start("page-actions") ?>
+<?php $this->end() ?>
+
+<form id="form-sanitario-aplicacao" class="form-validate" action="<?=$url_action?>" method="POST">
+    <input type="hidden" name="csrf" value="<?=$csrf?>">
+
+    <div class="card crud-form-card">
+        <div class="card-body">
+            <div class="crud-subsection mb-4">
+                <div class="crud-section-copy mb-3">
+                    <h5>Aplicação Sanitária</h5>
+                    <small>Selecione um lote OU um animal (nunca os dois). Se um produto controlado for informado, o estoque é baixado automaticamente.</small>
+                </div>
+
+                <div class="row">
+                    <?php if ($id_lote) : ?>
+                        <input type="hidden" name="id_lote" value="<?=$id_lote?>">
+                        <?php $loteAtual = null; foreach ($lotes as $l) { if ((int) $l->id === (int) $id_lote) { $loteAtual = $l; break; } } ?>
+                        <div class="col-12">
+                            <div class="alert alert-info mb-0">Aplicando no lote: <strong><?=$loteAtual->nome ?? "#$id_lote"?></strong></div>
+                        </div>
+                    <?php elseif ($id_animal) : ?>
+                        <input type="hidden" name="id_animal" value="<?=$id_animal?>">
+                        <?php $animalAtual = null; foreach ($animais as $a) { if ((int) $a->id === (int) $id_animal) { $animalAtual = $a; break; } } ?>
+                        <div class="col-12">
+                            <div class="alert alert-info mb-0">Aplicando no animal: <strong><?=$animalAtual->identificacao ?? "#$id_animal"?></strong></div>
+                        </div>
+                    <?php else : ?>
+                        <div class="col-12 col-md-4">
+                            <div class="mb-3">
+                                <label for="id_lote" class="form-label">Lote</label>
+                                <select name="id_lote" id="id_lote" class="form-select select2" data-search="true">
+                                    <option value="">Selecione</option>
+                                    <?php foreach ($lotes as $l) : ?>
+                                        <option value="<?=$l->id?>" <?=isset($aplicacao->id_lote) && (int) $aplicacao->id_lote === (int) $l->id ? "selected" : ""?>><?=$l->nome?> (<?=$l->codigo?>)</option>
+                                    <?php endforeach ?>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <div class="mb-3">
+                                <label for="id_animal" class="form-label">Animal</label>
+                                <select name="id_animal" id="id_animal" class="form-select select2" data-search="true">
+                                    <option value="">Selecione</option>
+                                    <?php foreach ($animais as $a) : ?>
+                                        <option value="<?=$a->id?>" <?=isset($aplicacao->id_animal) && (int) $aplicacao->id_animal === (int) $a->id ? "selected" : ""?>><?=$a->identificacao?></option>
+                                    <?php endforeach ?>
+                                </select>
+                            </div>
+                        </div>
+                    <?php endif ?>
+                    <div class="col-12 col-md-4">
+                        <div class="mb-3">
+                            <label for="tipo" class="form-label">Tipo</label>
+                            <select name="tipo" id="tipo" class="form-select" data-search="false">
+                                <option value="PROTOCOLO" <?=isset($aplicacao->tipo) && $aplicacao->tipo === "PROTOCOLO" ? "selected" : ""?>>Aplicação de Protocolo</option>
+                                <option value="TRATAMENTO_INDIVIDUAL" <?=isset($aplicacao->tipo) && $aplicacao->tipo === "TRATAMENTO_INDIVIDUAL" ? "selected" : ""?>>Tratamento Individual</option>
+                                <option value="TRATAMENTO_LOTE" <?=(!isset($aplicacao->tipo) || $aplicacao->tipo === "TRATAMENTO_LOTE") ? "selected" : ""?>>Tratamento em Lote</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <div class="mb-3">
+                            <label for="id_protocolo_sanitario" class="form-label">Protocolo (opcional)</label>
+                            <select name="id_protocolo_sanitario" id="id_protocolo_sanitario" class="form-select select2" data-search="true">
+                                <option value="">Nenhum / tratamento avulso</option>
+                                <?php foreach ($protocolos as $p) : ?>
+                                    <option value="<?=$p->id?>" <?=isset($aplicacao->id_protocolo_sanitario) && (int) $aplicacao->id_protocolo_sanitario === (int) $p->id ? "selected" : ""?>><?=$p->nome?></option>
+                                <?php endforeach ?>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <div class="mb-3">
+                            <label for="data_aplicacao" class="form-label">Data da Aplicação</label>
+                            <input type="date" class="form-control" id="data_aplicacao" name="data_aplicacao" autocomplete="off" value="<?=!empty($aplicacao->data_aplicacao) ? dateus($aplicacao->data_aplicacao) : ""?>">
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <div class="mb-3">
+                            <label for="quantidade_animais" class="form-label">Nº de Cabeças (se em lote)</label>
+                            <input type="number" min="0" class="form-control" id="quantidade_animais" name="quantidade_animais" placeholder="Nº de cabeças tratadas" autocomplete="off" value="<?=$aplicacao->quantidade_animais ?? ""?>">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="crud-subsection mb-4">
+                <div class="crud-section-copy mb-3">
+                    <h5>Produto e Carência</h5>
+                    <small>Ao informar um produto, o estoque é baixado automaticamente. A carência herda o padrão do protocolo, se houver, mas pode ser sobrescrita.</small>
+                </div>
+
+                <div class="row">
+                    <div class="col-12 col-md-4">
+                        <div class="mb-3">
+                            <label for="id_produto_estoque" class="form-label">Produto Usado</label>
+                            <select name="id_produto_estoque" id="id_produto_estoque" class="form-select select2" data-search="true">
+                                <option value="">Nenhum</option>
+                                <?php foreach ($produtos as $produto) : ?>
+                                    <option value="<?=$produto->id?>" <?=isset($aplicacao->id_produto_estoque) && (int) $aplicacao->id_produto_estoque === (int) $produto->id ? "selected" : ""?>><?=$produto->nome?></option>
+                                <?php endforeach ?>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <div class="mb-3">
+                            <label for="quantidade_produto" class="form-label">Quantidade do Produto</label>
+                            <input type="text" class="form-control input-decimal" id="quantidade_produto" name="quantidade_produto" placeholder="0,0" autocomplete="off" value="<?=isset($aplicacao->quantidade_produto) ? number_format((float) $aplicacao->quantidade_produto, 2, ",", ".") : ""?>">
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <div class="mb-3">
+                            <label for="dias_carencia" class="form-label">Dias de Carência</label>
+                            <input type="number" min="0" class="form-control" id="dias_carencia" name="dias_carencia" placeholder="Deixe em branco para usar o padrão do protocolo" autocomplete="off" value="<?=$aplicacao->dias_carencia ?? ""?>">
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="mb-3">
+                            <label for="id_tipo_aplicacao" class="form-label">Via de Aplicação</label>
+                            <select name="id_tipo_aplicacao" id="id_tipo_aplicacao" class="form-select select2" data-search="true">
+                                <option value="">Não informado</option>
+                                <?php foreach ($tiposAplicacao as $tipoAplicacao) : ?>
+                                    <option value="<?=$tipoAplicacao->id?>" <?=isset($aplicacao->id_tipo_aplicacao) && (int) $aplicacao->id_tipo_aplicacao === (int) $tipoAplicacao->id ? "selected" : ""?>><?=$tipoAplicacao->descricao?></option>
+                                <?php endforeach ?>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="mb-3">
+                            <label for="id_motivo_tratamento" class="form-label">Motivo do Tratamento</label>
+                            <select name="id_motivo_tratamento" id="id_motivo_tratamento" class="form-select select2" data-search="true">
+                                <option value="">Não informado</option>
+                                <?php foreach ($motivosTratamento as $motivoTratamento) : ?>
+                                    <option value="<?=$motivoTratamento->id?>" <?=isset($aplicacao->id_motivo_tratamento) && (int) $aplicacao->id_motivo_tratamento === (int) $motivoTratamento->id ? "selected" : ""?>><?=$motivoTratamento->descricao?></option>
+                                <?php endforeach ?>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="crud-subsection">
+                <div class="crud-section-copy mb-3">
+                    <h5>Responsável e Observações</h5>
+                    <small>Informações adicionais sobre a aplicação.</small>
+                </div>
+
+                <div class="row">
+                    <div class="col-12 col-md-4">
+                        <div class="mb-3">
+                            <label for="veterinario_responsavel" class="form-label">Veterinário Responsável</label>
+                            <input type="text" class="form-control" id="veterinario_responsavel" name="veterinario_responsavel" placeholder="Nome do responsável" autocomplete="off" value="<?=$aplicacao->veterinario_responsavel ?? ""?>">
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-8">
+                        <div class="mb-3">
+                            <label for="observacao" class="form-label">Observação</label>
+                            <textarea class="form-control" id="observacao" name="observacao" rows="1" placeholder="Observação"><?=$aplicacao->observacao ?? ""?></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-3 pt-4 border-top">
+                <div class="d-grid gap-2 d-sm-block">
+                    <button class="btn btn-primary" type="submit">Salvar</button>
+                    <a href="<?=$url_voltar?>" class="btn btn-white"><i class="uil uil-left"></i> Voltar</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>

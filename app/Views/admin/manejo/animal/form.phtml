@@ -1,0 +1,166 @@
+<?php $this->layout("app/template/base"); ?>
+
+<?php $this->start("page-actions") ?>
+<?php $this->end() ?>
+
+<form id="form-manejo-animal" class="form-validate" action="<?=$url_action?>" method="POST">
+    <input type="hidden" name="csrf" value="<?=$csrf?>">
+    <?php if (!empty($animal->id)) : ?>
+        <input type="hidden" name="id" value="<?=$animal->hash()?>">
+    <?php endif ?>
+
+    <div class="card crud-form-card">
+        <div class="card-body">
+            <div class="crud-subsection mb-4">
+                <div class="crud-section-copy mb-3">
+                    <h5>Identificação</h5>
+                    <small>Dados individuais do animal.</small>
+                </div>
+
+                <div class="row">
+                    <div class="col-12 col-md-4">
+                        <div class="mb-3">
+                            <label for="identificacao" class="form-label">Identificação</label>
+                            <input type="text" class="form-control" id="identificacao" name="identificacao" placeholder="Brinco / RFID / Código" autocomplete="off" value="<?=$animal->identificacao ?? ""?>">
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <div class="mb-3">
+                            <label for="tipo_identificacao" class="form-label">Tipo de Identificação</label>
+                            <input type="text" class="form-control" id="tipo_identificacao" name="tipo_identificacao" placeholder="Ex: Brinco, RFID" autocomplete="off" value="<?=$animal->tipo_identificacao ?? ""?>">
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <div class="mb-3">
+                            <label for="sexo" class="form-label">Sexo</label>
+                            <select name="sexo" id="sexo" class="form-select" data-search="false">
+                                <option value="">Selecione</option>
+                                <option value="M" <?=isset($animal->sexo) && $animal->sexo === "M" ? "selected" : ""?>>Macho</option>
+                                <option value="F" <?=isset($animal->sexo) && $animal->sexo === "F" ? "selected" : ""?>>Fêmea</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <div class="mb-3">
+                            <label for="raca" class="form-label">Raça</label>
+                            <input type="text" class="form-control" id="raca" name="raca" placeholder="Raça" autocomplete="off" value="<?=$animal->raca ?? ""?>">
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <div class="mb-3">
+                            <label for="data_nascimento" class="form-label">Data de Nascimento</label>
+                            <input type="date" class="form-control" id="data_nascimento" name="data_nascimento" autocomplete="off" value="<?=!empty($animal->data_nascimento) ? dateus($animal->data_nascimento) : ""?>">
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <div class="mb-3">
+                            <label for="peso_entrada" class="form-label">Peso de Entrada (kg)</label>
+                            <input type="text" class="form-control input-peso" id="peso_entrada" name="peso_entrada" placeholder="Peso de entrada" autocomplete="off" value="<?=$animal->peso_entrada ?? ""?>">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="crud-subsection mb-4">
+                <div class="crud-section-copy mb-3">
+                    <h5>Origem</h5>
+                    <small>De onde veio o animal e como entrou no confinamento.</small>
+                </div>
+
+                <div class="row">
+                    <div class="col-12 col-md-4">
+                        <div class="mb-3">
+                            <label for="id_fornecedor" class="form-label">Fornecedor</label>
+                            <select name="id_fornecedor" id="id_fornecedor" class="form-select select2" data-search="true">
+                                <option value="">Selecione</option>
+                                <?php foreach (($fornecedores ?? []) as $fornecedor) : ?>
+                                    <option value="<?=$fornecedor->id?>" <?=isset($animal->id_fornecedor) && (int) $animal->id_fornecedor === (int) $fornecedor->id ? "selected" : ""?>><?=$fornecedor->razao?></option>
+                                <?php endforeach ?>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <div class="mb-3">
+                            <label for="id_tipo_entrada" class="form-label">Tipo de Entrada</label>
+                            <select name="id_tipo_entrada" id="id_tipo_entrada" class="form-select" data-search="false">
+                                <option value="">Selecione</option>
+                                <?php foreach (($tiposEntrada ?? []) as $tipo) : ?>
+                                    <option value="<?=$tipo->id?>" <?=isset($animal->id_tipo_entrada) && (int) $animal->id_tipo_entrada === (int) $tipo->id ? "selected" : ""?>><?=$tipo->descricao?></option>
+                                <?php endforeach ?>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <div class="mb-3">
+                            <label for="data_entrada" class="form-label">Data de Entrada</label>
+                            <input type="date" class="form-control" id="data_entrada" name="data_entrada" autocomplete="off" value="<?=!empty($animal->data_entrada) ? dateus($animal->data_entrada) : ""?>">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="crud-subsection mb-4">
+                <div class="crud-section-copy mb-3">
+                    <h5>Manejo</h5>
+                    <small>Lote e situação atual do animal.</small>
+                </div>
+
+                <div class="row">
+                    <div class="col-12 col-md-4">
+                        <div class="mb-3">
+                            <label for="id_lote" class="form-label">Lote</label>
+                            <select name="id_lote" id="id_lote" class="form-select select2" data-search="true">
+                                <option value="">Selecione</option>
+                                <?php foreach (($lotes ?? []) as $lote) : ?>
+                                    <option value="<?=$lote->id?>" <?=isset($animal->id_lote) && (int) $animal->id_lote === (int) $lote->id ? "selected" : ""?>><?=$lote->nome?> (<?=$lote->codigo?>)</option>
+                                <?php endforeach ?>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <div class="mb-3">
+                            <label for="id_situacao" class="form-label">Situação</label>
+                            <select name="id_situacao" id="id_situacao" class="form-select select2" data-search="true">
+                                <option value="">Selecione</option>
+                                <?php foreach (($situacoes ?? []) as $situacao) : ?>
+                                    <option value="<?=$situacao->id?>" <?=isset($animal->id_situacao) && (int) $animal->id_situacao === (int) $situacao->id ? "selected" : ""?>><?=$situacao->descricao?></option>
+                                <?php endforeach ?>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <div class="mb-3">
+                            <label for="ativo" class="form-label">Ativo</label>
+                            <select name="ativo" id="ativo" class="form-select" data-search="false">
+                                <option value="1" <?=(!isset($animal->ativo) || (int) $animal->ativo === 1) ? "selected" : ""?>>Sim</option>
+                                <option value="0" <?=isset($animal->ativo) && (int) $animal->ativo === 0 ? "selected" : ""?>>Não</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="crud-subsection">
+                <div class="crud-section-copy mb-3">
+                    <h5>Observações</h5>
+                    <small>Informações livres para apoio operacional.</small>
+                </div>
+
+                <div class="row">
+                    <div class="col-12">
+                        <div class="mb-3">
+                            <textarea class="form-control" id="observacao" name="observacao" rows="5" placeholder="Observação"><?=$animal->observacao ?? ""?></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-3 pt-4 border-top">
+                <div class="d-grid gap-2 d-sm-block">
+                    <button class="btn btn-primary" type="submit">Salvar</button>
+                    <a href="<?=$router->route("admin.manejo.animal.index")?>" class="btn btn-white"><i class="uil uil-left"></i> Voltar</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>

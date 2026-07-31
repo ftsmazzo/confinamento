@@ -1,0 +1,16 @@
+<form id="form-animal-situacao" class="form-validate" action="<?=$url_action?>" method="POST">
+    <input type="hidden" name="csrf" value="<?=$csrf?>">
+    <?php if (!empty($situacao->id)) : ?>
+        <input type="hidden" name="id" value="<?=$situacao->hash()?>">
+    <?php endif ?>
+
+    <div class="mb-3">
+        <label for="descricao" class="form-label" title="Campo Obrigatório">Descrição <span class="text-danger">*</span></label>
+        <input type="text" class="form-control" id="descricao" name="descricao" placeholder="Ex: Ativo, Vendido, Abatido, Morto" required value="<?=$situacao->descricao ?? ""?>">
+    </div>
+
+    <div class="mb-3">
+        <label for="cor" class="form-label">Cor</label>
+        <input type="color" class="form-control form-control-color" id="cor" name="cor" value="<?=$situacao->cor ?? "#0d6efd"?>">
+    </div>
+</form>

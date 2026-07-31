@@ -1,0 +1,241 @@
+<?php $this->layout("app/template/base"); ?>
+
+<?php $this->start("page-actions") ?>
+<?php $this->end() ?>
+
+<?php $this->start("endScripts") ?>
+<script>
+window.fornecedorFormConfig = {
+    findUrl: "<?=$router->route("admin.fornecedor.find")?>",
+    required: <?=json_encode($required ?? "", JSON_UNESCAPED_UNICODE)?>,
+    estados: <?=json_encode($estados_br ?? [], JSON_UNESCAPED_UNICODE)?>,
+    pessoaFixa: <?=json_encode($pessoa_fixa ?? false)?>,
+    pessoaOpcoes: <?=json_encode($pessoa_opcoes ?? ["F", "J"], JSON_UNESCAPED_UNICODE)?>
+};
+</script>
+<script src="<?=asset("admin/js/fornecedor-form.js")?>"></script>
+<?php $this->end() ?>
+
+<form id="form-fornecedor-novo" class="form-validate" action="<?=$router->route("admin.fornecedor.insert")?>" method="POST">
+    <input type="hidden" name="csrf" value="<?=$csrf?>">
+
+    <div class="card crud-form-card">
+        <div class="card-body">
+            <div class="crud-subsection mb-4">
+                <div class="crud-section-copy mb-3">
+                    <h5>Identificação</h5>
+                    <small>Defina o tipo de pessoa e os dados principais.</small>
+                </div>
+
+                <div class="row">
+                    <?php if ($pessoa_fixa) : ?>
+                        <input type="hidden" name="pessoa" value="<?=$pessoa_opcoes[0] ?? $pessoa_padrao?>">
+                    <?php else : ?>
+                        <div class="col-12 col-sm-4 col-md-3 col-lg-3">
+                            <div class="mb-3">
+                                <label class="form-label">Pessoa</label>
+                                <select name="pessoa" class="form-select" data-search="false">
+                                    <?php if (in_array("J", $pessoa_opcoes ?? [], true)) : ?>
+                                        <option value="J" <?=$pessoa_padrao === "J" ? "selected" : ""?>>JURIDICA</option>
+                                    <?php endif ?>
+                                    <?php if (in_array("F", $pessoa_opcoes ?? [], true)) : ?>
+                                        <option value="F" <?=$pessoa_padrao === "F" ? "selected" : ""?>>FISICA</option>
+                                    <?php endif ?>
+                                </select>
+                            </div>
+                        </div>
+                    <?php endif ?>
+                    <div class="col-12 col-sm-8 col-md-5 col-lg-5">
+                        <div class="mb-3">
+                            <label class="form-label">
+                                <span class="pes J">CNPJ</span>
+                                <span class="pes F none">CPF</span>
+                            </label>
+                            <div class="input-group">
+                                <input type="text" class="form-control input-cpf-cnpj" id="documento" name="documento" placeholder="CPF / CNPJ" autocomplete="off">
+                                <button type="button" class="btn btn-light border border-start-0 text-secondary d-none pes J" id="searchCNPJ" title="Buscar dados do CNPJ" disabled><i class="uil uil-search"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-4 col-lg-4 col-xl-4">
+                        <div class="mb-3">
+                            <label for="rg_ie" class="form-label">
+                                <span class="pes J">Inscrição Estadual</span>
+                                <span class="pes F none">RG</span>
+                            </label>
+                            <input type="text" class="form-control" id="rg_ie" name="rg_ie" placeholder="IE / RG" autocomplete="off">
+                        </div>
+                    </div>
+                    <div class="col-12 col-lg-6">
+                        <div class="mb-3">
+                            <label for="razao" class="form-label">
+                                <span class="pes J">Razão Social</span>
+                                <span class="pes F none">Nome Completo</span>
+                            </label>
+                            <input type="text" class="form-control" id="razao" name="razao" placeholder="Razão Social / Nome Completo" autocomplete="off">
+                        </div>
+                    </div>
+                    <div class="col-12 col-lg-6">
+                        <div class="mb-3">
+                            <label for="nome" class="form-label">
+                                <span class="pes J">Nome Fantasia</span>
+                                <span class="pes F none">Apelido</span>
+                            </label>
+                            <input type="text" class="form-control" id="nome" name="nome" placeholder="Nome Fantasia / Apelido" autocomplete="off">
+                        </div>
+                    </div>
+                    <div class="col-12 col-sm-5 col-md-6 col-lg-4 col-xl-3">
+                        <div class="mb-3">
+                            <label for="nascimento" class="form-label">
+                                <span class="pes J">Data de Abertura</span>
+                                <span class="pes F none">Data de Nascimento</span>
+                            </label>
+                            <input type="date" class="form-control" id="nascimento" name="nascimento" autocomplete="off">
+                        </div>
+                    </div>
+                    <div class="col-12 col-sm-7 col-md-6 col-lg-4 col-xl-3">
+                        <div class="mb-3">
+                            <label for="contato" class="form-label">Contato</label>
+                            <input type="text" class="form-control" id="contato" name="contato" placeholder="Contato" autocomplete="off">
+                        </div>
+                    </div>
+                    <div class="col-12 col-sm-6 col-lg-4 col-xl-3">
+                        <div class="mb-3">
+                            <label for="telefone" class="form-label">Telefone</label>
+                            <input type="text" class="form-control input-phone" id="telefone" name="telefone" placeholder="Telefone" autocomplete="off">
+                        </div>
+                    </div>
+                    <div class="col-12 col-sm-6 col-lg-4 col-xl-3">
+                        <div class="mb-3">
+                            <label for="whatsapp" class="form-label">WhatsApp</label>
+                            <input type="text" class="form-control input-phone" id="whatsapp" name="whatsapp" placeholder="WhatsApp" autocomplete="off">
+                        </div>
+                    </div>
+                    <div class="col-12 col-lg-8 col-xl-6">
+                        <div class="mb-3">
+                            <label for="email" class="form-label">E-mail</label>
+                            <input type="email" class="form-control" id="email" name="email" placeholder="E-mail" autocomplete="off">
+                        </div>
+                    </div>
+                    <div class="col-12 col-lg-12 col-xl-6">
+                        <div class="mb-3">
+                            <label for="site" class="form-label">Site</label>
+                            <input type="text" class="form-control" id="site" name="site" placeholder="Site" autocomplete="off">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="crud-subsection mb-4">
+                <div class="crud-section-copy mb-3">
+                    <h5>Classificação</h5>
+                    <small>Defina o ramo e a situação do fornecedor.</small>
+                </div>
+
+                <div class="row">
+                    <div class="col-12 col-md-5">
+                        <div class="mb-3">
+                            <label for="id_situacao" class="form-label">Situação</label>
+                            <select name="id_situacao" id="id_situacao" class="form-select" data-search="false">
+                                <option value="">Selecione</option>
+                                <?php foreach ($situacoes as $situacao) : ?>
+                                    <option value="<?=$situacao->id?>"><?=$situacao->descricao?></option>
+                                <?php endforeach ?>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-7">
+                        <div class="mb-3">
+                            <label for="id_ramo" class="form-label">Ramo</label>
+                            <select name="id_ramo" id="id_ramo" class="form-select" data-search="false">
+                                <option value="">Selecione</option>
+                                <?php foreach ($ramos as $ramo) : ?>
+                                    <option value="<?=$ramo->id?>"><?=$ramo->descricao?></option>
+                                <?php endforeach ?>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="crud-subsection mb-4">
+                <div class="crud-section-copy mb-3">
+                    <h5>Endereço</h5>
+                    <small>Use a busca de CEP para completar os campos.</small>
+                </div>
+
+                <div class="row">
+                    <div class="col-12 col-sm-4 col-lg-3">
+                        <div class="mb-3">
+                            <label for="cep" class="form-label">CEP</label>
+                            <input type="tel" class="form-control input-cep" id="cep" name="cep" placeholder="CEP" autocomplete="off">
+                        </div>
+                    </div>
+                    <div class="col-12 col-sm-8 col-lg-9">
+                        <div class="mb-3">
+                            <label for="endereco" class="form-label">Logradouro</label>
+                            <input type="text" class="form-control" id="endereco" name="endereco" placeholder="Logradouro" autocomplete="off">
+                        </div>
+                    </div>
+                    <div class="col-12 col-sm-5 col-lg-3">
+                        <div class="mb-3">
+                            <label for="numero" class="form-label">Número</label>
+                            <input type="text" class="form-control" id="numero" name="numero" placeholder="Número" autocomplete="off">
+                        </div>
+                    </div>
+                    <div class="col-12 col-sm-7 col-lg-3">
+                        <div class="mb-3">
+                            <label for="complemento" class="form-label">Complemento</label>
+                            <input type="text" class="form-control" id="complemento" name="complemento" placeholder="Complemento" autocomplete="off">
+                        </div>
+                    </div>
+                    <div class="col-12 col-sm-5 col-lg-6">
+                        <div class="mb-3">
+                            <label for="bairro" class="form-label">Bairro</label>
+                            <input type="text" class="form-control" id="bairro" name="bairro" placeholder="Bairro" autocomplete="off">
+                        </div>
+                    </div>
+                    <div class="col-12 col-sm-7 col-lg-6">
+                        <div class="mb-3">
+                            <label for="cidade" class="form-label">Cidade</label>
+                            <input type="text" class="form-control" id="cidade" name="cidade" placeholder="Cidade" autocomplete="off">
+                        </div>
+                    </div>
+                    <div class="col-12 col-sm-3 col-lg-2">
+                        <div class="mb-3">
+                            <label for="estado" class="form-label">Estado</label>
+                            <input type="text" class="form-control input-uf" id="estado" name="estado" placeholder="UF" autocomplete="off" maxlength="2">
+                        </div>
+                    </div>
+                    <div class="col-12 col-sm-9 col-lg-4">
+                        <div class="mb-3">
+                            <label for="pais" class="form-label">País</label>
+                            <input type="text" class="form-control" id="pais" name="pais" placeholder="País" autocomplete="off" value="Brasil">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="crud-subsection">
+                <div class="crud-section-copy mb-3">
+                    <h5>Observações</h5>
+                    <small>Informações livres para apoio operacional.</small>
+                </div>
+
+                <div class="row">
+                    <div class="col-12">
+                        <div class="mb-3">
+                            <textarea class="form-control" id="observacoes" name="observacoes" rows="5" placeholder="Observações"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-3 pt-4 border-top">
+                <div class="d-grid gap-2 d-sm-block">
+                    <button class="btn btn-primary" type="submit">Salvar</button>
+                    <a href="<?=$url_back?>" class="btn btn-white"><i class="uil uil-left"></i> Voltar</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>

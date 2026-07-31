@@ -1,0 +1,11 @@
+<form id="form-tipo-entrada" class="form-validate" action="<?=$url_action?>" method="POST">
+    <input type="hidden" name="csrf" value="<?=$csrf?>">
+    <?php if (!empty($tipoEntrada->id)) : ?>
+        <input type="hidden" name="id" value="<?=$tipoEntrada->hash()?>">
+    <?php endif ?>
+
+    <div class="mb-3">
+        <label for="descricao" class="form-label" title="Campo Obrigatório">Descrição <span class="text-danger">*</span></label>
+        <input type="text" class="form-control" id="descricao" name="descricao" placeholder="Ex: Compra, Parceria, Transferência Interna" required value="<?=$tipoEntrada->descricao ?? ""?>">
+    </div>
+</form>

@@ -1,0 +1,488 @@
+<?php $this->layout("app/template/base"); ?>
+
+<?php $this->start("styles") ?>
+<style>
+    .shortcut-card {
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .shortcut-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+    }
+    .shortcut-icon {
+        width: 3rem;
+        height: 3rem;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.4rem;
+    }
+</style>
+<?php $this->end() ?>
+
+<?php $this->start("startScripts") ?>
+<script src="<?= asset("/dist/webpush/webpush.js")?>"></script>
+<script src="<?=asset("dist/echarts/dist/echarts.min.js")?>"></script>
+<script src="<?=asset("admin/js/echarts-locale-pt-br.js")?>"></script>
+<script>
+    WebPush.init({
+        publicKey: "<?= $vapidKey ?>",
+        autoSubscribe: false,
+        userToken: '<?= $userToken ?>'
+    });
+</script>
+<?php $this->end() ?>
+
+<?php $this->start("endScripts") ?>
+<script>
+    (function () {
+        var el = document.getElementById("grafico-peso-home");
+        var vazioEl = document.getElementById("grafico-peso-home-vazio");
+        if (!el || typeof echarts === "undefined") return;
+
+        var chart = echarts.init(el, null, { locale: "PT-BR" });
+        var form = document.getElementById("form-grafico-peso-home");
+        var url = "<?=$router->route("admin.home.grafico.peso")?>";
+
+        function render(series) {
+            if (!series || series.length === 0) {
+                el.style.display = "none";
+                vazioEl.style.display = "block";
+                return;
+            }
+            el.style.display = "block";
+            vazioEl.style.display = "none";
+
+            chart.setOption({
+                tooltip: {
+                    trigger: "axis",
+                    formatter: function (params) {
+                        if (!params.length) return "";
+                        var linhas = ["<strong>" + window.formatDataBr(params[0].axisValue) + "</strong>"];
+                        params.forEach(function (p) {
+                            if (p.value[1] === null || p.value[1] === undefined) return;
+                            linhas.push(p.marker + " " + p.seriesName + ": " + p.value[1].toLocaleString("pt-BR", { minimumFractionDigits: 2 }) + " kg");
+                        });
+                        return linhas.join("<br>");
+                    }
+                },
+                legend: { data: series.map(function (s) { return s.nome; }), top: 0 },
+                grid: { left: 50, right: 20, top: 40, bottom: 30 },
+                xAxis: { type: "time" },
+                yAxis: { type: "value", name: "kg", axisLabel: { formatter: "{value} kg" } },
+                series: series.map(function (s) {
+                    return {
+                        name: s.nome,
+                        type: "line",
+                        smooth: true,
+                        connectNulls: true,
+                        data: s.pontos.map(function (p) { return [p.data, p.peso_medio]; }),
+                    };
+                }),
+            }, true);
+        }
+
+        function load() {
+            var params = new URLSearchParams(new FormData(form));
+            $.ajax({
+                url: url + "?" + params.toString(),
+                method: "GET",
+                dataType: "json",
+            }).done(function (resp) {
+                render(resp && resp.data ? resp.data : []);
+            });
+        }
+
+        form.addEventListener("input", load);
+        document.getElementById("btn-limpar-filtro-peso-home").addEventListener("click", function () {
+            form.reset();
+            load();
+        });
+        window.addEventListener("resize", function () { chart.resize(); });
+
+        load();
+    })();
+</script>
+<?php $this->end() ?>
+
+<?php $this->start("page-actions") ?>
+<?php $this->end()?>
+
+<?php flash() ?>
+
+<?php
+    $resumoMes = $indicadores["resumo_mes"] ?? ["entradas" => 0, "animais_vendidos" => 0, "animais_perdidos" => 0];
+    $lotesAtivos = $indicadores["lotes_ativos"] ?? 0;
+    $gmdMedio = $indicadores["gmd_medio"] ?? null;
+    $animaisPorSituacao = $indicadores["animais_por_situacao"] ?? [];
+    $animaisAtivosIdadeSexo = $indicadores["animais_ativos_idade_sexo"] ?? [];
+    $carenciasVigentes = $indicadores["carencias_vigentes"] ?? [];
+    $produtosVencendo = $indicadores["produtos_vencendo"] ?? [];
+    $estoqueBaixo = $indicadores["estoque_baixo"] ?? [];
+    $totalAnimais = array_sum(array_column($animaisPorSituacao, "total"));
+?>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <h5 class="card-title mb-1">Bem-vindo, <?=$user->nome ?? $user->name ?? $user->login ?? "usuário"?></h5>
+        <p class="text-muted mb-0">Resumo rápido da operação do confinamento hoje.</p>
+    </div>
+</div>
+
+<!-- Atalhos rápidos -->
+<?php if (!empty($atalhos)) : ?>
+<div class="mb-4">
+    <h6 class="text-muted mb-2">Lançamentos rápidos</h6>
+    <div class="row g-3">
+        <?php foreach ($atalhos as $atalho) : ?>
+            <div class="col-6 col-md-4 col-lg-3">
+                <a href="<?=htmlspecialchars($atalho["url"])?>" class="card h-100 text-decoration-none shortcut-card">
+                    <div class="card-body d-flex flex-column align-items-center text-center py-4">
+                        <div class="shortcut-icon mb-2" style="background-color: <?=htmlspecialchars($atalho["cor"])?>1a; color: <?=htmlspecialchars($atalho["cor"])?>;">
+                            <i class="uil <?=htmlspecialchars($atalho["icon"])?>"></i>
+                        </div>
+                        <span class="fw-semibold text-body"><?=htmlspecialchars($atalho["label"])?></span>
+                    </div>
+                </a>
+            </div>
+        <?php endforeach ?>
+    </div>
+</div>
+<?php endif ?>
+
+<h6 class="text-muted mb-2">Indicadores gerais</h6>
+
+<!-- Cards de indicadores principais -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="text-muted small mb-1">Lotes ativos</div>
+                <div class="fs-3 fw-bold"><?=$lotesAtivos?></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="text-muted small mb-1">Animais cadastrados</div>
+                <div class="fs-3 fw-bold"><?=$totalAnimais?></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="text-muted small mb-1">GMD médio (60 dias)</div>
+                <div class="fs-3 fw-bold"><?=$gmdMedio !== null ? number_format($gmdMedio, 2, ",", ".") . " kg/dia" : "—"?></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="text-muted small mb-1">Carências vigentes</div>
+                <div class="fs-3 fw-bold <?=count($carenciasVigentes) > 0 ? "text-warning" : ""?>"><?=count($carenciasVigentes)?></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card-financeiro { position: relative; overflow: hidden; }
+    .card-financeiro .card-body { position: relative; z-index: 1; }
+    .card-financeiro .watermark-icon {
+        position: absolute; right: -5px; bottom: -10px;
+        font-size: 90px; opacity: 0.08; z-index: 0;
+    }
+</style>
+
+<!-- Cards financeiros -->
+<?php
+    $financeiro = $indicadores["financeiro"] ?? [
+        "a_pagar" => 0, "a_receber" => 0, "saldo" => 0,
+        "qtd_pagar" => 0, "qtd_receber" => 0,
+        "variacao_pagar" => ["pct" => 0, "direcao" => "stable"],
+        "variacao_receber" => ["pct" => 0, "direcao" => "stable"],
+        "variacao_saldo" => ["pct" => 0, "direcao" => "stable"],
+        "mes" => "", "mes_anterior" => "",
+    ];
+    $f = $financeiro;
+
+    $labelPagar = $f["variacao_pagar"]["pct"] > 0 ? "Aumentou" : ($f["variacao_pagar"]["pct"] < 0 ? "Abaixou" : "");
+    $labelReceber = $f["variacao_receber"]["pct"] > 0 ? "Aumentou" : ($f["variacao_receber"]["pct"] < 0 ? "Abaixou" : "");
+    $labelSaldo = $f["variacao_saldo"]["pct"] > 0 ? "Aumentou" : ($f["variacao_saldo"]["pct"] < 0 ? "Abaixou" : "");
+    $corPagar = $f["variacao_pagar"]["pct"] > 0 ? "text-danger" : ($f["variacao_pagar"]["pct"] < 0 ? "text-success" : "text-muted");
+    $corReceber = $f["variacao_receber"]["pct"] > 0 ? "text-success" : ($f["variacao_receber"]["pct"] < 0 ? "text-danger" : "text-muted");
+    $corSaldo = $f["variacao_saldo"]["pct"] > 0 ? "text-success" : ($f["variacao_saldo"]["pct"] < 0 ? "text-danger" : "text-muted");
+    $iconePagar = $f["variacao_pagar"]["pct"] > 0 ? "uil-arrow-up-right" : ($f["variacao_pagar"]["pct"] < 0 ? "uil-arrow-down-right" : "");
+    $iconeReceber = $f["variacao_receber"]["pct"] > 0 ? "uil-arrow-up-right" : ($f["variacao_receber"]["pct"] < 0 ? "uil-arrow-down-right" : "");
+    $iconeSaldo = $f["variacao_saldo"]["pct"] > 0 ? "uil-arrow-up-right" : ($f["variacao_saldo"]["pct"] < 0 ? "uil-arrow-down-right" : "");
+?>
+<h6 class="text-muted mb-2">Financeiro — <?=htmlspecialchars($f["mes"])?></h6>
+<div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+        <div class="card h-100 border-start border-2 border-warning card-financeiro">
+            <div class="card-body">
+                <i class="uil uil-invoice watermark-icon"></i>
+                <div class="text-muted small mb-1">Contas a Pagar</div>
+                <div class="fs-3 fw-bold text-warning"><?=number_format($f["a_pagar"], 2, ",", ".")?></div>
+                <?php if ($labelPagar) : ?>
+                <div class="d-flex align-items-center gap-1 small <?=$corPagar?>">
+                    <i class="uil <?=$iconePagar?>"></i>
+                    <?=$labelPagar?> <?=abs($f["variacao_pagar"]["pct"])?>% vs. <?=$f["mes_anterior"]?>
+                </div>
+                <?php endif ?>
+                <div class="text-muted small"><?=$f["qtd_pagar"]?> conta<?=$f["qtd_pagar"] == 1 ? "" : "s"?></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card h-100 border-start border-2 border-success card-financeiro">
+            <div class="card-body">
+                <i class="uil uil-money-bill watermark-icon"></i>
+                <div class="text-muted small mb-1">Contas a Receber</div>
+                <div class="fs-3 fw-bold text-success"><?=number_format($f["a_receber"], 2, ",", ".")?></div>
+                <?php if ($labelReceber) : ?>
+                <div class="d-flex align-items-center gap-1 small <?=$corReceber?>">
+                    <i class="uil <?=$iconeReceber?>"></i>
+                    <?=$labelReceber?> <?=abs($f["variacao_receber"]["pct"])?>% vs. <?=$f["mes_anterior"]?>
+                </div>
+                <?php endif ?>
+                <div class="text-muted small"><?=$f["qtd_receber"]?> conta<?=$f["qtd_receber"] == 1 ? "" : "s"?></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="card h-100 border-start border-2 <?=$f["saldo"] >= 0 ? "border-primary" : "border-danger"?> card-financeiro">
+            <div class="card-body">
+                <i class="uil uil-balance-scale watermark-icon"></i>
+                <div class="text-muted small mb-1">Saldo Financeiro</div>
+                <div class="fs-3 fw-bold <?=$f["saldo"] >= 0 ? "text-primary" : "text-danger"?>"><?=number_format($f["saldo"], 2, ",", ".")?></div>
+                <?php if ($labelSaldo) : ?>
+                <div class="d-flex align-items-center gap-1 small <?=$corSaldo?>">
+                    <i class="uil <?=$iconeSaldo?>"></i>
+                    <?=$labelSaldo?> <?=abs($f["variacao_saldo"]["pct"])?>% vs. <?=$f["mes_anterior"]?>
+                </div>
+                <?php endif ?>
+                <div class="text-muted small">Recebimentos - Pagamentos</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h6 class="text-muted mb-3 mt-4">Operacional</h6>
+
+<div class="row g-3 mb-4">
+    <!-- Resumo do mês -->
+    <div class="col-12 col-lg-4">
+        <div class="card h-100">
+            <div class="card-header bg-transparent">
+                <h6 class="mb-0">Movimentação do mês</h6>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                    <span class="text-muted">Entradas registradas</span>
+                    <span class="fw-bold"><?=$resumoMes["entradas"]?></span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                    <span class="text-muted">Animais vendidos/saídos</span>
+                    <span class="fw-bold"><?=$resumoMes["animais_vendidos"]?></span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center py-2">
+                    <span class="text-muted">Animais perdidos</span>
+                    <span class="fw-bold <?=$resumoMes["animais_perdidos"] > 0 ? "text-danger" : ""?>"><?=$resumoMes["animais_perdidos"]?></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Animais por situação -->
+    <div class="col-12 col-lg-8">
+        <div class="card h-100">
+            <div class="card-header bg-transparent">
+                <h6 class="mb-0">Animais por situação</h6>
+            </div>
+            <div class="card-body">
+                <?php if (empty($animaisPorSituacao)) : ?>
+                    <p class="text-muted mb-0">Nenhum animal cadastrado ainda.</p>
+                <?php else : ?>
+                    <?php foreach ($animaisPorSituacao as $item) :
+                        $percentual = $totalAnimais > 0 ? round($item["total"] / $totalAnimais * 100, 1) : 0;
+                    ?>
+                        <div class="mb-2">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span>
+                                    <span class="badge" style="background-color: <?=htmlspecialchars($item["cor"])?>; color: #fff;">&nbsp;</span>
+                                    <?=htmlspecialchars($item["descricao"])?>
+                                </span>
+                                <span class="text-muted small"><?=$item["total"]?> (<?=$percentual?>%)</span>
+                            </div>
+                            <div class="progress" style="height: 6px;">
+                                <div class="progress-bar" role="progressbar" style="width: <?=$percentual?>%; background-color: <?=htmlspecialchars($item["cor"])?>;"></div>
+                            </div>
+                        </div>
+                    <?php endforeach ?>
+
+                    <?php if (!empty($animaisAtivosIdadeSexo)) : ?>
+                        <hr class="my-3">
+                        <div class="small text-muted mb-2">Animais ativos por faixa etária e sexo</div>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-borderless mb-0">
+                                <thead>
+                                    <tr class="text-muted small">
+                                        <th>Idade</th>
+                                        <th class="text-end">Macho</th>
+                                        <th class="text-end">Fêmea</th>
+                                        <th class="text-end">Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ($animaisAtivosIdadeSexo as $linha) : ?>
+                                        <tr>
+                                            <td><?=htmlspecialchars($linha["faixa"])?></td>
+                                            <td class="text-end"><?=$linha["macho"]?></td>
+                                            <td class="text-end"><?=$linha["femea"]?></td>
+                                            <td class="text-end fw-bold"><?=$linha["total"]?></td>
+                                        </tr>
+                                    <?php endforeach ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    <?php endif ?>
+                <?php endif ?>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <form id="form-grafico-peso-home" class="row g-2 align-items-end">
+            <div class="col-6 col-md-4">
+                <label class="form-label small text-muted mb-1">Data inicial</label>
+                <input type="date" name="data_inicial" class="form-control form-control-sm">
+            </div>
+            <div class="col-6 col-md-4">
+                <label class="form-label small text-muted mb-1">Data final</label>
+                <input type="date" name="data_final" class="form-control form-control-sm">
+            </div>
+            <div class="col-12 col-md-4">
+                <button type="button" id="btn-limpar-filtro-peso-home" class="btn btn-sm btn-outline-secondary w-100">Limpar filtros</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-transparent">
+                <h6 class="mb-0">Evolução de peso médio por lote</h6>
+            </div>
+            <div class="card-body">
+                <div id="grafico-peso-home" style="width: 100%; height: 340px;"></div>
+                <p id="grafico-peso-home-vazio" class="text-muted mb-0 text-center py-4" style="display:none;">Nenhuma pesagem registrada para o período selecionado.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <!-- Carências sanitárias vigentes -->
+    <div class="col-12 col-lg-6">
+        <div class="card h-100">
+            <div class="card-header bg-transparent">
+                <h6 class="mb-0">Carências sanitárias vigentes</h6>
+            </div>
+            <div class="card-body">
+                <?php if (empty($carenciasVigentes)) : ?>
+                    <p class="text-muted mb-0">Nenhuma carência sanitária vigente no momento.</p>
+                <?php else : ?>
+                    <ul class="list-unstyled mb-0">
+                        <?php foreach ($carenciasVigentes as $item) : ?>
+                            <li class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                                <div>
+                                    <div><?=htmlspecialchars($item["referencia"])?></div>
+                                    <div class="text-muted small">Carência até <?=date("d/m/Y", strtotime($item["data_carencia_fim"]))?></div>
+                                </div>
+                                <span class="badge <?=$item["dias_restantes"] <= 3 ? "bg-danger" : "bg-warning text-dark"?>">
+                                    <?php if ($item["dias_restantes"] >= 0) : ?>
+                                        Faltam <?=$item["dias_restantes"]?> dia<?=$item["dias_restantes"] == 1 ? "" : "s"?>
+                                    <?php else : ?>
+                                        <?=abs($item["dias_restantes"])?> dia<?=abs($item["dias_restantes"]) == 1 ? "" : "s"?> atrasado<?=abs($item["dias_restantes"]) == 1 ? "" : "s"?>
+                                    <?php endif ?>
+                                </span>
+                            </li>
+                        <?php endforeach ?>
+                    </ul>
+                <?php endif ?>
+            </div>
+        </div>
+    </div>
+
+    <!-- Produtos vencendo -->
+    <div class="col-12 col-lg-6">
+        <div class="card h-100">
+            <div class="card-header bg-transparent">
+                <h6 class="mb-0">Produtos/medicamentos vencendo (30 dias)</h6>
+            </div>
+            <div class="card-body">
+                <?php if (empty($produtosVencendo)) : ?>
+                    <p class="text-muted mb-0">Nenhum produto com validade próxima cadastrada.</p>
+                <?php else : ?>
+                    <ul class="list-unstyled mb-0">
+                        <?php foreach ($produtosVencendo as $item) : ?>
+                            <li class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                                <div>
+                                    <div><?=htmlspecialchars($item["produto_nome"])?></div>
+                                    <div class="text-muted small">Lote <?=htmlspecialchars($item["codigo_lote"])?> — <?=number_format($item["quantidade_atual"], 2, ",", ".")?> em estoque</div>
+                                </div>
+                                <span class="badge <?=$item["vencido"] ? "bg-danger" : ($item["dias_restantes"] <= 7 ? "bg-warning text-dark" : "bg-secondary")?>">
+                                    <?=$item["vencido"] ? "Vencido" : $item["dias_restantes"] . " dias"?>
+                                </span>
+                            </li>
+                        <?php endforeach ?>
+                    </ul>
+                <?php endif ?>
+            </div>
+        </div>
+    </div>
+</div>
+
+<?php if (!empty($estoqueBaixo)) : ?>
+<div class="row g-3 mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-transparent">
+                <h6 class="mb-0">Itens com estoque baixo</h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm mb-0">
+                        <thead>
+                            <tr>
+                                <th>Item</th>
+                                <th>Tipo</th>
+                                <th class="text-end">Saldo atual</th>
+                                <th class="text-end">Estoque mínimo</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($estoqueBaixo as $item) : ?>
+                                <tr>
+                                    <td><?=htmlspecialchars($item["nome"])?></td>
+                                    <td><span class="badge bg-light text-dark border"><?=$item["tipo"]?></span></td>
+                                    <td class="text-end text-danger fw-bold"><?=number_format($item["saldo_atual"], 2, ",", ".")?> <?=htmlspecialchars($item["unidade_medida"])?></td>
+                                    <td class="text-end text-muted"><?=number_format($item["estoque_minimo"], 2, ",", ".")?> <?=htmlspecialchars($item["unidade_medida"])?></td>
+                                </tr>
+                            <?php endforeach ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<?php endif ?>

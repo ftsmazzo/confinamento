@@ -1,0 +1,187 @@
+<?php $this->layout("app/template/base"); ?>
+
+<?php $this->start("page-actions") ?>
+<?php $this->end() ?>
+
+<?php $this->start("styles") ?>
+<link rel="stylesheet" href="<?=asset("dist/dizuploader/dizuploader.min.css")?>">
+<style>
+    .anexo-preview {
+        display: inline-flex;
+        flex-direction: column;
+        align-items: center;
+        width: 110px;
+        margin: 0 10px 10px 0;
+        text-align: center;
+    }
+    .anexo-preview .anexo-thumb {
+        width: 100px;
+        height: 100px;
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        background: #f8f9fa;
+        font-size: 2rem;
+        color: #6c757d;
+    }
+    .anexo-preview .anexo-thumb img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    .anexo-preview small {
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        width: 100%;
+        margin-top: 4px;
+    }
+</style>
+<?php $this->end() ?>
+
+<?php $this->start("endScripts") ?>
+<script src="<?=asset("dist/dizuploader/dizuploader.min.js")?>"></script>
+<script>
+    $(document).ready(function () {
+        $("#anexos").dizuploader();
+    });
+</script>
+<?php $this->end() ?>
+
+<form id="form-manejo-ocorrencia" class="form-validate" action="<?=$url_action?>" method="POST" enctype="multipart/form-data">
+    <input type="hidden" name="csrf" value="<?=$csrf?>">
+    <?php if (!empty($ocorrencia->id)) : ?>
+        <input type="hidden" name="id" value="<?=$ocorrencia->hash()?>">
+    <?php endif ?>
+
+    <div class="card crud-form-card">
+        <div class="card-body">
+            <div class="crud-subsection mb-4">
+                <div class="crud-section-copy mb-3">
+                    <h5>Ocorrência</h5>
+                    <small>Se pertinente, selecione um lote OU um animal (nunca os dois).</small>
+                </div>
+
+                <div class="row">
+                    <?php if ($id_lote) : ?>
+                        <input type="hidden" name="id_lote" value="<?=$id_lote?>">
+                        <?php $loteAtual = null; foreach ($lotes as $l) { if ((int) $l->id === (int) $id_lote) { $loteAtual = $l; break; } } ?>
+                        <div class="col-12">
+                            <div class="alert alert-info mb-0">Ocorrência do lote: <strong><?=$loteAtual->nome ?? "#$id_lote"?></strong></div>
+                        </div>
+                    <?php elseif ($id_animal) : ?>
+                        <input type="hidden" name="id_animal" value="<?=$id_animal?>">
+                        <?php $animalAtual = null; foreach ($animais as $a) { if ((int) $a->id === (int) $id_animal) { $animalAtual = $a; break; } } ?>
+                        <div class="col-12">
+                            <div class="alert alert-info mb-0">Ocorrência do animal: <strong><?=$animalAtual->identificacao ?? "#$id_animal"?></strong></div>
+                        </div>
+                    <?php else : ?>
+                        <div class="col-12 col-md-6">
+                            <div class="mb-3">
+                                <label for="id_lote" class="form-label">Lote (opcional)</label>
+                                <select name="id_lote" id="id_lote" class="form-select select2" data-search="true">
+                                    <option value="">Nenhum</option>
+                                    <?php foreach ($lotes as $l) : ?>
+                                        <option value="<?=$l->id?>" <?=isset($ocorrencia->id_lote) && (int) $ocorrencia->id_lote === (int) $l->id ? "selected" : ""?>><?=$l->nome?> (<?=$l->codigo?>)</option>
+                                    <?php endforeach ?>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <div class="mb-3">
+                                <label for="id_animal" class="form-label">Animal (opcional)</label>
+                                <select name="id_animal" id="id_animal" class="form-select select2" data-search="true">
+                                    <option value="">Nenhum</option>
+                                    <?php foreach ($animais as $a) : ?>
+                                        <option value="<?=$a->id?>" <?=isset($ocorrencia->id_animal) && (int) $ocorrencia->id_animal === (int) $a->id ? "selected" : ""?>><?=$a->identificacao?></option>
+                                    <?php endforeach ?>
+                                </select>
+                            </div>
+                        </div>
+                    <?php endif ?>
+                    <div class="col-12 col-md-3">
+                        <div class="mb-3">
+                            <label for="data_ocorrencia" class="form-label">Data</label>
+                            <input type="date" class="form-control" id="data_ocorrencia" name="data_ocorrencia" autocomplete="off" value="<?=!empty($ocorrencia->data_ocorrencia) ? dateus($ocorrencia->data_ocorrencia) : ""?>">
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <div class="mb-3">
+                            <label for="categoria" class="form-label">Categoria</label>
+                            <input type="text" class="form-control" id="categoria" name="categoria" placeholder="Ex: Sanitário, Estrutural, Comportamental" autocomplete="off" value="<?=$ocorrencia->categoria ?? ""?>">
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-5">
+                        <div class="mb-3">
+                            <label for="titulo" class="form-label">Título</label>
+                            <input type="text" class="form-control" id="titulo" name="titulo" placeholder="Resumo da ocorrência" autocomplete="off" value="<?=$ocorrencia->titulo ?? ""?>">
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <div class="mb-3">
+                            <label for="responsavel" class="form-label">Responsável</label>
+                            <input type="text" class="form-control" id="responsavel" name="responsavel" placeholder="Nome do responsável" autocomplete="off" value="<?=$ocorrencia->responsavel ?? ""?>">
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="mb-3">
+                            <label for="descricao" class="form-label">Descrição</label>
+                            <textarea class="form-control" id="descricao" name="descricao" rows="3" placeholder="Detalhes da ocorrência"><?=$ocorrencia->descricao ?? ""?></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="crud-subsection">
+                <div class="crud-section-copy mb-3">
+                    <h5>Fotos, vídeos e áudios</h5>
+                    <small>Anexe evidências da ocorrência — várias mídias podem ser enviadas de uma vez.</small>
+                </div>
+
+                <?php if (!empty($anexos)) : ?>
+                    <div class="d-flex flex-wrap mb-3">
+                        <?php foreach ($anexos as $anexo) : ?>
+                            <div class="anexo-preview">
+                                <a href="<?=htmlspecialchars($anexo->url)?>" target="_blank" class="anexo-thumb">
+                                    <?php if ($anexo->tipo_midia === "IMAGEM") : ?>
+                                        <img src="<?=htmlspecialchars($anexo->url)?>" alt="<?=htmlspecialchars($anexo->nome_original ?? "")?>">
+                                    <?php elseif ($anexo->tipo_midia === "VIDEO") : ?>
+                                        <i class="uil uil-video"></i>
+                                    <?php elseif ($anexo->tipo_midia === "AUDIO") : ?>
+                                        <i class="uil uil-music"></i>
+                                    <?php else : ?>
+                                        <i class="uil uil-file-alt"></i>
+                                    <?php endif ?>
+                                </a>
+                                <small title="<?=htmlspecialchars($anexo->nome_original ?? "")?>"><?=htmlspecialchars($anexo->nome_original ?? "")?></small>
+                                <button type="button" class="btn btn-link btn-sm text-danger p-0" onclick="Delete('manejo/ocorrencias/anexos/delete', '<?=$anexo->hash?>')">Remover</button>
+                            </div>
+                        <?php endforeach ?>
+                    </div>
+                <?php endif ?>
+
+                <div class="row">
+                    <div class="col-12">
+                        <div class="mb-3">
+                            <label for="anexos" class="form-label">Adicionar novos anexos</label>
+                            <input type="file" class="form-control" id="anexos" name="anexos[]" multiple
+                                   data-extensions="jpg jpeg png gif bmp webp mp4 mov avi webm mkv mp3 wav ogg m4a wma"
+                                   data-max-files="15">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-3 pt-4 border-top">
+                <div class="d-grid gap-2 d-sm-block">
+                    <button class="btn btn-primary" type="submit">Salvar</button>
+                    <a href="<?=$url_voltar?>" class="btn btn-white"><i class="uil uil-left"></i> Voltar</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>

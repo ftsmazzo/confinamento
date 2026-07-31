@@ -1,0 +1,131 @@
+<?php $this->layout("app/template/base"); ?>
+
+<?php $this->start("startScripts") ?>
+<script src="<?=asset("dist/echarts/dist/echarts.min.js")?>"></script>
+<script src="<?=asset("admin/js/echarts-locale-pt-br.js")?>"></script>
+<?php $this->end() ?>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" action="<?=$router->route("admin.relatorio.consumo.racao")?>" class="row g-2 align-items-end">
+            <div class="col-6 col-md-4">
+                <label class="form-label small text-muted mb-1">Data inicial</label>
+                <input type="date" name="data_inicial" class="form-control form-control-sm" value="<?=htmlspecialchars($dataInicial ?? "")?>" onchange="this.form.submit()">
+            </div>
+            <div class="col-6 col-md-4">
+                <label class="form-label small text-muted mb-1">Data final</label>
+                <input type="date" name="data_final" class="form-control form-control-sm" value="<?=htmlspecialchars($dataFinal ?? "")?>" onchange="this.form.submit()">
+            </div>
+            <div class="col-12 col-md-4">
+                <?php if ($dataInicial || $dataFinal) : ?>
+                    <a href="<?=$router->route("admin.relatorio.consumo.racao")?>" class="btn btn-sm btn-outline-secondary w-100">Limpar filtros</a>
+                <?php endif ?>
+            </div>
+        </form>
+    </div>
+</div>
+
+<?php
+    $totalKg = 0;
+    $totalCusto = 0;
+    foreach ($dados as $d) {
+        $totalKg += $d->quantidade_total;
+        $totalCusto += $d->custo_estimado;
+    }
+?>
+
+<div class="row mb-4">
+    <div class="col-6 col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <small class="text-muted">Total de Ração Fornecida</small>
+                <h4 class="mb-0"><?=number_format($totalKg, 0, ",", ".")?> kg</h4>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <small class="text-muted">Custo Total Estimado</small>
+                <h4 class="mb-0">R$ <?=number_format($totalCusto, 2, ",", ".")?></h4>
+            </div>
+        </div>
+    </div>
+</div>
+
+<?php if (!empty($graficoConsumoDiario)) : ?>
+<div class="card crud-table-card mb-4">
+    <div class="card-body">
+        <h5 class="mb-3">Consumo diário de ração (kg)</h5>
+        <div id="grafico-consumo-racao" style="width: 100%; height: 340px;"></div>
+    </div>
+</div>
+<?php endif ?>
+
+<div class="card crud-table-card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover table-sm table-datatable table-datatable-alt crud-table">
+                <thead>
+                    <tr>
+                        <th>Lote</th>
+                        <th>Fórmula</th>
+                        <th>Quantidade Fornecida</th>
+                        <th>Custo Estimado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($dados as $d) : ?>
+                        <tr>
+                            <td><?=$d->lote_nome?> (<?=$d->lote_codigo?>)</td>
+                            <td><span class="badge filled-outlined bg-secondary"><?=$d->formula_nome?></span></td>
+                            <td><?=number_format($d->quantidade_total, 2, ",", ".")?> kg</td>
+                            <td>R$ <?=number_format($d->custo_estimado, 2, ",", ".")?></td>
+                        </tr>
+                    <?php endforeach ?>
+                    <?php if (empty($dados)) : ?>
+                        <tr>
+                            <td colspan="4" class="text-center text-muted">Nenhum fornecimento de trato registrado ainda.</td>
+                        </tr>
+                    <?php endif ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<?php if (!empty($graficoConsumoDiario)) : ?>
+<?php $this->start("endScripts") ?>
+<script>
+    (function () {
+        var el = document.getElementById("grafico-consumo-racao");
+        if (!el || typeof echarts === "undefined") return;
+
+        var chart = echarts.init(el, null, { locale: "PT-BR" });
+        var pontos = <?=json_encode($graficoConsumoDiario, JSON_UNESCAPED_UNICODE)?>;
+
+        chart.setOption({
+            tooltip: {
+                trigger: "axis",
+                formatter: function (params) {
+                    if (!params.length) return "";
+                    var p = params[0];
+                    return "<strong>" + window.formatDataBr(p.axisValue) + "</strong><br>" + p.marker + " " + p.value[1].toLocaleString("pt-BR", { minimumFractionDigits: 2 }) + " kg";
+                }
+            },
+            grid: { left: 60, right: 20, top: 20, bottom: 30 },
+            xAxis: { type: "time" },
+            yAxis: { type: "value", name: "kg", axisLabel: { formatter: "{value} kg" } },
+            series: [{
+                type: "line",
+                smooth: true,
+                areaStyle: {},
+                data: pontos.map(function (p) { return [p.data, p.quantidade]; }),
+            }],
+        });
+
+        window.addEventListener("resize", function () { chart.resize(); });
+    })();
+</script>
+<?php $this->end() ?>
+<?php endif ?>

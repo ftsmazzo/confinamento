@@ -1,0 +1,161 @@
+<?php $this->layout("app/template/base"); ?>
+
+<?php $this->start("startScripts") ?>
+<script src="<?=asset("dist/echarts/dist/echarts.min.js")?>"></script>
+<script src="<?=asset("admin/js/echarts-locale-pt-br.js")?>"></script>
+<?php $this->end() ?>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" action="<?=$router->route("admin.relatorio.mortalidade")?>" class="row g-2 align-items-end">
+            <div class="col-6 col-md-4">
+                <label class="form-label small text-muted mb-1">Data inicial</label>
+                <input type="date" name="data_inicial" class="form-control form-control-sm" value="<?=htmlspecialchars($dataInicial ?? "")?>" onchange="this.form.submit()">
+            </div>
+            <div class="col-6 col-md-4">
+                <label class="form-label small text-muted mb-1">Data final</label>
+                <input type="date" name="data_final" class="form-control form-control-sm" value="<?=htmlspecialchars($dataFinal ?? "")?>" onchange="this.form.submit()">
+            </div>
+            <div class="col-12 col-md-4">
+                <?php if ($dataInicial || $dataFinal) : ?>
+                    <a href="<?=$router->route("admin.relatorio.mortalidade")?>" class="btn btn-sm btn-outline-secondary w-100">Limpar filtros</a>
+                <?php endif ?>
+            </div>
+        </form>
+    </div>
+</div>
+
+<?php
+    $totalEntrada = 0;
+    $totalPerdido = 0;
+    $totalValorPerdido = 0;
+    foreach ($lotes as $l) {
+        $totalEntrada += (int) ($l->quantidade_entrada ?? 0);
+        $totalPerdido += $l->total_perdido;
+        $totalValorPerdido += $l->valor_estimado_perdido;
+    }
+    $percentualGeral = $totalEntrada > 0 ? round($totalPerdido / $totalEntrada * 100, 2) : 0;
+?>
+
+<div class="row mb-4">
+    <div class="col-6 col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <small class="text-muted">Cabeças Recebidas</small>
+                <h4 class="mb-0"><?=$totalEntrada?></h4>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <small class="text-muted">Total de Perdas</small>
+                <h4 class="mb-0 text-danger"><?=$totalPerdido?></h4>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <small class="text-muted">% de Perda Geral</small>
+                <h4 class="mb-0 <?=$percentualGeral > 3 ? "text-danger" : "text-success"?>"><?=number_format($percentualGeral, 2, ",", ".")?>%</h4>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <small class="text-muted">Valor Estimado Perdido</small>
+                <h4 class="mb-0 text-danger">R$ <?=number_format($totalValorPerdido, 2, ",", ".")?></h4>
+            </div>
+        </div>
+    </div>
+</div>
+
+<?php if (!empty($graficoPerdasDiarias)) : ?>
+<div class="card crud-table-card mb-4">
+    <div class="card-body">
+        <h5 class="mb-3">Perdas por dia</h5>
+        <div id="grafico-mortalidade" style="width: 100%; height: 340px;"></div>
+    </div>
+</div>
+<?php endif ?>
+
+<div class="card crud-table-card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover table-sm table-datatable table-datatable-alt crud-table">
+                <thead>
+                    <tr>
+                        <th>Lote</th>
+                        <th>Cabeças Recebidas</th>
+                        <th>Total de Perdas</th>
+                        <th>% Perda</th>
+                        <th>Valor Estimado Perdido</th>
+                        <th>Motivos</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($lotes as $l) : ?>
+                        <tr>
+                            <td><?=$l->nome?> (<?=$l->codigo?>)</td>
+                            <td><?=(int) ($l->quantidade_entrada ?? 0)?></td>
+                            <td><?=$l->total_perdido?></td>
+                            <td>
+                                <span class="badge filled-outlined <?=$l->percentual_perda > 3 ? "bg-danger" : "bg-success"?>"><?=number_format($l->percentual_perda, 2, ",", ".")?>%</span>
+                            </td>
+                            <td>R$ <?=number_format($l->valor_estimado_perdido, 2, ",", ".")?></td>
+                            <td>
+                                <?php if (empty($l->perdas)) : ?>
+                                    <span class="text-muted">-</span>
+                                <?php else : ?>
+                                    <?php foreach ($l->perdas as $perda) : ?>
+                                        <div><?=datebr($perda->data_ocorrencia)?> — <?=$perda->motivo_descricao ?: "Sem motivo"?> (<?=$perda->quantidade?>)</div>
+                                    <?php endforeach ?>
+                                <?php endif ?>
+                            </td>
+                        </tr>
+                    <?php endforeach ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<?php if (!empty($graficoPerdasDiarias)) : ?>
+<?php $this->start("endScripts") ?>
+<script>
+    (function () {
+        var el = document.getElementById("grafico-mortalidade");
+        if (!el || typeof echarts === "undefined") return;
+
+        var chart = echarts.init(el, null, { locale: "PT-BR" });
+        var pontos = <?=json_encode($graficoPerdasDiarias, JSON_UNESCAPED_UNICODE)?>;
+
+        chart.setOption({
+            tooltip: {
+                trigger: "axis",
+                formatter: function (params) {
+                    if (!params.length) return "";
+                    var p = params[0];
+                    return "<strong>" + window.formatDataBr(p.axisValue) + "</strong><br>" + p.marker + " " + p.value[1] + " cabeça(s)";
+                }
+            },
+            grid: { left: 50, right: 20, top: 20, bottom: 30 },
+            xAxis: { type: "time" },
+            yAxis: { type: "value", name: "cabeças", minInterval: 1 },
+            series: [{
+                type: "line",
+                smooth: true,
+                lineStyle: { color: "#dc3545" },
+                itemStyle: { color: "#dc3545" },
+                areaStyle: { color: "rgba(220, 53, 69, 0.15)" },
+                data: pontos.map(function (p) { return [p.data, p.quantidade]; }),
+            }],
+        });
+
+        window.addEventListener("resize", function () { chart.resize(); });
+    })();
+</script>
+<?php $this->end() ?>
+<?php endif ?>
