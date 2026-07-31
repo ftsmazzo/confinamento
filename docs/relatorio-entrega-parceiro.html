@@ -217,7 +217,14 @@
               <td>Não</td>
             </tr>
             <tr>
-              <td><strong>P6–P10</strong></td>
+              <td><strong>P6</strong></td>
+              <td>Carga rebanho + lote↔curral (E05/E11)</td>
+              <td><span class="badge wait">Aguardando validação</span></td>
+              <td>—</td>
+              <td>Sim</td>
+            </tr>
+            <tr>
+              <td><strong>P7–P10</strong></td>
               <td>Demais entregas do escopo</td>
               <td><span class="badge wait">Pendente</span></td>
               <td>—</td>
@@ -531,6 +538,54 @@
         </div>
       </article>
 
+      <!-- P6 -->
+      <article class="step" id="p6">
+        <div class="step-top">
+          <span class="step-id">P6</span>
+          <h3>Carga rebanho / currais + lote↔curral (E05 · E11)</h3>
+          <span class="badge wait">Aguardando validação na segura</span>
+        </div>
+        <p class="muted small">Data: 31/07/2026 · Seed one-shot + UX curral→lote</p>
+
+        <div class="grid-2">
+          <div class="box">
+            <h4>O que mudou</h4>
+            <ul>
+              <li>SQL idempotente da planilha Acompanhamento: 21 currais BI (Linha A/B/Recepção; 04 U/V) + 14 lotes (~1067 cab, peso médio entrada)</li>
+              <li>Sem tela de import recorrente (carga direta via SQL)</li>
+              <li>UX: curral preenche lote (e vice-versa) em Leitura, Fornecimento, Programação e Entrada</li>
+              <li>Entrada com curral de destino atualiza <code>lote.id_curral</code></li>
+              <li>Manual: checklist de conferência da carga</li>
+            </ul>
+          </div>
+          <div class="box">
+            <h4>Como validar na segura</h4>
+            <ol>
+              <li>Aplicar <code>storage/migrations/20260731_0003_seed_rebanho_bichara.sql</code></li>
+              <li>Currais BI com linha; lotes BI com qtd/peso; total ~1067 cab</li>
+              <li>Leitura de Cocho: escolher Curral 01 → lote BI-L01 preenche</li>
+              <li>Quadro do Dia: filtrar linha A / VELHA</li>
+            </ol>
+          </div>
+        </div>
+
+        <div class="box" style="margin-top:12px">
+          <h4>Arquivos principais</h4>
+          <ul class="files">
+            <li><span class="tag">sql</span> <span class="path">storage/migrations/20260731_0003_seed_rebanho_bichara.sql</span></li>
+            <li><span class="tag">js</span> <span class="path">public/assets/admin/js/curral-lote-link.js</span></li>
+            <li><span class="tag">model</span> <span class="path">app/Models/Confinamento/Curral.php</span> (<code>comLoteAtivo</code>)</li>
+            <li><span class="tag">ctrl</span> <span class="path">app/Controllers/Admin/Manejo/EntradaController.php</span></li>
+            <li><span class="tag doc">manual</span> <span class="path">public/assets/manual/manual-do-sistema.html</span></li>
+          </ul>
+        </div>
+
+        <div class="sql-box">
+          <strong>DB:</strong> executar <code>storage/migrations/20260731_0003_seed_rebanho_bichara.sql</code>
+          (idempotente por código <code>BI-*</code>; exige coluna linha/giro do P2).
+        </div>
+      </article>
+
     </section>
 
     <section>
@@ -541,7 +596,6 @@
             <tr><th>Passo</th><th>Entrega</th><th>Obs.</th></tr>
           </thead>
           <tbody>
-            <tr><td>P6</td><td>Carga rebanho + lote↔curral (E05/E11)</td><td>Seed/SQL</td></tr>
             <tr><td>P7</td><td>Farmácia carga inicial (E04)</td><td>Sem import recorrente</td></tr>
             <tr><td>P8</td><td>Cocho: foto, permissão, turnos (E12)</td><td>Migration + ACL</td></tr>
             <tr><td>P9</td><td>Sugestão por escore (E07)</td><td>—</td></tr>

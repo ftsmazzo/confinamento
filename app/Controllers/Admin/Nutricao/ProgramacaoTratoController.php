@@ -282,7 +282,7 @@ class ProgramacaoTratoController extends ControllerAdmin
 
     private function currais(): array
     {
-        return Curral::orderBy("nome")->get();
+        return Curral::comLoteAtivo();
     }
 
     private function formulas(): array

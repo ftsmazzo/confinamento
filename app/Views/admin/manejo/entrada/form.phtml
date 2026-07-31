@@ -24,7 +24,7 @@
                             <select name="id_lote" id="id_lote" class="form-select select2" data-search="true">
                                 <option value="">Selecione</option>
                                 <?php foreach (($lotes ?? []) as $lote) : ?>
-                                    <option value="<?=$lote->id?>" <?=isset($entrada->id_lote) && (int) $entrada->id_lote === (int) $lote->id ? "selected" : ""?>><?=$lote->nome?> (<?=$lote->codigo?>)</option>
+                                    <option value="<?=$lote->id?>" data-id-curral="<?=!empty($lote->id_curral) ? (int) $lote->id_curral : ""?>" <?=isset($entrada->id_lote) && (int) $entrada->id_lote === (int) $lote->id ? "selected" : ""?>><?=$lote->nome?> (<?=$lote->codigo?>)</option>
                                 <?php endforeach ?>
                             </select>
                         </div>
@@ -57,7 +57,7 @@
                             <select name="id_curral_destino" id="id_curral_destino" class="form-select select2" data-search="true">
                                 <option value="">Selecione</option>
                                 <?php foreach (($currais ?? []) as $curral) : ?>
-                                    <option value="<?=$curral->id?>" <?=isset($entrada->id_curral_destino) && (int) $entrada->id_curral_destino === (int) $curral->id ? "selected" : ""?>><?=$curral->nome?> (<?=$curral->codigo?>)</option>
+                                    <option value="<?=$curral->id?>" data-id-lote="<?=!empty($curral->id_lote_ativo) ? (int) $curral->id_lote_ativo : ""?>" <?=isset($entrada->id_curral_destino) && (int) $entrada->id_curral_destino === (int) $curral->id ? "selected" : ""?>><?=$curral->nome?> (<?=$curral->codigo?>)</option>
                                 <?php endforeach ?>
                             </select>
                         </div>
@@ -128,3 +128,5 @@
         </div>
     </div>
 </form>
+
+<script src="<?=asset("admin/js/curral-lote-link.js")?>"></script>

@@ -98,6 +98,14 @@ class EntradaController extends ControllerAdmin
         $payload["created_by"] = $this->user->uid;
 
         MovimentacaoEntrada::create($payload);
+
+        if (!empty($payload["id_curral_destino"])) {
+            Lote::updateBy((int) $payload["id_lote"], [
+                "id_curral" => (int) $payload["id_curral_destino"],
+                "updated_by" => $this->user->uid,
+            ]);
+        }
+
         $this->message->success("Entrada registrada com sucesso");
         $this->router->redirect("admin.manejo.entrada.index");
     }
@@ -152,6 +160,14 @@ class EntradaController extends ControllerAdmin
         $payload["updated_by"] = $this->user->uid;
 
         MovimentacaoEntrada::updateBy($entrada->id, $payload);
+
+        if (!empty($payload["id_curral_destino"])) {
+            Lote::updateBy((int) $payload["id_lote"], [
+                "id_curral" => (int) $payload["id_curral_destino"],
+                "updated_by" => $this->user->uid,
+            ]);
+        }
+
         $this->message->success("Entrada atualizada com sucesso");
         $this->router->redirect("admin.manejo.entrada.index");
     }
@@ -217,7 +233,7 @@ class EntradaController extends ControllerAdmin
 
     private function currais(): array
     {
-        return Curral::orderBy("nome")->get();
+        return Curral::comLoteAtivo();
     }
 
     private function tiposEntrada(): array

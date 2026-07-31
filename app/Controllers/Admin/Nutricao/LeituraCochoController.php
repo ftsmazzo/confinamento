@@ -207,6 +207,6 @@ class LeituraCochoController extends ControllerAdmin
 
     private function currais(): array
     {
-        return Curral::orderBy("nome")->get();
+        return Curral::comLoteAtivo();
     }
 }
