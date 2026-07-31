@@ -9,7 +9,9 @@ use App\Core\Request;
 use App\Models\Nutricao\FaseNutricional;
 use App\Models\Nutricao\FormulaRacao;
 use App\Models\Nutricao\FormulaRacaoItem;
+use App\Models\Nutricao\FormulaRacaoParametro;
 use App\Models\Nutricao\Ingrediente;
+use App\Models\Nutricao\ParametroNutricional;
 use App\Models\Nutricao\TipoDieta;
 
 class FormulaRacaoController extends ControllerAdmin
@@ -48,9 +50,12 @@ class FormulaRacaoController extends ControllerAdmin
             ->orderBy("fr.nome")
             ->get();
 
+        $msPorFormula = $this->mapaMateriaSeca();
+
         foreach ($dados as $item) {
             $item->hash = md5((string) $item->id);
             $item->total_percentual = (float) (FormulaRacaoItem::where("id_formula_racao", "=", $item->id)->select("SUM(percentual) as total")->first()->total ?? 0);
+            $item->materia_seca = $msPorFormula[(int) $item->id] ?? null;
         }
 
         echo $this->view->render("admin/nutricao/formula-racao/index", [
@@ -70,6 +75,8 @@ class FormulaRacaoController extends ControllerAdmin
             "csrf" => $this->csrf->generate(),
             "formula" => false,
             "itens" => [],
+            "parametros" => $this->parametrosCatalogo(),
+            "valoresParametros" => [],
             "tiposDieta" => $this->tiposDieta(),
             "fases" => $this->fases(),
             "ingredientes" => $this->ingredientes(),
@@ -93,6 +100,7 @@ class FormulaRacaoController extends ControllerAdmin
 
         $formula = FormulaRacao::create($payload);
         $this->salvarItens((int) $formula->id, $request);
+        $this->salvarParametros((int) $formula->id, $request);
 
         $this->message->success("Fórmula cadastrada com sucesso");
         $this->router->redirect("admin.nutricao.formula.racao.index");
@@ -120,6 +128,8 @@ class FormulaRacaoController extends ControllerAdmin
             "csrf" => $this->csrf->generate(),
             "formula" => $formula,
             "itens" => $itens,
+            "parametros" => $this->parametrosCatalogo(),
+            "valoresParametros" => $this->valoresParametros((int) $formula->id),
             "tiposDieta" => $this->tiposDieta(),
             "fases" => $this->fases(),
             "ingredientes" => $this->ingredientes(),
@@ -150,6 +160,7 @@ class FormulaRacaoController extends ControllerAdmin
 
         FormulaRacao::updateBy($formula->id, $payload);
         $this->salvarItens((int) $formula->id, $request);
+        $this->salvarParametros((int) $formula->id, $request);
 
         $this->message->success("Fórmula atualizada com sucesso");
         $this->router->redirect("admin.nutricao.formula.racao.index");
@@ -202,6 +213,40 @@ class FormulaRacaoController extends ControllerAdmin
         }
     }
 
+    /**
+     * Substitui os parametros nutricionais da formula (ex.: % MS).
+     * Campos vazios sao removidos; valores numericos sao gravados.
+     */
+    private function salvarParametros(int $idFormula, Request $request): void
+    {
+        $post = $request->all();
+        $valores = $post["parametro_valor"] ?? [];
+
+        FormulaRacaoParametro::where("id_formula_racao", "=", $idFormula)->delete();
+
+        if (!is_array($valores)) {
+            return;
+        }
+
+        foreach ($valores as $idParametro => $valorBruto) {
+            $idParametro = (int) $idParametro;
+            $valorBruto = trim((string) $valorBruto);
+
+            if ($idParametro <= 0 || $valorBruto === "") {
+                continue;
+            }
+
+            $valor = (float) str_replace(",", ".", $valorBruto);
+
+            FormulaRacaoParametro::create([
+                "id_formula_racao" => $idFormula,
+                "id_parametro_nutricional" => $idParametro,
+                "valor" => $valor,
+                "created_by" => $this->user->uid,
+            ]);
+        }
+    }
+
     private function normalizarPayload(Data $data): array
     {
         $data->nullIfEmpty("id_tipo_dieta");
@@ -213,7 +258,8 @@ class FormulaRacaoController extends ControllerAdmin
             $payload["csrf"],
             $payload["id"],
             $payload["item_ingrediente"],
-            $payload["item_percentual"]
+            $payload["item_percentual"],
+            $payload["parametro_valor"]
         );
 
         $payload["ativo"] = isset($payload["ativo"]) ? (int) $payload["ativo"] : 1;
@@ -234,5 +280,44 @@ class FormulaRacaoController extends ControllerAdmin
     private function ingredientes(): array
     {
         return Ingrediente::orderBy("nome")->get();
+    }
+
+    private function parametrosCatalogo(): array
+    {
+        return ParametroNutricional::orderBy("nome")->get();
+    }
+
+    /**
+     * @return array<int, float> id_parametro_nutricional => valor
+     */
+    private function valoresParametros(int $idFormula): array
+    {
+        $mapa = [];
+
+        foreach (FormulaRacaoParametro::where("id_formula_racao", "=", $idFormula)->get() as $row) {
+            $mapa[(int) $row->id_parametro_nutricional] = (float) $row->valor;
+        }
+
+        return $mapa;
+    }
+
+    /**
+     * @return array<int, float> id_formula_racao => valor % MS
+     */
+    private function mapaMateriaSeca(): array
+    {
+        $paramMs = ParametroNutricional::where("nome", "=", "MATÉRIA SECA")->first();
+
+        if (!$paramMs) {
+            return [];
+        }
+
+        $mapa = [];
+
+        foreach (FormulaRacaoParametro::where("id_parametro_nutricional", "=", $paramMs->id)->get() as $row) {
+            $mapa[(int) $row->id_formula_racao] = (float) $row->valor;
+        }
+
+        return $mapa;
     }
 }

@@ -16,6 +16,7 @@
                         <th>Tipo</th>
                         <th>Fase</th>
                         <th>Composição</th>
+                        <th>% MS</th>
                         <th>Ativo</th>
                         <?php if ($permissao["editar"] || $permissao["excluir"]) : ?>
                             <th class="text-end actions-column"></th>
@@ -41,6 +42,13 @@
                                     <span class="badge filled-outlined bg-warning" data-tooltip="true" title="Composição não fecha em 100%"><?=number_format((float) $d->total_percentual, 2, ",", ".")?>%</span>
                                 <?php else : ?>
                                     <span class="badge filled-outlined bg-secondary">Sem itens</span>
+                                <?php endif ?>
+                            </td>
+                            <td>
+                                <?php if ($d->materia_seca !== null) : ?>
+                                    <?=number_format((float) $d->materia_seca, 2, ",", ".")?>%
+                                <?php else : ?>
+                                    <span class="text-muted">—</span>
                                 <?php endif ?>
                             </td>
                             <td><?=!empty($d->ativo) ? '<span class="badge filled-outlined bg-success">Sim</span>' : '<span class="badge filled-outlined bg-secondary">Não</span>'?></td>

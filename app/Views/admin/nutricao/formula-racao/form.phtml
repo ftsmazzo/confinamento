@@ -98,6 +98,51 @@
                 <button type="button" class="btn btn-white btn-sm" id="btn-add-item-formula"><i class="fa fa-plus fa-fw"></i> Adicionar Ingrediente</button>
             </div>
 
+            <div class="crud-subsection mb-4">
+                <div class="crud-section-copy mb-3">
+                    <h5>Parâmetros nutricionais</h5>
+                    <small>Valores de bromatologia da fórmula (ex.: % de matéria seca). O % MS é necessário para o cálculo do trato (MS → matéria natural).</small>
+                </div>
+
+                <?php if (empty($parametros)) : ?>
+                    <div class="alert alert-warning mb-0">
+                        Nenhum parâmetro nutricional cadastrado. Cadastre em
+                        <strong>Nutrição → Parâmetros Nutricionais</strong> (ex.: MATÉRIA SECA).
+                    </div>
+                <?php else : ?>
+                    <div class="row">
+                        <?php foreach ($parametros as $param) : ?>
+                            <?php
+                                $idParam = (int) $param->id;
+                                $valorAtual = $valoresParametros[$idParam] ?? null;
+                                $unidade = trim((string) ($param->unidade_medida ?? ""));
+                                $label = $param->nome . ($unidade !== "" ? " (" . $unidade . ")" : "");
+                                $destaqueMs = mb_strtoupper((string) $param->nome) === "MATÉRIA SECA";
+                            ?>
+                            <div class="col-12 col-md-4">
+                                <div class="mb-3">
+                                    <label for="parametro_valor_<?=$idParam?>" class="form-label">
+                                        <?=$label?>
+                                        <?php if ($destaqueMs) : ?>
+                                            <span class="badge filled-outlined bg-primary ms-1">Principal</span>
+                                        <?php endif ?>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        class="form-control input-decimal"
+                                        id="parametro_valor_<?=$idParam?>"
+                                        name="parametro_valor[<?=$idParam?>]"
+                                        placeholder="0,000"
+                                        autocomplete="off"
+                                        value="<?=$valorAtual !== null ? number_format((float) $valorAtual, 3, ",", ".") : ""?>"
+                                    >
+                                </div>
+                            </div>
+                        <?php endforeach ?>
+                    </div>
+                <?php endif ?>
+            </div>
+
             <div class="crud-subsection">
                 <div class="crud-section-copy mb-3">
                     <h5>Situação</h5>
