@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Entrega parcial — P1 a P4 · Confinamento</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink: #1a2332; --muted: #5c6b7a; --line: #d8e0e8; --paper: #f7f4ef; --card: #fff;
+      --forest: #1f5c45; --forest-soft: #e6f2ec;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; font-family: "Manrope", system-ui, sans-serif; color: var(--ink);
+      background:
+        radial-gradient(900px 400px at 0% -10%, #e8efe9 0%, transparent 55%),
+        var(--paper);
+      line-height: 1.55;
+    }
+    .wrap { max-width: 720px; margin: 0 auto; padding: 36px 20px 72px; }
+    .cover {
+      background: var(--card); border: 1px solid var(--line); border-radius: 22px;
+      padding: 36px 32px 28px; position: relative; overflow: hidden;
+    }
+    .cover::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 8px; background: var(--forest); }
+    .eyebrow {
+      font-size: 0.78rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--forest); margin-bottom: 12px;
+    }
+    h1 {
+      font-family: "Fraunces", Georgia, serif; font-size: clamp(1.6rem, 3vw, 2rem);
+      line-height: 1.2; margin: 0 0 12px;
+    }
+    .lede { color: var(--muted); margin: 0 0 8px; max-width: 58ch; }
+    .meta { font-size: 0.88rem; color: var(--muted); margin-top: 14px; }
+    .step {
+      background: var(--card); border: 1px solid var(--line); border-radius: 16px;
+      padding: 20px 22px; margin: 16px 0;
+    }
+    .step-top { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 10px; }
+    .step-id {
+      font-family: "Fraunces", Georgia, serif; font-weight: 700;
+      background: var(--forest-soft); color: var(--forest); border-radius: 10px; padding: 5px 11px;
+    }
+    .step h2 { font-family: "Fraunces", Georgia, serif; font-size: 1.15rem; margin: 0; flex: 1; }
+    .badge {
+      font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em;
+      padding: 4px 9px; border-radius: 6px; background: var(--forest-soft); color: var(--forest);
+    }
+    ul { margin: 8px 0 0; padding-left: 1.15rem; }
+    li { margin: 5px 0; }
+    .where { color: var(--muted); font-size: 0.92rem; margin-top: 10px; }
+    .where strong { color: var(--ink); }
+    .next {
+      margin-top: 22px; background: linear-gradient(180deg, #f3f8f5, #eef5f1);
+      border: 1px solid #c7ddd1; border-radius: 14px; padding: 16px 18px; color: #234536;
+    }
+    footer { margin-top: 28px; font-size: 0.82rem; color: var(--muted); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="cover">
+      <div class="eyebrow">Confinamento · Fuad Bichara</div>
+      <h1>Diego, seguimento da entrega</h1>
+      <p class="lede">
+        Fechamos e validamos na versão segura os quatro primeiros blocos do escopo.
+        Abaixo está o que mudou de verdade no sistema — tela a tela — para você conferir.
+      </p>
+      <p class="meta">31/07/2026 · Status: <strong>P1 → P4 concluídos e testados</strong></p>
+    </header>
+
+    <article class="step">
+      <div class="step-top">
+        <span class="step-id">P1</span>
+        <h2>Correções técnicas</h2>
+        <span class="badge">Validado</span>
+      </div>
+      <ul>
+        <li>Menu/layout vertical corrigido (typo que quebrava a configuração).</li>
+        <li>Botão de editar parcela voltou a funcionar em Contas a Pagar e a Receber.</li>
+        <li>Limpeza de botões/caminhos mortos no cadastro.</li>
+        <li>Hotfix: edição de curral/lote deixou de estourar erro de hash no ambiente hospedado.</li>
+      </ul>
+      <p class="where"><strong>Onde ver:</strong> Financeiro → Contas a Pagar (editar parcela) · Confinamento → Currais (editar)</p>
+    </article>
+
+    <article class="step">
+      <div class="step-top">
+        <span class="step-id">P2</span>
+        <h2>Linha e Giro</h2>
+        <span class="badge">Validado</span>
+      </div>
+      <ul>
+        <li>Campo <strong>Linha</strong> no curral (ex.: RECEPÇÃO, A, 1, 2).</li>
+        <li>Campo <strong>Giro</strong> no lote (ex.: 1º, 2º).</li>
+        <li>Colunas novas nas listagens de Currais e Lotes.</li>
+      </ul>
+      <p class="where"><strong>Onde ver:</strong> Confinamento → Currais · Manejo → Lotes</p>
+    </article>
+
+    <article class="step">
+      <div class="step-top">
+        <span class="step-id">P3</span>
+        <h2>Parâmetros nutricionais nas fórmulas</h2>
+        <span class="badge">Validado</span>
+      </div>
+      <ul>
+        <li>Seção de bromatologia na fórmula (Matéria Seca em destaque + demais parâmetros).</li>
+        <li>% MS aparece na listagem de fórmulas.</li>
+        <li>Composição (ingredientes) e % MS são independentes — um não altera o outro.</li>
+      </ul>
+      <p class="where"><strong>Onde ver:</strong> Nutrição → Fórmulas de Ração (editar → Parâmetros nutricionais)</p>
+    </article>
+
+    <article class="step">
+      <div class="step-top">
+        <span class="step-id">P4</span>
+        <h2>Motor de previsão de trato + alerta de permanência</h2>
+        <span class="badge">Validado</span>
+      </div>
+      <ul>
+        <li>Motor calcula o dia: dias no confinamento → peso projetado (GMD) → consumo MS (%PV) → matéria natural (% MS da fórmula) → rateio em 4 turnos.</li>
+        <li>Botão <strong>Gerar previstos</strong> grava Manhã / Intermediário / Tarde / Noite automaticamente.</li>
+        <li>Tela <strong>Parâmetros do Trato</strong> (GMD, %PV, % dos turnos, limiares 100/110).</li>
+        <li>Coluna <strong>Dias</strong> na listagem de lotes (alerta amarelo ~100 / vermelho ~110).</li>
+      </ul>
+      <p class="where">
+        <strong>Onde ver:</strong> Nutrição → Parâmetros do Trato · Programação de Trato → Gerar previstos · Manejo → Lotes (coluna Dias)<br>
+        <strong>Teste feito:</strong> LOTE 2026-001 gerou 4 turnos (303,16 / 202,11 / 202,11 / 303,16 kg); dias 91 / 82 / 60 nos lotes.
+      </p>
+    </article>
+
+    <div class="next">
+      <strong>Próximo bloco:</strong> P5 — quadro diário de trato (previsto × ocorrido) + custo alimentar.
+      Seguimos na mesma cadência: entrega → você confere na segura → fechamos e avançamos.
+    </div>
+
+    <footer>
+      Escopo fechado: E01–E12 · Relatório vivo completo: <code>docs/relatorio-entrega-parceiro.html</code>
+    </footer>
+  </div>
+</body>
+</html>
