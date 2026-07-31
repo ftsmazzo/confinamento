@@ -134,6 +134,9 @@ class AdminMenuDefinition extends AbstractMenuDefinition
         ]));
 
         $nutricaoTratoItems = array_values(array_filter([
+            $this->link("nutricao-quadro-diario", "Quadro do Dia", "admin.nutricao.quadro.diario", [
+                "permission" => "programacao_trato_gerenciar",
+            ]),
             $this->link("nutricao-confeccoes-racao", "Confecção de Ração", "admin.nutricao.confeccao.racao.index", [
                 "permission" => "confeccao_racao_gerenciar",
             ]),

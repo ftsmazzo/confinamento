@@ -270,6 +270,8 @@ $router->namespace("\App\Controllers\Admin")->group(null);
     $router->get("/nutricao/confeccoes-racao/delete/{id}", "Nutricao\\ConfeccaoRacaoController:delete", "admin.nutricao.confeccao.racao.delete");
 
     // NUTRICAO - PROGRAMACOES DE TRATO
+    $router->get("/nutricao/quadro-diario", "Nutricao\\QuadroDiarioController:index", "admin.nutricao.quadro.diario");
+
     $router->get("/nutricao/programacoes-trato", "Nutricao\\ProgramacaoTratoController:index", "admin.nutricao.programacao.trato.index");
     $router->get("/nutricao/programacoes-trato/novo", "Nutricao\\ProgramacaoTratoController:new", "admin.nutricao.programacao.trato.novo");
     $router->get("/nutricao/programacoes-trato/gerar", "Nutricao\\ProgramacaoTratoController:gerarForm", "admin.nutricao.programacao.trato.gerar");

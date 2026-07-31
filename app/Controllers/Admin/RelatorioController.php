@@ -9,8 +9,8 @@ use App\Core\Request;
 use App\Models\Manejo\Lote;
 use App\Models\Manejo\MovimentacaoMortalidade;
 use App\Models\Manejo\MovimentacaoPesagem;
-use App\Models\Nutricao\FormulaRacaoItem;
 use App\Models\Sanitario\AplicacaoSanitaria;
+use App\Services\Nutricao\CustoFormulaService;
 
 class RelatorioController extends ControllerAdmin
 {
@@ -61,7 +61,7 @@ class RelatorioController extends ControllerAdmin
             ->orderBy("l.nome")
             ->get();
 
-        $custoFormulaPorKg = $this->custoFormulaPorKg();
+        $custoFormulaPorKg = (new CustoFormulaService())->custoPorKg();
         $racaoPorLotePorFormula = $this->racaoPorLotePorFormula();
         $custoSanitarioPorLote = $this->custoSanitarioPorLote();
         $receitaPorLote = $this->somarPorLote("movimentacao_saida", "id_lote", "valor_total");
@@ -339,7 +339,7 @@ class RelatorioController extends ControllerAdmin
             ],
         ]);
 
-        $custoFormulaPorKg = $this->custoFormulaPorKg();
+        $custoFormulaPorKg = (new CustoFormulaService())->custoPorKg();
 
         $query = DB::table("fornecimento_trato", "ft")
             ->leftJoin("lote as l", "ft.id_lote", "=", "l.id")
@@ -664,29 +664,6 @@ class RelatorioController extends ControllerAdmin
         }
 
         return $ganho;
-    }
-
-    /**
-     * Custo por kg de cada formula de racao, calculado a partir da
-     * composicao percentual x custo unitario de cada ingrediente.
-     * Ingredientes sem custo cadastrado (custo_unitario NULL) entram
-     * como 0 no calculo -- o total fica subestimado ate o custo ser
-     * preenchido no cadastro do ingrediente.
-     */
-    private function custoFormulaPorKg(): array
-    {
-        $itens = FormulaRacaoItem::leftJoin("ingrediente as i", "fri.id_ingrediente", "=", "i.id")
-            ->select("fri.id_formula_racao", "fri.percentual", "i.custo_unitario")
-            ->get();
-
-        $custoPorFormula = [];
-        foreach ($itens as $item) {
-            $custoUnitario = (float) ($item->custo_unitario ?? 0);
-            $custoPorFormula[$item->id_formula_racao] = ($custoPorFormula[$item->id_formula_racao] ?? 0)
-                + ((float) $item->percentual / 100) * $custoUnitario;
-        }
-
-        return $custoPorFormula;
     }
 
     /**

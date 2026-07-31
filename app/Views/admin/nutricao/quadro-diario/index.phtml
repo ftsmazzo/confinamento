@@ -1,0 +1,288 @@
+<?php $this->layout("app/template/base"); ?>
+
+<?php $this->start("page-buttons") ?>
+    <?php if (!empty($podeGerar)) : ?>
+        <a class="btn btn-white" href="<?=$router->route("admin.nutricao.programacao.trato.gerar")?>"><i class="fa fa-calculator fa-fw"></i> Gerar previstos</a>
+    <?php endif ?>
+    <?php if (!empty($podeFornecer)) : ?>
+        <a class="btn btn-primary" href="<?=$router->route("admin.nutricao.fornecimento.trato.novo")?>"><i class="fa fa-plus fa-fw"></i> Lançar ocorrido</a>
+    <?php endif ?>
+<?php $this->end() ?>
+
+<div class="card mb-3">
+    <div class="card-body">
+        <form method="GET" action="<?=$router->route("admin.nutricao.quadro.diario")?>" class="row g-2 align-items-end">
+            <div class="col-6 col-md-3">
+                <label class="form-label small text-muted mb-1">Data</label>
+                <input type="date" name="data" class="form-control form-control-sm" value="<?=htmlspecialchars($data)?>" onchange="this.form.submit()">
+            </div>
+            <div class="col-6 col-md-3">
+                <label class="form-label small text-muted mb-1">Linha</label>
+                <select name="linha" class="form-select form-select-sm" onchange="this.form.submit()">
+                    <option value="">Todas</option>
+                    <?php foreach ($linhasFiltro as $lf) : ?>
+                        <option value="<?=htmlspecialchars($lf)?>" <?=($linha === $lf) ? "selected" : ""?>><?=htmlspecialchars($lf)?></option>
+                    <?php endforeach ?>
+                </select>
+            </div>
+            <div class="col-12 col-md-4">
+                <label class="form-label small text-muted mb-1">Curral</label>
+                <select name="id_curral" class="form-select form-select-sm" onchange="this.form.submit()">
+                    <option value="">Todos</option>
+                    <?php foreach ($currais as $c) : ?>
+                        <option value="<?=$c->id?>" <?=!empty($id_curral) && (int) $id_curral === (int) $c->id ? "selected" : ""?>>
+                            <?=$c->nome?><?=!empty($c->linha) ? " · Linha {$c->linha}" : ""?>
+                        </option>
+                    <?php endforeach ?>
+                </select>
+            </div>
+            <div class="col-12 col-md-2">
+                <?php if ($linha !== "" || !empty($id_curral) || $data !== date("Y-m-d")) : ?>
+                    <a href="<?=$router->route("admin.nutricao.quadro.diario")?>" class="btn btn-sm btn-outline-secondary w-100">Limpar</a>
+                <?php endif ?>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="row mb-3 g-2">
+    <div class="col-6 col-md-3">
+        <div class="card h-100">
+            <div class="card-body py-3">
+                <small class="text-muted">Previsto</small>
+                <h4 class="mb-0"><?=number_format((float) $totais["previsto"], 0, ",", ".")?> <small class="fs-6 text-muted">kg</small></h4>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card h-100">
+            <div class="card-body py-3">
+                <small class="text-muted">Ocorrido</small>
+                <h4 class="mb-0"><?=number_format((float) $totais["ocorrido"], 0, ",", ".")?> <small class="fs-6 text-muted">kg</small></h4>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card h-100">
+            <div class="card-body py-3">
+                <small class="text-muted">Aderência</small>
+                <?php
+                    $ad = $totais["aderencia"];
+                    $adClass = ($ad !== null && ($ad < 90 || $ad > 110)) ? "text-warning" : "text-success";
+                ?>
+                <h4 class="mb-0 <?=$ad !== null ? $adClass : ""?>">
+                    <?=$ad !== null ? number_format((float) $ad, 1, ",", ".") . "%" : "—"?>
+                </h4>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card h-100">
+            <div class="card-body py-3">
+                <small class="text-muted">Custo médio R$/cab</small>
+                <h4 class="mb-0">
+                    <?=$totais["custo_cab_medio"] !== null
+                        ? "R$ " . number_format((float) $totais["custo_cab_medio"], 2, ",", ".")
+                        : "—"?>
+                </h4>
+            </div>
+        </div>
+    </div>
+</div>
+
+<?php if (empty($linhas)) : ?>
+    <div class="card">
+        <div class="card-body text-center py-5">
+            <p class="text-muted mb-3">Nenhuma programação ou fornecimento neste dia<?=$linha || $id_curral ? " com os filtros atuais" : ""?>.</p>
+            <?php if (!empty($podeGerar)) : ?>
+                <a class="btn btn-primary" href="<?=$router->route("admin.nutricao.programacao.trato.gerar")?>">Gerar previstos do dia</a>
+            <?php endif ?>
+        </div>
+    </div>
+<?php else : ?>
+
+    <!-- Mobile: cards por lote -->
+    <div class="d-md-none">
+        <?php foreach ($linhas as $l) : ?>
+            <div class="card mb-3">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div>
+                            <strong><?=htmlspecialchars($l["lote_nome"])?></strong>
+                            <?php if (!empty($l["lote_codigo"])) : ?>
+                                <span class="text-muted small">(<?=htmlspecialchars($l["lote_codigo"])?>)</span>
+                            <?php endif ?>
+                            <div class="small text-muted">
+                                <?=!empty($l["linha"]) ? "Linha " . htmlspecialchars($l["linha"]) . " · " : ""?>
+                                <?=htmlspecialchars($l["curral_nome"] ?: "—")?>
+                                <?=$l["cabecas"] !== null ? " · " . (int) $l["cabecas"] . " cab" : ""?>
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <?php if ($l["dias"] !== null) : ?>
+                                <?php if ($l["alerta"] === "risco") : ?>
+                                    <span class="badge filled-outlined bg-danger"><?=(int) $l["dias"]?> d</span>
+                                <?php elseif ($l["alerta"] === "atencao") : ?>
+                                    <span class="badge filled-outlined bg-warning"><?=(int) $l["dias"]?> d</span>
+                                <?php else : ?>
+                                    <span class="badge filled-outlined bg-secondary"><?=(int) $l["dias"]?> d</span>
+                                <?php endif ?>
+                            <?php endif ?>
+                        </div>
+                    </div>
+                    <div class="small mb-2"><?=htmlspecialchars($l["formula_nome"] ?: "Sem dieta")?></div>
+                    <div class="table-responsive">
+                        <table class="table table-sm mb-2">
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <?php foreach ($turnos as $t) : ?>
+                                        <th class="text-end"><?=htmlspecialchars(explode(" ", $turnosLabel[$t] ?? $t)[0])?></th>
+                                    <?php endforeach ?>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Prev.</td>
+                                    <?php foreach ($turnos as $t) : ?>
+                                        <td class="text-end"><?=number_format((float) $l["previsto"][$t], 0, ",", ".")?></td>
+                                    <?php endforeach ?>
+                                </tr>
+                                <tr>
+                                    <td>Ocor.</td>
+                                    <?php foreach ($turnos as $t) : ?>
+                                        <td class="text-end"><?=number_format((float) $l["ocorrido"][$t], 0, ",", ".")?></td>
+                                    <?php endforeach ?>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="d-flex justify-content-between small">
+                        <span>
+                            Total <?=number_format((float) $l["total_previsto"], 0, ",", ".")?>
+                            → <?=number_format((float) $l["total_ocorrido"], 0, ",", ".")?> kg
+                            <?php if ($l["aderencia"] !== null) : ?>
+                                (<?=number_format((float) $l["aderencia"], 0, ",", ".")?>%)
+                            <?php endif ?>
+                        </span>
+                        <span>
+                            <?=$l["custo_cab"] !== null
+                                ? "R$ " . number_format((float) $l["custo_cab"], 2, ",", ".") . "/cab"
+                                : "—"?>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        <?php endforeach ?>
+    </div>
+
+    <!-- Desktop: tabela wide -->
+    <div class="card crud-table-card d-none d-md-block">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-sm table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Linha</th>
+                            <th>Curral</th>
+                            <th>Lote</th>
+                            <th class="text-end">Cab</th>
+                            <th>Dieta</th>
+                            <th class="text-center">Dias</th>
+                            <?php foreach ($turnos as $t) : ?>
+                                <th class="text-end" colspan="2"><?=htmlspecialchars($turnosLabel[$t] ?? $t)?></th>
+                            <?php endforeach ?>
+                            <th class="text-end">Total P</th>
+                            <th class="text-end">Total O</th>
+                            <th class="text-end">Δ</th>
+                            <th class="text-end">%</th>
+                            <th class="text-end">R$/cab</th>
+                        </tr>
+                        <tr class="small text-muted">
+                            <th colspan="6"></th>
+                            <?php foreach ($turnos as $t) : ?>
+                                <th class="text-end fw-normal">P</th>
+                                <th class="text-end fw-normal">O</th>
+                            <?php endforeach ?>
+                            <th colspan="5"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($linhas as $l) : ?>
+                            <tr>
+                                <td><?=htmlspecialchars($l["linha"] ?: "—")?></td>
+                                <td><?=htmlspecialchars($l["curral_nome"] ?: "—")?></td>
+                                <td>
+                                    <a href="<?=$router->route("admin.nutricao.programacao.trato.index", ["id_lote" => $l["id_lote"]])?>">
+                                        <?=htmlspecialchars($l["lote_nome"])?>
+                                    </a>
+                                    <?php if (!empty($l["giro"])) : ?>
+                                        <span class="badge filled-outlined bg-secondary ms-1">Giro <?=$l["giro"]?></span>
+                                    <?php endif ?>
+                                </td>
+                                <td class="text-end"><?=$l["cabecas"] !== null ? (int) $l["cabecas"] : "—"?></td>
+                                <td><?=htmlspecialchars($l["formula_nome"] ?: "—")?></td>
+                                <td class="text-center">
+                                    <?php if ($l["dias"] === null) : ?>
+                                        —
+                                    <?php elseif ($l["alerta"] === "risco") : ?>
+                                        <span class="badge filled-outlined bg-danger"><?=(int) $l["dias"]?></span>
+                                    <?php elseif ($l["alerta"] === "atencao") : ?>
+                                        <span class="badge filled-outlined bg-warning"><?=(int) $l["dias"]?></span>
+                                    <?php else : ?>
+                                        <?=(int) $l["dias"]?>
+                                    <?php endif ?>
+                                </td>
+                                <?php foreach ($turnos as $t) : ?>
+                                    <td class="text-end"><?=number_format((float) $l["previsto"][$t], 1, ",", ".")?></td>
+                                    <td class="text-end"><?=number_format((float) $l["ocorrido"][$t], 1, ",", ".")?></td>
+                                <?php endforeach ?>
+                                <td class="text-end fw-semibold"><?=number_format((float) $l["total_previsto"], 1, ",", ".")?></td>
+                                <td class="text-end fw-semibold"><?=number_format((float) $l["total_ocorrido"], 1, ",", ".")?></td>
+                                <td class="text-end <?=(float) $l["delta"] < 0 ? "text-danger" : ((float) $l["delta"] > 0 ? "text-success" : "")?>">
+                                    <?=number_format((float) $l["delta"], 1, ",", ".")?>
+                                </td>
+                                <td class="text-end">
+                                    <?php if ($l["aderencia"] === null) : ?>
+                                        —
+                                    <?php else : ?>
+                                        <?php $a = (float) $l["aderencia"]; ?>
+                                        <span class="<?=($a < 90 || $a > 110) ? "text-warning" : "text-success"?>">
+                                            <?=number_format($a, 0, ",", ".")?>%
+                                        </span>
+                                    <?php endif ?>
+                                </td>
+                                <td class="text-end">
+                                    <?=$l["custo_cab"] !== null
+                                        ? number_format((float) $l["custo_cab"], 2, ",", ".")
+                                        : "—"?>
+                                </td>
+                            </tr>
+                        <?php endforeach ?>
+                    </tbody>
+                    <tfoot>
+                        <tr class="fw-semibold">
+                            <td colspan="6">Totais (<?=(int) $totais["lotes"]?> lote<?=$totais["lotes"] == 1 ? "" : "s"?>)</td>
+                            <td colspan="<?=count($turnos) * 2?>"></td>
+                            <td class="text-end"><?=number_format((float) $totais["previsto"], 1, ",", ".")?></td>
+                            <td class="text-end"><?=number_format((float) $totais["ocorrido"], 1, ",", ".")?></td>
+                            <td class="text-end"><?=number_format((float) $totais["delta"], 1, ",", ".")?></td>
+                            <td class="text-end">
+                                <?=$totais["aderencia"] !== null ? number_format((float) $totais["aderencia"], 0, ",", ".") . "%" : "—"?>
+                            </td>
+                            <td class="text-end">
+                                <?=$totais["custo_cab_medio"] !== null
+                                    ? number_format((float) $totais["custo_cab_medio"], 2, ",", ".")
+                                    : "—"?>
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+            <p class="small text-muted mt-3 mb-0">
+                P = previsto (programação) · O = ocorrido (fornecimento). R$/cab usa o custo dos ingredientes da fórmula × kg ocorridos ÷ cabeças.
+                Sem custo cadastrado no ingrediente ou sem ocorrido, o indicador fica em —.
+            </p>
+        </div>
+    </div>
+<?php endif ?>
