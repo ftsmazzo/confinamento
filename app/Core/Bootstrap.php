@@ -61,9 +61,12 @@ class Bootstrap
             error_reporting(E_ALL & ~E_DEPRECATED & ~E_USER_DEPRECATED);
             ini_set('display_errors', '1');
 
-            $whoops = new \Whoops\Run;
-            $whoops->pushHandler(new \Whoops\Handler\PrettyPageHandler);
-            $whoops->register();
+            // Whoops é require-dev; em deploy (--no-dev) a classe não existe
+            if (class_exists(\Whoops\Run::class)) {
+                $whoops = new \Whoops\Run;
+                $whoops->pushHandler(new \Whoops\Handler\PrettyPageHandler);
+                $whoops->register();
+            }
 
             ini_set('log_errors', '1');
             ini_set('error_log', __DIR__ . '/../../storage/logs/errors/php_dev.log');
