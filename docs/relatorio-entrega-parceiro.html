@@ -224,7 +224,14 @@
               <td>Sim</td>
             </tr>
             <tr>
-              <td><strong>P7–P10</strong></td>
+              <td><strong>P7</strong></td>
+              <td>Farmácia carga inicial (E04)</td>
+              <td><span class="badge wait">Aguardando validação</span></td>
+              <td>—</td>
+              <td>Sim</td>
+            </tr>
+            <tr>
+              <td><strong>P8–P10</strong></td>
               <td>Demais entregas do escopo</td>
               <td><span class="badge wait">Pendente</span></td>
               <td>—</td>
@@ -588,6 +595,51 @@
         </div>
       </article>
 
+      <!-- P7 -->
+      <article class="step" id="p7">
+        <div class="step-top">
+          <span class="step-id">P7</span>
+          <h3>Farmácia — carga inicial de produtos (E04)</h3>
+          <span class="badge wait">Aguardando validação na segura</span>
+        </div>
+        <p class="muted small">Data: 01/08/2026 · Seed one-shot do catálogo (~94)</p>
+
+        <div class="grid-2">
+          <div class="box">
+            <h4>O que mudou</h4>
+            <ul>
+              <li>SQL idempotente da planilha Farmácia (aba Cadastro-Estoque): 94 produtos <code>BI-P*</code></li>
+              <li>Local <code>BI-FARM</code> + prateleira interna, se ainda não existirem</li>
+              <li>Sem tela de import recorrente; entradas/saídas ficam no fluxo normal</li>
+              <li>Duplicatas de nome na planilha desambiguadas pela unidade (ex. RIPERCOLL)</li>
+              <li>Manual: checklist de conferência do catálogo</li>
+            </ul>
+          </div>
+          <div class="box">
+            <h4>Como validar na segura</h4>
+            <ol>
+              <li>Aplicar <code>storage/migrations/20260801_0001_seed_farmacia_bichara.sql</code></li>
+              <li><code>SELECT COUNT(*) … WHERE codigo LIKE 'BI-P%'</code> → 94</li>
+              <li>Estoque → Produtos / Medicamentos e Vacinas: lista BI-P*</li>
+              <li>Reaplicar o SQL → não duplica</li>
+            </ol>
+          </div>
+        </div>
+
+        <div class="box" style="margin-top:12px">
+          <h4>Arquivos principais</h4>
+          <ul class="files">
+            <li><span class="tag">sql</span> <span class="path">storage/migrations/20260801_0001_seed_farmacia_bichara.sql</span></li>
+            <li><span class="tag doc">manual</span> <span class="path">public/assets/manual/manual-do-sistema.html</span> (<code>#carga-farmacia</code>)</li>
+          </ul>
+        </div>
+
+        <div class="sql-box">
+          <strong>DB:</strong> executar <code>storage/migrations/20260801_0001_seed_farmacia_bichara.sql</code>
+          (idempotente por <code>BI-P*</code>; exige categoria Sanitário + coluna <code>tipo_produto</code>).
+        </div>
+      </article>
+
     </section>
 
     <section>
@@ -598,7 +650,6 @@
             <tr><th>Passo</th><th>Entrega</th><th>Obs.</th></tr>
           </thead>
           <tbody>
-            <tr><td>P7</td><td>Farmácia carga inicial (E04)</td><td>Sem import recorrente</td></tr>
             <tr><td>P8</td><td>Cocho: foto, permissão, turnos (E12)</td><td>Migration + ACL</td></tr>
             <tr><td>P9</td><td>Sugestão por escore (E07)</td><td>—</td></tr>
             <tr><td>P10</td><td>Handoff final</td><td>Lista ordenada de migrations</td></tr>
