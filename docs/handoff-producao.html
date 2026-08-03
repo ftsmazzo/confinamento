@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Handoff produção — Confinamento</title>
+  <style>
+    :root { --ink:#1a2332; --muted:#5c6b7a; --line:#d8e0e8; --paper:#f7f4ef; --card:#fff; --forest:#1f5c45; }
+    body { margin:0; font-family: system-ui, sans-serif; color:var(--ink); background:var(--paper); line-height:1.55; }
+    .wrap { max-width:880px; margin:0 auto; padding:36px 20px 80px; }
+    h1 { font-size:1.6rem; margin:0 0 8px; }
+    h2 { font-size:1.15rem; margin:28px 0 10px; color:var(--forest); }
+    .muted { color:var(--muted); }
+    .card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:18px 20px; margin:14px 0; }
+    code, .path { font-family: ui-monospace, Consolas, monospace; font-size:.9em; }
+    ol.migrations li { margin:6px 0; }
+    table { width:100%; border-collapse:collapse; font-size:.92rem; }
+    th, td { border:1px solid var(--line); padding:8px 10px; text-align:left; vertical-align:top; }
+    th { background:#eef3f0; }
+    .ok { color:var(--forest); font-weight:600; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Handoff final (P10)</h1>
+    <p class="muted">Confinamento Fuad Bichara · rodada E01–E12 · aplicar na segura e depois na real.</p>
+
+    <div class="card">
+      <strong>Repo:</strong> <code>ftsmazzo/confinamento</code> branch <code>main</code><br>
+      <strong>Manual:</strong> <span class="path">public/assets/manual/manual-do-sistema.html</span>
+      (âncoras <code>#leitura-cocho-p8</code>, <code>#sugestao-escore-p9</code>)<br>
+      <strong>Relatório:</strong> <span class="path">docs/relatorio-entrega-parceiro.html</span>
+    </div>
+
+    <h2>1. Migrations na ordem (Adminer / real)</h2>
+    <p class="muted">Rodar na ordem. Seeds <code>BI-*</code> são idempotentes. Seeds de teste só sob demanda.</p>
+    <ol class="migrations">
+      <li><code>storage/migrations/20260711_0001_add_tipo_produto_e_campos_sanitarios.sql</code></li>
+      <li><code>storage/migrations/20260711_0002_create_tipo_aplicacao_motivo_tratamento.sql</code></li>
+      <li><code>storage/migrations/20260712_0001_unificar_grupo_permissoes_relatorios.sql</code></li>
+      <li><code>storage/migrations/20260721_0045_create_financeiro_base.sql</code></li>
+      <li><code>storage/migrations/20260721_0100_add_parcelamento_financeiro.sql</code></li>
+      <li><code>storage/migrations/20260721_0200_add_parcela_origem_id.sql</code></li>
+      <li><code>storage/migrations/20260721_0300_add_preferencias_usuario.sql</code></li>
+      <li><code>storage/migrations/20260721_0400_add_calendario_eventos_preferencia.sql</code></li>
+      <li><code>storage/migrations/20260721_0500_add_calendario_visao_preferencia.sql</code></li>
+      <li><code>storage/migrations/20260731_0001_add_linha_giro.sql</code></li>
+      <li><code>storage/migrations/20260731_0002_parametros_trato.sql</code></li>
+      <li><code>storage/migrations/20260731_0003_seed_rebanho_bichara.sql</code> — currais/lotes BI (~1067 cab)</li>
+      <li><code>storage/migrations/20260801_0001_seed_farmacia_bichara.sql</code> — ~94 produtos BI-P*</li>
+      <li><code>storage/migrations/20260803_0001_leitura_cocho_p8.sql</code> — foto/turno/escore NULL + <code>dieta_dar_nota</code></li>
+    </ol>
+    <p class="muted">P9 não tem migration (só lógica/UI). Pasta de fotos: <code>storage/media/leituras-cocho/</code> (criar se não existir; gitignored).</p>
+
+    <h2>2. Smoke test na segura</h2>
+    <table>
+      <thead><tr><th>#</th><th>Checagem</th><th>OK?</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>Login admin · menu Nutrição / Manejo / Estoque</td><td></td></tr>
+        <tr><td>2</td><td>Currais BI com linha · lotes BI com cabeças</td><td></td></tr>
+        <tr><td>3</td><td>Produtos farmácia BI-P01…P94</td><td></td></tr>
+        <tr><td>4</td><td>Leitura de cocho: turno + foto + escore (com/sem <code>dieta_dar_nota</code>)</td><td></td></tr>
+        <tr><td>5</td><td>Quadro do Dia: previsto × ocorrido + coluna Cocho com sugestão %</td><td></td></tr>
+        <tr><td>6</td><td>Aplicar ajuste: form pré-preenchido · salvar grava · sem auto-gravação</td><td></td></tr>
+        <tr><td>7</td><td>Sem escore: Quadro sem badge / fluxo não quebra</td><td></td></tr>
+        <tr><td>8</td><td>Gerar previstos / lançar ocorrido (motor MS)</td><td></td></tr>
+      </tbody>
+    </table>
+
+    <h2>3. Tabela de sugestão (P9 / E07)</h2>
+    <div class="card">
+      0 Limpo → <strong>+5%</strong> · 1 Traços → <strong>+3%</strong> · 2 Leve → <strong>0%</strong> ·
+      3 Moderada → <strong>−5%</strong> · 4 Excessiva → <strong>−10%</strong> · sem nota → sem sugestão
+    </div>
+
+    <h2>4. Fora deste escopo</h2>
+    <ul>
+      <li>Dashboard gerencial avançado</li>
+      <li>Pesagem / balança integrada</li>
+      <li>Importação recorrente (carga é SQL one-shot)</li>
+    </ul>
+
+    <p class="ok" style="margin-top:28px">Rodada P1–P10 pronta para validação do Diego na segura e promoção à real.</p>
+  </div>
+</body>
+</html>

@@ -171,6 +171,23 @@
                                 : "—"?>
                         </span>
                     </div>
+                    <?php if ($l["cocho_sugestao_pct"] !== null) : ?>
+                        <?php
+                            $pctSug = (float) $l["cocho_sugestao_pct"];
+                            $badgeSug = $pctSug > 0 ? "bg-success" : ($pctSug < 0 ? "bg-warning" : "bg-secondary");
+                        ?>
+                        <div class="mt-2 small">
+                            <span class="badge filled-outlined <?=$badgeSug?>" title="<?=htmlspecialchars($l["cocho_sugestao_texto"] ?? "")?>">
+                                Cocho <?=(int) $l["cocho_escore"]?> → <?=htmlspecialchars($l["cocho_sugestao_label"])?>
+                            </span>
+                            <?php if (!empty($podeAjustar)) : ?>
+                                <a class="ms-1" href="<?=$router->route("admin.nutricao.ajuste.consumo.novo", [
+                                    "id_lote" => $l["id_lote"],
+                                    "id_leitura_cocho" => $l["id_leitura_cocho"],
+                                ])?>">Aplicar ajuste</a>
+                            <?php endif ?>
+                        </div>
+                    <?php endif ?>
                 </div>
             </div>
         <?php endforeach ?>
@@ -197,6 +214,7 @@
                             <th class="text-end">Δ</th>
                             <th class="text-end">%</th>
                             <th class="text-end">R$/cab</th>
+                            <th class="text-center">Cocho</th>
                         </tr>
                         <tr class="small text-muted">
                             <th colspan="6"></th>
@@ -204,7 +222,7 @@
                                 <th class="text-end fw-normal">P</th>
                                 <th class="text-end fw-normal">O</th>
                             <?php endforeach ?>
-                            <th colspan="5"></th>
+                            <th colspan="6"></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -257,6 +275,27 @@
                                         ? number_format((float) $l["custo_cab"], 2, ",", ".")
                                         : "—"?>
                                 </td>
+                                <td class="text-center">
+                                    <?php if ($l["cocho_sugestao_pct"] === null) : ?>
+                                        <span class="text-muted">—</span>
+                                    <?php else : ?>
+                                        <?php
+                                            $pctSug = (float) $l["cocho_sugestao_pct"];
+                                            $badgeSug = $pctSug > 0 ? "bg-success" : ($pctSug < 0 ? "bg-warning" : "bg-secondary");
+                                        ?>
+                                        <span class="badge filled-outlined <?=$badgeSug?>" title="<?=htmlspecialchars($l["cocho_sugestao_texto"] ?? "")?>">
+                                            <?=(int) $l["cocho_escore"]?> → <?=htmlspecialchars($l["cocho_sugestao_label"])?>
+                                        </span>
+                                        <?php if (!empty($podeAjustar)) : ?>
+                                            <div class="small mt-1">
+                                                <a href="<?=$router->route("admin.nutricao.ajuste.consumo.novo", [
+                                                    "id_lote" => $l["id_lote"],
+                                                    "id_leitura_cocho" => $l["id_leitura_cocho"],
+                                                ])?>">Aplicar</a>
+                                            </div>
+                                        <?php endif ?>
+                                    <?php endif ?>
+                                </td>
                             </tr>
                         <?php endforeach ?>
                     </tbody>
@@ -275,6 +314,7 @@
                                     ? number_format((float) $totais["custo_cab_medio"], 2, ",", ".")
                                     : "—"?>
                             </td>
+                            <td></td>
                         </tr>
                     </tfoot>
                 </table>
@@ -282,6 +322,7 @@
             <p class="small text-muted mt-3 mb-0">
                 P = previsto (programação) · O = ocorrido (fornecimento). R$/cab usa o custo dos ingredientes da fórmula × kg ocorridos ÷ cabeças.
                 Sem custo cadastrado no ingrediente ou sem ocorrido, o indicador fica em —.
+                Coluna Cocho: sugestão % a partir da última leitura com escore (não grava sozinha — use Aplicar).
             </p>
         </div>
     </div>

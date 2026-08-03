@@ -75,6 +75,7 @@ class QuadroDiarioController extends ControllerAdmin
             "linhasFiltro" => array_keys($linhasFiltro),
             "podeGerar" => $this->auth->allow("programacao_trato_inserir"),
             "podeFornecer" => $this->auth->allow("fornecimento_trato_inserir"),
+            "podeAjustar" => $this->auth->allow("ajuste_consumo_inserir"),
         ]);
     }
 }

@@ -238,11 +238,18 @@
               <td>Sim</td>
             </tr>
             <tr>
-              <td><strong>P9–P10</strong></td>
-              <td>Demais entregas do escopo</td>
-              <td><span class="badge wait">Pendente</span></td>
-              <td>—</td>
-              <td>—</td>
+              <td><strong>P9</strong></td>
+              <td>Sugestão por escore (E07)</td>
+              <td><span class="badge ok">Entregue</span></td>
+              <td>aguardando push</td>
+              <td>Não</td>
+            </tr>
+            <tr>
+              <td><strong>P10</strong></td>
+              <td>Handoff final</td>
+              <td><span class="badge ok">Entregue</span></td>
+              <td><code>docs/handoff-producao.html</code></td>
+              <td>Não</td>
             </tr>
           </tbody>
         </table>
@@ -693,26 +700,56 @@
         </div>
       </article>
 
+      <!-- P9 -->
+      <article class="step" id="p9">
+        <div class="step-top">
+          <span class="step-id">P9</span>
+          <h3>Sugestão de ajuste por escore (E07)</h3>
+          <span class="badge ok">Entregue</span>
+        </div>
+        <p>
+          Tabela fixa 0→+5%, 1→+3%, 2→0%, 3→−5%, 4→−10%. Exibida no Quadro do Dia (coluna Cocho)
+          e pré-preenche Ajuste de Consumo. <strong>Não grava sozinha.</strong>
+        </p>
+        <div class="box" style="margin-top:12px">
+          <h4>Arquivos principais</h4>
+          <ul class="files">
+            <li><span class="tag">svc</span> <span class="path">app/Services/Nutricao/SugestaoAjusteCochoService.php</span></li>
+            <li><span class="tag">svc</span> <span class="path">app/Services/Nutricao/QuadroDiarioService.php</span></li>
+            <li><span class="tag">view</span> <span class="path">app/Views/admin/nutricao/quadro-diario/index.phtml</span></li>
+            <li><span class="tag">ctrl</span> <span class="path">app/Controllers/Admin/Nutricao/AjusteConsumoController.php</span></li>
+            <li><span class="tag">manual</span> <span class="path">#sugestao-escore-p9</span></li>
+          </ul>
+        </div>
+        <div class="sql-box"><strong>DB:</strong> nenhuma migration (só código).</div>
+      </article>
+
+      <!-- P10 -->
+      <article class="step" id="p10">
+        <div class="step-top">
+          <span class="step-id">P10</span>
+          <h3>Handoff final</h3>
+          <span class="badge ok">Entregue</span>
+        </div>
+        <p>
+          Lista ordenada de migrations, smoke test e instruções para a real em
+          <code>docs/handoff-producao.html</code>.
+        </p>
+      </article>
+
     </section>
 
     <section>
-      <div class="section-head"><span class="num">03</span><h2>Próximos passos (fila)</h2></div>
+      <div class="section-head"><span class="num">03</span><h2>Próximos passos</h2></div>
       <div class="toc">
-        <table>
-          <thead>
-            <tr><th>Passo</th><th>Entrega</th><th>Obs.</th></tr>
-          </thead>
-          <tbody>
-            <tr><td>P9</td><td>Sugestão por escore (E07)</td><td>—</td></tr>
-            <tr><td>P10</td><td>Handoff final</td><td>Lista ordenada de migrations</td></tr>
-          </tbody>
-        </table>
+        <p>Escopo E01–E12 da rodada está fechado (P1–P10). Próximo: smoke do Diego na segura → promoção à real conforme <code>docs/handoff-producao.html</code>.</p>
+        <p class="muted" style="color:var(--muted)">Fora do escopo: dashboard avançado, balança, importação recorrente.</p>
       </div>
     </section>
 
     <footer>
       Relatório de entrega · Confinamento · atualizado a cada passo validado<br>
-      Escopo: <code>docs/entrega-final-escopo.html</code> · Plano: <code>docs/plano-execucao-passos.html</code>
+      Escopo: <code>docs/entrega-final-escopo.html</code> · Plano: <code>docs/plano-execucao-passos.html</code> · Handoff: <code>docs/handoff-producao.html</code>
     </footer>
   </div>
 </body>

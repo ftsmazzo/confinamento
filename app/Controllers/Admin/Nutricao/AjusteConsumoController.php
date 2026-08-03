@@ -9,6 +9,7 @@ use App\Core\Request;
 use App\Models\Manejo\Lote;
 use App\Models\Nutricao\AjusteConsumo;
 use App\Models\Nutricao\LeituraCocho;
+use App\Services\Nutricao\SugestaoAjusteCochoService;
 
 class AjusteConsumoController extends ControllerAdmin
 {
@@ -83,13 +84,20 @@ class AjusteConsumoController extends ControllerAdmin
 
         $data = new Data($request->all());
         $idLote = $data->has("id_lote") ? (int) $data->id_lote : null;
+        $idLeitura = $data->has("id_leitura_cocho") ? (int) $data->id_leitura_cocho : null;
+
+        $ajuste = $this->prefillNovo($idLote, $idLeitura);
+        if (!empty($ajuste->id_lote)) {
+            $idLote = (int) $ajuste->id_lote;
+        }
 
         echo $this->view->render("admin/nutricao/ajuste-consumo/form", [
             "csrf" => $this->csrf->generate(),
-            "ajuste" => false,
+            "ajuste" => $ajuste,
             "id_lote" => $idLote,
             "lotes" => $this->lotes(),
             "leituras" => $this->leituras($idLote),
+            "sugestao" => $ajuste->sugestao ?? null,
             "url_action" => $this->router->route("admin.nutricao.ajuste.consumo.insert"),
             "url_voltar" => $this->urlVoltar($idLote),
         ]);
@@ -132,6 +140,7 @@ class AjusteConsumoController extends ControllerAdmin
             "id_lote" => (int) $ajuste->id_lote,
             "lotes" => $this->lotes(),
             "leituras" => $this->leituras((int) $ajuste->id_lote),
+            "sugestao" => null,
             "url_action" => $this->router->route("admin.nutricao.ajuste.consumo.update"),
             "url_voltar" => $this->urlVoltar((int) $ajuste->id_lote),
         ]);
@@ -223,5 +232,53 @@ class AjusteConsumoController extends ControllerAdmin
         return LeituraCocho::where("id_lote", "=", $idLote)
             ->orderBy("data_leitura", "desc")
             ->get();
+    }
+
+    /**
+     * Prefill a partir da leitura (query) ou da última com escore do lote.
+     * Apenas sugere — gravar o ajuste continua manual.
+     */
+    private function prefillNovo(?int $idLote, ?int $idLeitura): object
+    {
+        $ajuste = (object) [
+            "id_lote" => $idLote,
+            "id_leitura_cocho" => $idLeitura,
+            "data_ajuste" => date("Y-m-d"),
+            "percentual_ajuste" => null,
+            "quantidade_ajustada" => null,
+            "motivo" => null,
+            "observacao" => null,
+            "sugestao" => null,
+        ];
+
+        $leitura = null;
+        if ($idLeitura) {
+            $leitura = LeituraCocho::find($idLeitura);
+        } elseif ($idLote) {
+            $leituras = LeituraCocho::where("id_lote", "=", $idLote)
+                ->whereNotNull("escore")
+                ->orderBy("data_leitura", "desc")
+                ->orderBy("id", "desc")
+                ->limit(1)
+                ->get();
+            $leitura = $leituras[0] ?? null;
+        }
+
+        if (!$leitura || $leitura->escore === null || $leitura->escore === "") {
+            return $ajuste;
+        }
+
+        $sugestao = (new SugestaoAjusteCochoService())->sugerir((int) $leitura->escore);
+        if ($sugestao === null) {
+            return $ajuste;
+        }
+
+        $ajuste->id_lote = (int) $leitura->id_lote;
+        $ajuste->id_leitura_cocho = (int) $leitura->id;
+        $ajuste->percentual_ajuste = $sugestao["percentual"];
+        $ajuste->motivo = "Sugestão por escore " . $sugestao["escore"] . " (" . $sugestao["escore_label"] . ")";
+        $ajuste->sugestao = $sugestao;
+
+        return $ajuste;
     }
 }

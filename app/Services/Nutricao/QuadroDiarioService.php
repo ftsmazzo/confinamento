@@ -4,6 +4,7 @@ namespace App\Services\Nutricao;
 
 use App\Core\DB;
 use App\Models\Manejo\Lote;
+use App\Models\Nutricao\LeituraCocho;
 
 /**
  * Quadro operacional do dia (E02) + custo alimentar R$/cab/dia (E09).
@@ -18,13 +19,16 @@ class QuadroDiarioService
 
     private CustoFormulaService $custoService;
     private PrevisaoTratoService $previsaoService;
+    private SugestaoAjusteCochoService $sugestaoService;
 
     public function __construct(
         ?CustoFormulaService $custoService = null,
-        ?PrevisaoTratoService $previsaoService = null
+        ?PrevisaoTratoService $previsaoService = null,
+        ?SugestaoAjusteCochoService $sugestaoService = null
     ) {
         $this->custoService = $custoService ?? new CustoFormulaService();
         $this->previsaoService = $previsaoService ?? new PrevisaoTratoService();
+        $this->sugestaoService = $sugestaoService ?? new SugestaoAjusteCochoService();
     }
 
     /**
@@ -149,6 +153,12 @@ class QuadroDiarioService
             "total_ocorrido" => 0.0,
             "delta" => 0.0,
             "aderencia" => null,
+            "cocho_escore" => null,
+            "cocho_escore_label" => null,
+            "cocho_sugestao_pct" => null,
+            "cocho_sugestao_label" => null,
+            "cocho_sugestao_texto" => null,
+            "id_leitura_cocho" => null,
         ];
     }
 
@@ -221,6 +231,54 @@ class QuadroDiarioService
             }
 
             $porLote[$id]["custo_total"] = round((float) $porLote[$id]["custo_total"], 2);
+        }
+
+        $this->aplicarSugestoesCocho($porLote, $data);
+    }
+
+    /**
+     * Última leitura com nota (escore) até a data do quadro → sugestão %.
+     *
+     * @param array<int, array<string, mixed>> $porLote
+     */
+    private function aplicarSugestoesCocho(array &$porLote, string $data): void
+    {
+        $ids = array_keys($porLote);
+        if ($ids === []) {
+            return;
+        }
+
+        $leituras = LeituraCocho::whereIn("id_lote", $ids)
+            ->whereNotNull("escore")
+            ->where("data_leitura", "<=", $data)
+            ->orderBy("data_leitura", "desc")
+            ->orderBy("id", "desc")
+            ->get();
+
+        $porLoteLeitura = [];
+        foreach ($leituras as $leitura) {
+            $idLote = (int) $leitura->id_lote;
+            if (!isset($porLoteLeitura[$idLote])) {
+                $porLoteLeitura[$idLote] = $leitura;
+            }
+        }
+
+        foreach ($porLoteLeitura as $idLote => $leitura) {
+            if (!isset($porLote[$idLote])) {
+                continue;
+            }
+            $escore = (int) $leitura->escore;
+            $sugestao = $this->sugestaoService->sugerir($escore);
+            if ($sugestao === null) {
+                continue;
+            }
+
+            $porLote[$idLote]["cocho_escore"] = $escore;
+            $porLote[$idLote]["cocho_escore_label"] = $sugestao["escore_label"];
+            $porLote[$idLote]["cocho_sugestao_pct"] = $sugestao["percentual"];
+            $porLote[$idLote]["cocho_sugestao_label"] = $sugestao["percentual_label"];
+            $porLote[$idLote]["cocho_sugestao_texto"] = $sugestao["texto"];
+            $porLote[$idLote]["id_leitura_cocho"] = (int) $leitura->id;
         }
     }
 

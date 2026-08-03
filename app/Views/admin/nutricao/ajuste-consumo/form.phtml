@@ -14,6 +14,14 @@
             <div class="crud-subsection mb-4">
                 <div class="crud-section-copy mb-3">
                     <h5>Ajuste de Consumo</h5>
+                    <?php if (!empty($sugestao)) : ?>
+                        <div class="alert alert-info py-2 mb-2">
+                            <strong>Sugestão (E07):</strong>
+                            <?=htmlspecialchars($sugestao["texto"])?>.
+                            O percentual abaixo já veio pré-preenchido — revise e salve só se concordar.
+                            Nada é gravado automaticamente.
+                        </div>
+                    <?php endif ?>
                     <small>Correção técnica formal da quantidade de ração prevista, geralmente motivada por uma leitura de cocho.</small>
                 </div>
 
