@@ -1,13 +1,32 @@
 <?php $this->layout("app/template/base"); ?>
 
+<?php $this->start("styles") ?>
+<link rel="stylesheet" href="<?=asset("dist/dizuploader/dizuploader.min.css")?>">
+<?php $this->end() ?>
+
 <?php $this->start("endScripts") ?>
+<script src="<?=asset("dist/dizuploader/dizuploader.min.js")?>"></script>
 <script src="<?=asset("admin/js/curral-lote-link.js")?>"></script>
+<script>
+(function () {
+    if (window.jQuery && $.fn.dizuploader) {
+        $("#foto").dizuploader();
+    }
+})();
+</script>
 <?php $this->end() ?>
 
 <?php $this->start("page-actions") ?>
 <?php $this->end() ?>
 
-<form id="form-nutricao-leitura-cocho" class="form-validate" action="<?=$url_action?>" method="POST">
+<?php
+    $escoreAtual = isset($leitura->escore) && $leitura->escore !== "" && $leitura->escore !== null
+        ? (int) $leitura->escore
+        : null;
+    $turnoAtual = $leitura->turno ?? "";
+?>
+
+<form id="form-nutricao-leitura-cocho" class="form-validate" action="<?=$url_action?>" method="POST" enctype="multipart/form-data">
     <input type="hidden" name="csrf" value="<?=$csrf?>">
     <?php if (!empty($leitura->id)) : ?>
         <input type="hidden" name="id" value="<?=$leitura->hash()?>">
@@ -18,7 +37,7 @@
             <div class="crud-subsection mb-4">
                 <div class="crud-section-copy mb-3">
                     <h5>Leitura de Cocho</h5>
-                    <small>Escore de sobra do cocho, padrão da indústria de 0 (limpo) a 4 (sobra excessiva).</small>
+                    <small>Registre o turno, a foto do cocho e — se tiver permissão — o escore de sobra (0 a 4).</small>
                 </div>
 
                 <div class="row">
@@ -44,10 +63,21 @@
                     <div class="col-12 col-md-3">
                         <div class="mb-3">
                             <label for="data_leitura" class="form-label">Data</label>
-                            <input type="date" class="form-control" id="data_leitura" name="data_leitura" autocomplete="off" value="<?=!empty($leitura->data_leitura) ? dateus($leitura->data_leitura) : ""?>">
+                            <input type="date" class="form-control" id="data_leitura" name="data_leitura" autocomplete="off" value="<?=!empty($leitura->data_leitura) ? dateus($leitura->data_leitura) : date("Y-m-d")?>">
                         </div>
                     </div>
                     <div class="col-12 col-md-3">
+                        <div class="mb-3">
+                            <label for="turno" class="form-label">Turno</label>
+                            <select name="turno" id="turno" class="form-select" data-search="false">
+                                <option value="">Selecione</option>
+                                <?php foreach ($turnos_label as $valor => $label) : ?>
+                                    <option value="<?=$valor?>" <?= $turnoAtual === $valor ? "selected" : ""?>><?=$label?></option>
+                                <?php endforeach ?>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6">
                         <div class="mb-3">
                             <label for="id_curral" class="form-label">Curral</label>
                             <select name="id_curral" id="id_curral" class="form-select select2" data-search="true">
@@ -58,23 +88,67 @@
                             </select>
                         </div>
                     </div>
-                    <div class="col-12">
-                        <label class="form-label">Escore</label>
-                        <div class="row">
-                            <?php
-                                $escoreLabels = [0 => "Limpo", 1 => "Traços", 2 => "Leve sobra", 3 => "Sobra moderada", 4 => "Sobra excessiva"];
-                            ?>
-                            <?php foreach ($escoreLabels as $valor => $label) : ?>
-                                <div class="col-6 col-md-2">
-                                    <div class="form-check mb-3">
-                                        <input class="form-check-input" type="radio" name="escore" id="escore_<?=$valor?>" value="<?=$valor?>" <?=isset($leitura->escore) && (int) $leitura->escore === $valor ? "checked" : ""?>>
-                                        <label class="form-check-label" for="escore_<?=$valor?>"><?=$valor?> - <?=$label?></label>
+                    <div class="col-12 col-md-6">
+                        <div class="mb-3">
+                            <label for="foto" class="form-label">Foto do cocho</label>
+                            <input type="file" name="foto" id="foto" data-extensions="jpg jpeg png gif webp">
+                            <?php if (!empty($leitura->foto)) : ?>
+                                <div class="mt-2 d-flex align-items-center gap-3">
+                                    <a href="<?=media("leituras-cocho", $leitura->foto)?>" target="_blank" rel="noopener">
+                                        <img src="<?=media("leituras-cocho", $leitura->foto)?>" alt="Foto atual" style="max-height:72px;border-radius:6px">
+                                    </a>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="remover_foto" id="remover_foto" value="1">
+                                        <label class="form-check-label" for="remover_foto">Remover foto atual</label>
                                     </div>
                                 </div>
-                            <?php endforeach ?>
+                            <?php endif ?>
                         </div>
                     </div>
                 </div>
+            </div>
+
+            <div class="crud-subsection mb-4">
+                <div class="crud-section-copy mb-3">
+                    <h5>Escore<?=!empty($can_dar_nota) ? "" : " (somente leitura)"?></h5>
+                    <small>
+                        <?php if (!empty($can_dar_nota)) : ?>
+                            Padrão da indústria: 0 (limpo) a 4 (sobra excessiva). Opcional.
+                        <?php else : ?>
+                            Você não tem a permissão <code>dieta_dar_nota</code> — a leitura será salva sem nota.
+                        <?php endif ?>
+                    </small>
+                </div>
+
+                <?php if (!empty($can_dar_nota)) : ?>
+                    <div class="row">
+                        <?php
+                            $escoreLabels = [0 => "Limpo", 1 => "Traços", 2 => "Leve sobra", 3 => "Sobra moderada", 4 => "Sobra excessiva"];
+                        ?>
+                        <div class="col-6 col-md-2">
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="radio" name="escore" id="escore_none" value="" <?= $escoreAtual === null ? "checked" : ""?>>
+                                <label class="form-check-label" for="escore_none">Sem nota</label>
+                            </div>
+                        </div>
+                        <?php foreach ($escoreLabels as $valor => $label) : ?>
+                            <div class="col-6 col-md-2">
+                                <div class="form-check mb-3">
+                                    <input class="form-check-input" type="radio" name="escore" id="escore_<?=$valor?>" value="<?=$valor?>" <?= $escoreAtual === $valor ? "checked" : ""?>>
+                                    <label class="form-check-label" for="escore_<?=$valor?>"><?=$valor?> - <?=$label?></label>
+                                </div>
+                            </div>
+                        <?php endforeach ?>
+                    </div>
+                <?php else : ?>
+                    <div class="alert alert-secondary mb-0">
+                        <?php if ($escoreAtual !== null) : ?>
+                            Nota atual: <strong><?=$escoreAtual?> — <?= \App\Models\Nutricao\LeituraCocho::escoreLabel($escoreAtual) ?></strong> (não editável sem permissão).
+                        <?php else : ?>
+                            Sem escore nesta leitura.
+                        <?php endif ?>
+                    </div>
+                <?php endif ?>
             </div>
 
             <div class="crud-subsection">
