@@ -233,7 +233,7 @@
             <tr>
               <td><strong>P8</strong></td>
               <td>Cocho: foto, permissão, turnos (E12)</td>
-              <td><span class="badge wait">Aguardando validação</span></td>
+              <td><span class="badge ok">Validado</span></td>
               <td><code>2a64b13</code></td>
               <td>Sim</td>
             </tr>
@@ -651,10 +651,10 @@
         <div class="step-top">
           <span class="step-id">P8</span>
           <h3>Leitura de cocho — foto, permissão, turnos (E12)</h3>
-          <span class="badge wait">Aguardando validação na segura</span>
+          <span class="badge ok">Validado na segura</span>
           <span class="badge commit">2a64b13</span>
         </div>
-        <p class="muted small">Data: 03/08/2026 · Migration + ACL + visão diária</p>
+        <p class="muted small">Data: 03/08/2026 · Validado na segura (foto + visão do dia)</p>
 
         <div class="grid-2">
           <div class="box">
@@ -668,12 +668,11 @@
             </ul>
           </div>
           <div class="box">
-            <h4>Como validar na segura</h4>
+            <h4>Como foi validado</h4>
             <ol>
-              <li>Aplicar <code>storage/migrations/20260803_0001_leitura_cocho_p8.sql</code></li>
-              <li>Admin: nova leitura com turno + foto + escore</li>
-              <li>Usuário sem <code>dieta_dar_nota</code>: salva sem nota</li>
-              <li>Visão do dia: blocos por turno; abrir foto</li>
+              <li>Leitura com turno e foto registrada</li>
+              <li>Apareceu no bloco do turno na visão do dia</li>
+              <li>Link da foto abriu corretamente</li>
             </ol>
           </div>
         </div>
